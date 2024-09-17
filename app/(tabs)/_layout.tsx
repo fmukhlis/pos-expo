@@ -4,6 +4,7 @@ import React from 'react';
 import { TabBarIcon } from '@/components/navigation/TabBarIcon';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
+import { Text, View } from 'react-native';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -11,20 +12,29 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
         headerShown: false,
       }}>
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Home',
-          tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon name={focused ? 'home' : 'home-outline'} color={color} />
+          tabBarLabel: ({ focused }) => (
+            <Text
+              className={`${focused ? 'font-bold text-light-tabIconSelected' : 'text-light-tabIconDefault'} text-xs`}
+            >
+              Home
+            </Text>
+          ),
+          tabBarIcon: ({ focused, size }) => (
+            <TabBarIcon
+              name={focused ? 'home-sharp' : 'home-outline'}
+              className={`${focused ? 'text-light-tabIconSelected' : ' text-light-tabIconDefault'}`}
+              size={size}
+            />
           ),
         }}
       />
       <Tabs.Screen
-        name="explore"
+        name="profile"
         options={{
           title: 'Explore',
           tabBarIcon: ({ color, focused }) => (
