@@ -9,7 +9,6 @@ interface CustomButton extends ComponentPropsWithoutRef<typeof TouchableOpacity>
 const CustomButton = forwardRef<ElementRef<typeof TouchableOpacity>, CustomButton>(({
     children,
     classNames = '',
-    isLoading = false,
     ...props
 }, forwardedRef) => {
 
@@ -18,8 +17,7 @@ const CustomButton = forwardRef<ElementRef<typeof TouchableOpacity>, CustomButto
             {...props}
             ref={forwardedRef}
             activeOpacity={0.7}
-            className={`justify-center items-center h-[55px] rounded ${classNames} ${isLoading ? 'opacity-50' : ''}`}
-            disabled={isLoading}
+            className={`bg-light-accent dark:bg-dark-accent justify-center items-center rounded ${classNames} disabled:opacity-50`}
         >
             {children}
         </TouchableOpacity>

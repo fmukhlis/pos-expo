@@ -9,8 +9,8 @@ export const Colors = {
     secondaryText: 'rgb(155,155,155)',
     highlightedText: 'rgb(20,20,20)',
     primaryBackground: 'rgb(255,255,255)',
-    secondaryBackground: 'rgb(235,235,235)',
-    highlightedBackground: 'rgb(245,245,245)',
+    secondaryBackground: 'rgb(245,245,245)',
+    tertiaryBackground: 'rgb(235,235,235)',
     accent: 'rgb(59 130 246)'
   },
   dark: {
@@ -18,24 +18,8 @@ export const Colors = {
     secondaryText: 'rgb(110,110,110)',
     highlightedText: 'rgb(245,245,245)',
     primaryBackground: 'rgb(30,30,30)',
-    secondaryBackground: 'rgb(20,20,20)',
-    highlightedBackground: 'rgb(45,45,45)',
+    secondaryBackground: 'rgb(45,45,45)',
+    tertiaryBackground: 'rgb(20,20,20)',
     accent: 'rgb(147 197 253)'
   },
-  // light: {
-  //   text: '#11181C',
-  //   background: '#fff',
-  //   tint: tintColorLight,
-  //   icon: '#687076',
-  //   tabIconDefault: '#687076',
-  //   tabIconSelected: tintColorLight,
-  // },
-  // dark: {
-  //   text: '#ECEDEE',
-  //   background: '#151718',
-  //   tint: tintColorDark,
-  //   icon: '#9BA1A6',
-  //   tabIconDefault: '#9BA1A6',
-  //   tabIconSelected: tintColorDark,
-  // },
 };

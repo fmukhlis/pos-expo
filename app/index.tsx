@@ -17,7 +17,7 @@ const App = () => {
                     className={`${colorScheme === 'dark' ? 'bg-dark-primaryBackground' : 'bg-light-primaryBackground'} justify-center items-center px-5 h-full`}
                 >
                     <Image
-                        tintColor={colorScheme === 'dark' ? Colors.dark.primaryText : Colors.light.primaryText}
+                        tintColor={colorScheme === 'dark' ? Colors.dark.accent : Colors.light.accent}
                         source={require('../assets/images/logo.png')}
                         className='w-[200px] h-[60px]'
                         resizeMode='contain'
@@ -39,12 +39,12 @@ const App = () => {
                         Manage transactions, track inventory, and generate detailed reports with ease
                     </Text>
 
-                    <Link href={'/(auth)/sign-in'} asChild>
+                    <Link href={'/(auth)'} asChild>
                         <CustomButton
-                            classNames={`${colorScheme === 'dark' ? 'bg-blue-300' : 'bg-blue-500'} w-full mt-7`}
+                            classNames={`w-full mt-7 h-12`}
                         >
                             <Text
-                                className={`${colorScheme === 'dark' ? 'text-dark-primaryBackground' : 'text-light-primaryBackground'} font-bold text-lg`}
+                                className={`text-light-primaryBackground dark:text-dark-primaryBackground font-bold text-lg`}
                             >
                                 Get Started
                             </Text>
@@ -52,9 +52,6 @@ const App = () => {
                     </Link>
                 </View>
             </ScrollView>
-            <StatusBar
-                backgroundColor={colorScheme === 'dark' ? Colors.dark.primaryBackground : Colors.light.primaryBackground}
-            />
         </SafeAreaView>
     )
 }
