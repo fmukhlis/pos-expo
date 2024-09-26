@@ -2,6 +2,7 @@ import { View, Text, ScrollView, useColorScheme, Image } from 'react-native'
 import React, { useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Link } from 'expo-router'
+import * as Device from 'expo-device'
 
 import { Colors } from '@/constants/Colors'
 import PrimaryInput from '@/components/PrimaryInput'
@@ -13,14 +14,16 @@ const SignUp = () => {
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [form, setForm] = useState({
         email: '',
-        fullName: '',
+        full_name: '',
         password: '',
+        password_confirmation: '',
+        device_name: Device.deviceName
     })
 
-    const handleFullNameChange = (fullName: string) => {
+    const handleFullNameChange = (full_name: string) => {
         setForm((prev) => ({
             ...prev,
-            fullName,
+            full_name,
         }))
     }
 
@@ -38,8 +41,39 @@ const SignUp = () => {
         }))
     }
 
-    const handleSubmit = () => {
+    const handlePasswordConfirmationChange = (password_confirmation: string) => {
+        setForm((prev) => ({
+            ...prev,
+            password_confirmation,
+        }))
+    }
 
+    const handleSubmit = async () => {
+        try {
+            setIsSubmitting(true)
+
+            const response = await fetch('http://192.168.107.52:8000/api/v1/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify(form)
+            })
+
+            if (!response.ok) {
+                const errors = await response.json()
+                throw new Error('Registration failed')
+            }
+
+            const data = await response.json()
+            alert(data.message)
+        } catch (error) {
+            console.error('Registration error: ', error)
+            throw error
+        } finally {
+            setIsSubmitting(false)
+        }
     }
 
     return (
@@ -51,21 +85,21 @@ const SignUp = () => {
                     <Image
                         tintColor={colorScheme === 'dark' ? Colors.dark.accent : Colors.light.accent}
                         source={require('@/assets/images/logo-small.png')}
-                        className='w-[200px] h-[60px]'
+                        className='w-[150px] h-[100px]'
                         resizeMode='contain'
                     />
                     <Text
-                        className={`text-light-primaryText dark:text-dark-primaryText text-xl font-bold mt-5 mb-3`}
+                        className={`text-light-primaryText dark:text-dark-primaryText text-xl font-bold mt-3 mb-5`}
                     >
-                        Sign Up to Moncip
+                        Sign Up
                     </Text>
                     <View className='space-y-3 w-full'>
                         <View>
                             <Text className='text-light-primaryText dark:text-dark-primaryText font-medium'>Full Name</Text>
                             <PrimaryInput
-                                value={form.fullName}
+                                value={form.full_name}
                                 onChangeText={handleFullNameChange}
-                                containerClassName='mt-2'
+                                containerClassName='mt-2 h-11'
                             />
                         </View>
                         <View>
@@ -73,7 +107,7 @@ const SignUp = () => {
                             <PrimaryInput
                                 value={form.email}
                                 onChangeText={handleEmailChange}
-                                containerClassName='mt-2'
+                                containerClassName='mt-2 h-11'
                             />
                         </View>
                         <View>
@@ -81,7 +115,16 @@ const SignUp = () => {
                             <PrimaryInput
                                 value={form.password}
                                 onChangeText={handlePasswordChange}
-                                containerClassName='mt-2'
+                                containerClassName='mt-2 h-11'
+                                type='password'
+                            />
+                        </View>
+                        <View>
+                            <Text className='text-light-primaryText dark:text-dark-primaryText font-medium'>Confirm Password</Text>
+                            <PrimaryInput
+                                value={form.password_confirmation}
+                                onChangeText={handlePasswordConfirmationChange}
+                                containerClassName='mt-2 h-11'
                                 type='password'
                             />
                         </View>
@@ -92,7 +135,7 @@ const SignUp = () => {
                         onPress={handleSubmit}
                     >
                         <Text
-                            className={`text-light-primaryBackground dark:text-dark-primaryBackground font-bold text-lg`}
+                            className={`text-light-primaryBackground dark:text-dark-primaryBackground font-bold text-base`}
                         >
                             Register
                         </Text>

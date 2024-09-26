@@ -43,13 +43,13 @@ const SignIn = () => {
           <Image
             tintColor={colorScheme === 'dark' ? Colors.dark.accent : Colors.light.accent}
             source={require('@/assets/images/logo-small.png')}
-            className='w-[200px] h-[60px]'
+            className='w-[150px] h-[100px]'
             resizeMode='contain'
           />
           <Text
-            className={`text-light-primaryText dark:text-dark-primaryText text-xl font-bold mt-5 mb-3`}
+            className={`text-light-primaryText dark:text-dark-primaryText text-xl font-bold mt-3 mb-5`}
           >
-            Sign In to Moncip
+            Sign In
           </Text>
           <View className='space-y-3 w-full'>
             <View>
@@ -57,7 +57,7 @@ const SignIn = () => {
               <PrimaryInput
                 value={form.email}
                 onChangeText={handleEmailChange}
-                containerClassName='mt-2'
+                containerClassName='mt-2 h-11'
               />
             </View>
             <View>
@@ -65,7 +65,7 @@ const SignIn = () => {
               <PrimaryInput
                 value={form.password}
                 onChangeText={handlePasswordChange}
-                containerClassName='mt-2'
+                containerClassName='mt-2 h-11'
                 type='password'
               />
             </View>
@@ -76,7 +76,7 @@ const SignIn = () => {
             onPress={handleSubmit}
           >
             <Text
-              className={`text-light-primaryBackground dark:text-dark-primaryBackground font-bold text-lg`}
+              className={`text-light-primaryBackground dark:text-dark-primaryBackground font-bold text-base`}
             >
               Log In
             </Text>

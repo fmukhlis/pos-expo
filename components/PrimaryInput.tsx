@@ -19,7 +19,7 @@ const PrimaryInput = forwardRef<ElementRef<typeof TextInput>, PrimaryInputProps>
 
         return (
             <View
-                className={`bg-light-secondaryBackground dark:bg-dark-secondaryBackground h-12 pl-4 flex-row rounded items-center border border-light-secondaryText dark:border-dark-secondaryText focus:border-light-primaryText dark:focus:border-dark-primaryText ${containerClassName}`}
+                className={`bg-light-secondaryBackground dark:bg-dark-tertiaryBackground pl-4 flex-row rounded items-center border border-light-tertiaryBackground dark:border-dark-secondaryText focus:border-light-primaryText dark:focus:border-dark-primaryText ${containerClassName}`}
             >
                 <TextInput
                     {...props}
