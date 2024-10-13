@@ -19,19 +19,19 @@ const PrimaryInput = forwardRef<ElementRef<typeof TextInput>, PrimaryInputProps>
 
         return (
             <View
-                className={`bg-light-secondaryBackground dark:bg-dark-tertiaryBackground pl-4 flex-row rounded items-center border border-light-tertiaryBackground dark:border-dark-secondaryText focus:border-light-primaryText dark:focus:border-dark-primaryText ${containerClassName}`}
+                className={`relative bg-light-secondaryBackground dark:bg-dark-tertiaryBackground px-3 flex-row rounded items-center border border-light-secondaryText/30 dark:border-dark-secondaryText/30 focus:border-light-secondaryText/70 dark:focus:border-dark-secondaryText/80 ${containerClassName}`}
             >
                 <TextInput
                     {...props}
                     ref={forwardedRef}
-                    className={`peer text-light-primaryText dark:text-dark-primaryText flex-1 ${className}`}
+                    className={`text-base text-light-primaryText dark:text-dark-primaryText flex-1 ${className}`}
                     secureTextEntry={type === 'password' && !isPasswordShowed}
                 >
                     {children}
                 </TextInput>
                 {type === 'password' &&
                     <TouchableOpacity
-                        className='h-full justify-center px-4'
+                        className='absolute right-0 items-center w-[50px] h-5/6 justify-center bg-light-secondaryBackground dark:bg-dark-tertiaryBackground border-l border-light-secondaryText/30 dark:border-dark-secondaryText/30'
                         onPress={handleShowPasswordPressed}
                         activeOpacity={0.7}
                     >
