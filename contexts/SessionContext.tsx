@@ -1,73 +1,44 @@
 import { createContext, ReactNode, useContext, useEffect, useState } from "react"
 import { Alert } from "react-native";
-import * as Device from "expo-device";
 
 import { useCustomFetch } from "@/utils/fetch"
 import useStorageState from "@/hooks/useStorageState"
 import { AuthError } from "@/errors/AuthError"
-import { UserModel } from "@/types/auth"
+import { SessionContextProps, UserModel } from "@/types/auth"
+import useSignInHelper from "@/utils/useSignInHelper";
+import useSignUpHelper from "@/utils/useSignUpHelper";
+import useSyncUserHelper from "@/utils/useSyncUserHelper";
+import useSignOutHelper from "@/utils/useSignOutHelper";
+import useEmailVerificationHelper from "@/utils/useEmailVerificationHelper";
+import usePasswordResetHelper from "@/utils/usePasswordResetHelper";
 
-const AuthContext = createContext<{
-    /**
-     * Send email verification request.
-     * 
-     * @returns Promise that resolve server message and time it takes to be able to resend the request
-     * @throws {AuthError}
-     */
-    sendEmailVerification: () => Promise<{
-        message: string
-        retryAfter: string | null
-    }>
-    /**
-     * Send signin request. If succeeded it will update the stored session.
-     * 
-     * @param requestBody A credentials that needed to authenticate the user
-     * @throws {AuthError}
-     */
-    signIn: (requestBody: {
-        email: string
-        password: string
-        rememberMe?: boolean | undefined
-    }) => Promise<void>
-    /**
-     * Send signout request. If succeeded it will clear the current session.
-     * 
-     * @throws {AuthError}
-     */
-    signOut: () => Promise<void>
-    /**
-     * Send signup request. If succeeded it will update the stored session.
-     * 
-     * @param requestBody A credentials that needed to authenticate the user
-     * @throws {AuthError}
-     */
-    signUp: (requestBody: {
-        fullName: string
-        email: string
-        password: string
-        passwordConfirmation: string
-    }) => Promise<void>;
-    /**
-     * Send verify email request. If succeeded it will sync the user state.
-     * 
-     * @param verificationCode A code that sent to user's email
-     * @throws {AuthError}
-     */
-    verifyEmail: (verificationCode: string) => Promise<void>;
-    sessionLoading: boolean
-    session: string | null
-    userLoading: boolean
-    user: UserModel | null
-}>({
-    sendEmailVerification: async () => ({ message: '', retryAfter: null }),
-    signIn: async () => undefined,
-    signOut: async () => undefined,
-    signUp: async () => undefined,
-    verifyEmail: async () => undefined,
-    sessionLoading: false,
+const AuthContext = createContext<SessionContextProps>({
+    resetPassword: async () => false,
+    resetPasswordLoading: false,
+
+    sendResetPassword: async () => false,
+    sendResetPasswordLoading: false,
+
+    sendVerificationEmail: async () => false,
+    sendVerificationEmailLoading: false,
+
     session: null,
-    userLoading: false,
+
+    signIn: async () => false,
+    signInLoading: false,
+
+    signOut: async () => false,
+    signOutLoading: false,
+
+    signUp: async () => false,
+    signUpLoading: false,
+
+    syncUserLoading: true,
+
     user: null,
+
+    verifyEmail: async () => false,
+    verifyEmailLoading: false,
 })
 
 export const useSession = () => {
@@ -79,163 +50,142 @@ export const useSession = () => {
 }
 
 export const SessionProvider = ({ children }: { children: ReactNode }) => {
-    const customFetch = useCustomFetch()
-
     const [[sessionLoading, session], setSession] = useStorageState('session')
-    const [[userLoading, user], setUser] = useState<[boolean, UserModel | null]>([true, null])
+    const [user, setUser] = useState<UserModel | null>(null)
 
-    const syncUser = async (token: string) => {
-        try {
-            setUser(([_, prevUser]) => ([true, prevUser]))
+    const [syncUserLoading, setSyncUserLoading] = useState(true)
+    const [signInLoading, setSignInLoading] = useState(false)
+    const [signUpLoading, setSignUpLoading] = useState(false)
+    const [signOutLoading, setSignOutLoading] = useState(false)
+    const [verifyEmailLoading, setVerifyEmailLoading] = useState(false)
+    const [sendVerificationEmailLoading, setSendVerificationEmailLoading] = useState(false)
+    const [resetPasswordLoading, setResetPasswordLoading] = useState(false)
+    const [sendResetPasswordLoading, setSendResetPasswordLoading] = useState(false)
 
-            const response = await customFetch.get('/user', {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            })
-
-            if (response.ok) {
-                const responseData: { data: UserModel } = await response.json()
-                setUser([false, responseData.data])
-            } else {
-                const responseData: { message: string } = await response.json()
-                setUser(([_, prevUser]) => ([false, prevUser]))
-                setSession([false, null])
-                throw new AuthError(responseData.message)
-            }
-        } catch (error: any) {
-            Alert.alert("Can't Sync User Data", error.message ?? error, [{ text: "Ok" }]);
-        }
-    }
-
-    const signUp = async (requestBody: {
-        fullName: string
-        email: string
-        password: string
-        passwordConfirmation: string
-    }) => {
-        setSession([true, session])
-        const response = await customFetch.post('/register', {
-            body: JSON.stringify({
-                ...requestBody,
-                deviceName: Device.deviceName,
-            })
-        })
-        if (response.ok) {
-            const responseData: { token: string } = await response.json()
-            setSession([false, responseData.token])
-        } else {
-            const responseData: {
-                message: string
-                errors?: Record<string, string[]>
-            } = await response.json()
-            setSession([false, session])
-            throw new AuthError(responseData.message, responseData.errors)
-        }
-    }
-
-    const signIn = async (requestBody: {
-        email: string
-        password: string
-    }) => {
-        setSession([true, session])
-
-        const response = await customFetch.post('/login', {
-            body: JSON.stringify({
-                ...requestBody,
-                deviceName: Device.deviceName,
-            })
-        })
-
-        if (response.ok) {
-            const responseData: { token: string } = await response.json()
-            setSession([false, responseData.token])
-        } else {
-            const responseData: {
-                message: string
-                errors: Record<string, string[]>
-            } = await response.json()
-            setSession([false, session])
-            throw new AuthError(responseData.message, responseData.errors)
-        }
-    }
-
-    const signOut = async () => {
-        setSession([true, session])
-
-        const response = await customFetch.post('/logout', {
-            headers: {
-                'Authorization': `Bearer ${session}`
-            }
-        })
-
-        if (response.ok) {
+    const syncUser = useSyncUserHelper({
+        onError: (message) => {
+            setUser(null)
             setSession([false, null])
-        } else {
-            const responseData: {
-                message: string
-                errors: Record<string, string[]>
-            } = await response.json()
-            setSession([false, session])
-            throw new AuthError(responseData.message, responseData.errors)
-        }
-    }
+            Alert.alert("Can't Sync User Data", message, [{ text: 'OK' }])
+        },
+        onFinish: () => { setSyncUserLoading(false) },
+        onStart: () => {
+            setSyncUserLoading(true)
+        },
+        onSuccess: async (user) => {
+            setUser(user)
+        },
+    })
 
-    const verifyEmail = async (verificationCode: string) => {
-        const response = await customFetch.post('/verify-email', {
-            headers: {
-                'Authorization': `Bearer ${session}`
+    const signUp = useSignUpHelper({
+        onError: (message, errors) => { Alert.alert("Can't Register", message, [{ text: 'OK' }]) },
+        onFinish: () => { setSignUpLoading(false) },
+        onStart: () => { setSignUpLoading(true) },
+        onSuccess: async (token) => {
+            setSession([false, token])
+            await syncUser(token)
+        },
+    })
+
+    const signIn = useSignInHelper({
+        onError: (message, errors) => { Alert.alert("Can't Log In", message, [{ text: 'OK' }]) },
+        onFinish: () => { setSignInLoading(false) },
+        onStart: () => { setSignInLoading(true) },
+        onSuccess: async (token) => {
+            setSession([false, token])
+            await syncUser(token)
+        },
+    })
+
+    const signOut = useSignOutHelper({
+        onError: (message, errors) => { Alert.alert("Can't Log Out", message, [{ text: 'OK' }]) },
+        onFinish: () => { setSignOutLoading(false) },
+        onStart: () => { setSignOutLoading(true) },
+        onSuccess: async () => {
+            setSession([false, null])
+        },
+    })
+
+    const { verifyEmail, sendVerificationEmail } = useEmailVerificationHelper({
+        verifyEmailOption: {
+            onError: (message, errors) => { Alert.alert("Can't Verify Your Email", message, [{ text: 'OK' }]) },
+            onFinish: () => { setVerifyEmailLoading(false) },
+            onStart: () => { setVerifyEmailLoading(true) },
+            onSuccess: async (_, token) => {
+                await syncUser(token)
             },
-            body: JSON.stringify({ verificationCode })
-        })
-
-        if (response.ok) {
-            await syncUser(session ?? '')
-        } else {
-            const responseData: {
-                message: string
-                errors: Record<string, string[]>
-            } = await response.json()
-            throw new AuthError(responseData.message, responseData.errors)
+        },
+        sendVerificationEmailOption: {
+            onError: (message, errors) => { Alert.alert("Email Not Sent", message, [{ text: 'OK' }]) },
+            onFinish: () => { setSendVerificationEmailLoading(false) },
+            onStart: () => { setSendVerificationEmailLoading(true) },
+            onSuccess: async (message) => {
+                Alert.alert("Email Sent", message, [{ text: 'OK' }])
+            },
         }
-    }
+    })
 
-    const sendEmailVerification = async () => {
-        const response = await customFetch.post('/email/verification-notification', {
-            headers: {
-                'Authorization': `Bearer ${session}`
-            }
-        })
-
-        const retryAfter = response.headers.get('retry-after')
-
-        if (response.status === 429) {
-            throw new AuthError('Too many attempts, please retry in: ' + retryAfter + ' sec.')
+    const { resetPassword, sendResetPassword } = usePasswordResetHelper({
+        resetPasswordOption: {
+            onError: (message, errors) => { Alert.alert("Can't Reset Password", message, [{ text: 'OK' }]) },
+            onFinish: () => { setResetPasswordLoading(false) },
+            onStart: () => { setResetPasswordLoading(true) },
+            onSuccess: async (message) => {
+                Alert.alert("Password Updated", message, [{ text: 'OK' }])
+            },
+        },
+        sendResetPasswordOption: {
+            onError: (message, errors) => { Alert.alert("Email Not Sent", message, [{ text: 'OK' }]) },
+            onFinish: () => { setSendResetPasswordLoading(false) },
+            onStart: () => { setSendResetPasswordLoading(true) },
+            onSuccess: async (message) => {
+                Alert.alert("Email Sent", message, [{ text: 'OK' }])
+            },
         }
-
-        const responseData: {
-            message: string
-        } = await response.json()
-
-        if (response.status === 422) {
-            throw new AuthError(responseData.message)
-        }
-
-        return { ...responseData, retryAfter }
-    }
+    })
 
     useEffect(() => {
         if (!sessionLoading) {
             if (session) {
                 syncUser(session)
             } else {
-                setUser([false, null])
+                setUser(null)
+                setSyncUserLoading(false)
             }
         }
     }, [sessionLoading])
 
     return (
-        <AuthContext.Provider value={{ sessionLoading, userLoading, sendEmailVerification, session, signIn, signOut, signUp, user, verifyEmail }}>
+        <AuthContext.Provider
+            value={{
+                resetPassword,
+                resetPasswordLoading,
+
+                sendResetPassword,
+                sendResetPasswordLoading,
+
+                sendVerificationEmail,
+                sendVerificationEmailLoading,
+
+                session,
+
+                signIn,
+                signInLoading,
+
+                signOut,
+                signOutLoading,
+
+                signUp,
+                signUpLoading,
+
+                syncUserLoading,
+
+                user,
+
+                verifyEmail,
+                verifyEmailLoading,
+            }}
+        >
             {children}
         </AuthContext.Provider>
     )

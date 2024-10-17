@@ -1,5 +1,5 @@
 export const useCustomFetch = () => {
-    const baseURL = process.env.EXPO_PUBLIC_BASE_URL
+    const baseURL = process.env.EXPO_PUBLIC_API_URL
     const baseHeaders = {
         'Content-Type': 'application/json',
         'Accept': 'application/json',

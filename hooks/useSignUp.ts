@@ -1,14 +1,12 @@
-import { useState } from "react";
-import { Alert, useColorScheme } from "react-native";
+import { useColorScheme } from "react-native";
 import { router } from "expo-router";
+import { useState } from "react";
 
 import { useSession } from "@/contexts/SessionContext";
-import { useCustomFetch } from "@/utils/fetch";
-import { RegistrationResponseData } from "@/types/auth";
 
 export default function useSignUp() {
   const colorScheme = useColorScheme();
-  const { signUp, sessionLoading } = useSession();
+  const { signUp, signUpLoading } = useSession();
 
   const [form, setForm] = useState({
     email: "",
@@ -43,14 +41,12 @@ export default function useSignUp() {
   };
 
   const handleSubmit = async () => {
-    signUp(form)
-      .then(() => {
+    signUp(form).then((isRegisterSuccess) => {
+      if (isRegisterSuccess) {
         router.dismissAll();
         router.replace("/");
-      })
-      .catch((e) => {
-        Alert.alert("Register Failed", e.message ?? e, [{ text: "Ok" }]);
-      });
+      }
+    });
   };
 
   return {
@@ -61,6 +57,6 @@ export default function useSignUp() {
     handlePasswordChange,
     handlePasswordConfirmationChange,
     handleSubmit,
-    sessionLoading,
+    signUpLoading,
   };
 }

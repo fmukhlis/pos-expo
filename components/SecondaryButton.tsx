@@ -6,8 +6,38 @@ interface SecondaryButton extends Omit<ComponentPropsWithoutRef<typeof Touchable
     isProcessing?: boolean | undefined
 }
 
+const SecondaryButtonLG = forwardRef<ElementRef<typeof TouchableOpacity>, SecondaryButton>(({
+    children = 'Secondary Button LG',
+    className = '',
+    disabled = false,
+    isProcessing = false,
+    ...props
+}, forwardedRef) => {
+
+    return (
+        <TouchableOpacity
+            {...props}
+            ref={forwardedRef}
+            activeOpacity={0.7}
+            className={`min-w-[80px] min-h-[40px] border-2 border-r-gray-400 border-t-gray-400 border-b-gray-600 border-l-gray-600 bg-gray-500 dark:bg-dark-gray-300 justify-center items-center rounded ${className} ${(disabled || isProcessing) ? 'opacity-70' : ''}`}
+            disabled={disabled || isProcessing}
+        >
+            {isProcessing
+                ? <ActivityIndicator size={30} color="#ffffff" />
+                : (
+                    <Text
+                        className={`text-light-primaryBackground dark:text-dark-primaryBackground font-bold text-lg`}
+                    >
+                        {children}
+                    </Text>
+                )
+            }
+        </TouchableOpacity>
+    )
+})
+
 const SecondaryButton = forwardRef<ElementRef<typeof TouchableOpacity>, SecondaryButton>(({
-    children = 'Primary Button',
+    children = 'Secondary Button',
     className = '',
     disabled = false,
     isProcessing = false,
@@ -37,7 +67,7 @@ const SecondaryButton = forwardRef<ElementRef<typeof TouchableOpacity>, Secondar
 })
 
 const SecondaryButtonSM = forwardRef<ElementRef<typeof TouchableOpacity>, SecondaryButton>(({
-    children = 'Primary Button',
+    children = 'Secondary Button SM',
     className = '',
     disabled = false,
     isProcessing = false,
@@ -65,4 +95,4 @@ const SecondaryButtonSM = forwardRef<ElementRef<typeof TouchableOpacity>, Second
         </TouchableOpacity>
     )
 })
-export { SecondaryButton, SecondaryButtonSM }
+export { SecondaryButtonLG, SecondaryButton, SecondaryButtonSM }

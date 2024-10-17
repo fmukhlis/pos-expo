@@ -8,10 +8,10 @@ import VerifyEmail from '@/components/VerifyEmail'
 
 function AuthLayout() {
 
-    const { session, user, sessionLoading, userLoading } = useSession()
+    const { session, user, syncUserLoading } = useSession()
     const { colorScheme } = useTheme()
 
-    if (sessionLoading || userLoading) {
+    if (syncUserLoading) {
         return <LoadingPage colorScheme={colorScheme} />
     }
 
@@ -19,7 +19,7 @@ function AuthLayout() {
         return <Redirect href='/welcome' />
     }
 
-    if (!user?.emailVerifiedAt) {
+    if (user && !user.emailVerifiedAt) {
         return <VerifyEmail />
     }
 

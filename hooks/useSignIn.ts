@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Alert } from "react-native";
 import { router } from "expo-router";
 
@@ -6,7 +6,7 @@ import { useSession } from "@/contexts/SessionContext";
 import { useTheme } from "@/contexts/ThemeProvider";
 
 function useSignIn() {
-  const { signIn, sessionLoading } = useSession();
+  const { signIn, signInLoading, sessionLoading } = useSession();
   const { colorScheme } = useTheme();
 
   const [form, setForm] = useState({
@@ -28,14 +28,12 @@ function useSignIn() {
   };
 
   const handleSubmit = () => {
-    signIn(form)
-      .then(() => {
+    signIn(form).then((isLoginSuccess) => {
+      if (isLoginSuccess) {
         router.dismissAll();
         router.replace("/");
-      })
-      .catch((e) => {
-        Alert.alert("Login Failed", e.message ?? e, [{ text: "Ok" }]);
-      })
+      }
+    });
   };
 
   return {
@@ -45,6 +43,7 @@ function useSignIn() {
     handlePasswordChange,
     handleSubmit,
     sessionLoading,
+    signInLoading,
   };
 }
 

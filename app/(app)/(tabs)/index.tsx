@@ -12,10 +12,11 @@ import { useSession } from '@/contexts/SessionContext';
 import HomeSkeleton from '@/components/HomeSkeleton';
 import { useTheme } from '@/contexts/ThemeProvider';
 import { Colors } from '@/constants/Colors';
+import { PrimaryButton } from '@/components/PrimaryButton';
 
 export default function HomeScreen() {
 
-  const { user, session, signOut } = useSession()
+  const { user, session, signOutLoading, signOut } = useSession()
   const { colorScheme } = useTheme()
 
   if (!user) {
@@ -34,19 +35,19 @@ export default function HomeScreen() {
     <View className='flex-1 items-center justify-center bg-white'>
       <Text className='text-3xl font-black'>CloudMon</Text>
       <Text className=''>{user?.fullName}</Text>
-      <CustomButton
+      <PrimaryButton
+        isProcessing={signOutLoading}
         onPress={() => {
-          signOut()
-            .finally(() => { router.replace('/') })
+          signOut(session ?? '')
+            .then((isLogoutSuccess) => {
+              if (isLogoutSuccess) {
+                router.replace('/')
+              }
+            })
         }}
-        className='w-full mt-7 h-12'
       >
-        <Text
-          className={`text-light-primaryBackground dark:text-dark-primaryBackground font-bold text-lg`}
-        >
-          Logout
-        </Text>
-      </CustomButton>
+        Logout
+      </PrimaryButton>
       <StatusBar style='auto' />
       {/* <Link href={'/bookmark'} className='text-blue-600'>Profile</Link> */}
     </View>

@@ -10,16 +10,25 @@ import { useSession } from '@/contexts/SessionContext'
 import CodeInput from '@/components/CodeInput'
 import { PrimaryButton } from '@/components/PrimaryButton'
 import { SecondaryButton } from '@/components/SecondaryButton'
+import OverlapLoading from './OverlapLoading'
+import TransparentScreen from './TransparentScreen'
 
 const VerifyEmail = () => {
 
     const { colorScheme } = useTheme()
 
-    const { user, sendEmailVerification, signOut, verifyEmail, userLoading, sessionLoading, } = useSession()
+    const {
+        user,
+        sendVerificationEmail,
+        sendVerificationEmailLoading,
+        session,
+        signOut,
+        signOutLoading,
+        verifyEmail,
+        verifyEmailLoading,
+    } = useSession()
 
     const [verificationCode, setVerificationCode] = useState('')
-    const [resendEmailLoading, setResendEmailLoading] = useState(false)
-    const [verifyEmailLoading, setVerifyEmailLoading] = useState(false)
 
     useEffect(() => {
         if (verificationCode.length === 6) {
@@ -28,39 +37,31 @@ const VerifyEmail = () => {
     }, [verificationCode])
 
     const handleSubmit = async () => {
-        setVerifyEmailLoading(true)
-        await verifyEmail(verificationCode)
-            .then(() => {
-                router.replace('/')
-            })
-            .catch((e) => {
-                Alert.alert('Verification Failed', e.message ?? e, [{ text: 'Ok' }])
-            })
-            .finally(() => {
-                setVerifyEmailLoading(false)
-            })
+        if (session) {
+            verifyEmail(session, verificationCode)
+                .then((isSuccess) => {
+                    if (isSuccess) {
+                        router.replace('/')
+                    }
+                })
+        }
     }
 
     const handleResendEmail = async () => {
-        setResendEmailLoading(true)
-        await sendEmailVerification()
-            .then(() => {
-                Alert.alert('Email Sent', `A new verification code has been sent to your email`, [{ text: "Ok" }])
-            })
-            .catch((e) => {
-                Alert.alert('Email Not Sent', e.message ?? e, [{ text: "Ok" }])
-            })
-            .finally(() => {
-                setResendEmailLoading(false)
-            })
+        if (session) {
+            sendVerificationEmail(session)
+        }
     }
 
     const handleLogout = () => {
-        signOut()
-            .then(() => {
-                router.replace('/')
-            })
-            .catch((e) => { Alert.alert('Logout Error', e.message ?? e, [{ text: 'Ok' }]) })
+        if (session) {
+            signOut(session)
+                .then((isSuccess) => {
+                    if (isSuccess) {
+                        router.replace('/')
+                    }
+                })
+        }
     }
 
     return (
@@ -79,27 +80,25 @@ const VerifyEmail = () => {
                     <View className='w-full items-center border-t border-light-secondaryText/50 dark:border-dark-secondaryText/50 pt-4 mt-4 space-y-3'>
                         <PrimaryButton
                             onPress={handleResendEmail}
-                            isProcessing={resendEmailLoading}
-                            disabled={sessionLoading || userLoading}
+                            isProcessing={sendVerificationEmailLoading}
                             className='w-36'
                         >
                             Resend Email
                         </PrimaryButton>
                         <SecondaryButton
                             onPress={handleLogout}
-                            isProcessing={sessionLoading || userLoading}
-                            disabled={resendEmailLoading}
+                            isProcessing={signOutLoading}
                             className='w-36'
                         >
                             Logout
                         </SecondaryButton>
                     </View>
                 </View>
-                {verifyEmailLoading &&
-                    <View className='h-full w-full justify-center items-center absolute bg-light-tertiaryBackground/60 dark:bg-dark-tertiaryBackground/60'>
-                        <ActivityIndicator size={50} color={colorScheme === 'dark' ? Colors.dark.secondaryText : Colors.light.secondaryText} />
-                    </View>
-                }
+
+                {(sendVerificationEmailLoading || verifyEmailLoading || signOutLoading)
+                    && <TransparentScreen />}
+                {verifyEmailLoading
+                    && <OverlapLoading colorScheme={colorScheme} />}
             </View>
         </SafeAreaView>
     )
