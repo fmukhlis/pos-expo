@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "pos-expo",
-    "slug": "pos-expo",
+    "name": "Moncip",
+    "slug": "moncip",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "pos-expo",
+    "scheme": "moncip",
     "userInterfaceStyle": "automatic",
     "splash": {
       "image": "./assets/images/splash.png",
@@ -32,6 +32,15 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "3f25f280-ddf0-435f-865e-b0d162aa6f0a"
+      }
+    },
+    "owner": "exor_gaming"
   }
 }

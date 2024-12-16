@@ -24,7 +24,7 @@ function useSyncUserHelper({
   const syncUser = async (token: string) => {
     try {
       onStartCallback();
-      const response = await customFetch.get("/user", {
+      const response = await customFetch.get("/settings/my-profile", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
