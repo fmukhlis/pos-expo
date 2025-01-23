@@ -7,6 +7,7 @@ export interface UserModel {
   fullName: string;
   email: string;
   emailVerifiedAt: string;
+  role: "Premium" | "Free";
 }
 
 export interface RegistrationResponseData {

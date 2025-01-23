@@ -8,12 +8,7 @@ import VerifyEmail from '@/components/VerifyEmail'
 
 function AuthLayout() {
 
-    const { session, user, syncUserLoading } = useSession()
-    const { colorScheme } = useTheme()
-
-    if (syncUserLoading) {
-        return <LoadingPage colorScheme={colorScheme} />
-    }
+    const { session, user } = useSession()
 
     if (!session) {
         return <Redirect href='/welcome' />
@@ -24,7 +19,11 @@ function AuthLayout() {
     }
 
     return (
-        <Stack screenOptions={{ headerShown: false }} />
+        <>
+            <Stack screenOptions={{ headerShown: false }} >
+                <Stack.Screen name='(tabs)' />
+            </Stack>
+        </>
     )
 }
 

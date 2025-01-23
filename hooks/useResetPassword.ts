@@ -50,18 +50,6 @@ const useResetPassword = () => {
 
   const handleSendToken = () => {
     sendResetPassword(form.email);
-
-    // setRetryAfter(60);
-    // const retryAfterInterval = setInterval(() => {
-    //   setRetryAfter((prev) => {
-    //     if (prev > 1) {
-    //       return prev - 1;
-    //     } else {
-    //       clearInterval(retryAfterInterval);
-    //       return 0;
-    //     }
-    //   });
-    // }, 1000);
   };
 
   const handleCancelPress = () => {
@@ -69,7 +57,11 @@ const useResetPassword = () => {
   };
 
   const handleSubmit = () => {
-    resetPassword(form);
+    resetPassword(form).then((isResetSuccess) => {
+      if (isResetSuccess) {
+        router.back();
+      }
+    });
   };
 
   return {

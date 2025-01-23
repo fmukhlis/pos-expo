@@ -65,12 +65,12 @@ const ResetPassword = () => {
                   />
                   <TouchableOpacity
                     activeOpacity={0.7}
-                    disabled={resetPasswordLoading}
+                    disabled={sendResetPasswordLoading}
                     onPress={handleSendToken}
                     className='w-[100px] rounded justify-center border-2 border-light-secondaryText/30 dark: dark:border-dark-secondaryText/30'
                   >
 
-                    {resetPasswordLoading
+                    {sendResetPasswordLoading
                       ? <ActivityIndicator size={25} color="#9B9B9B" />
                       : (false)
                         ? (

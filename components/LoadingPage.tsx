@@ -1,13 +1,12 @@
-import { ComponentPropsWithoutRef } from 'react'
+import React, { ComponentPropsWithoutRef } from 'react'
 import { View, Image, ActivityIndicator } from 'react-native'
 
 import { Colors } from '@/constants/Colors'
+import { useTheme } from '@/contexts/ThemeProvider'
 
-interface LoadingPageProps extends ComponentPropsWithoutRef<typeof View> {
-    colorScheme: 'dark' | 'light'
-}
+const LoadingPage = (props: React.ComponentPropsWithoutRef<typeof View>) => {
+    const { colorScheme } = useTheme()
 
-const LoadingPage = ({ colorScheme, ...props }: LoadingPageProps) => {
     return (
         <View {...props} className='flex-1 justify-center items-center'>
             <Image

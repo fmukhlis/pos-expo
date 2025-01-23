@@ -1,5 +1,5 @@
 import { Text } from 'react-native';
-import { Tabs } from 'expo-router';
+import { router, Tabs } from 'expo-router';
 
 import { TabBarIcon } from '@/components/navigation/TabBarIcon';
 
@@ -8,20 +8,26 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-      }}>
+        tabBarHideOnKeyboard: true,
+        tabBarStyle: {
+          height: 60,
+          paddingBottom: 5
+        },
+      }}
+    >
       <Tabs.Screen
-        name="index"
+        name="(checkout)"
         options={{
           tabBarLabel: ({ focused }) => (
             <Text
               className={`${focused ? 'font-bold text-light-tabIconSelected' : 'text-light-tabIconDefault'} text-xs`}
             >
-              Home
+              Checkout
             </Text>
           ),
           tabBarIcon: ({ focused, size }) => (
             <TabBarIcon
-              name={focused ? 'home-sharp' : 'home-outline'}
+              name={focused ? 'apps' : 'apps-outline'}
               className={`${focused ? 'text-light-tabIconSelected' : ' text-light-tabIconDefault'}`}
               size={size}
             />
@@ -29,11 +35,40 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="profile"
+        name='notification'
         options={{
-          title: 'Explore',
-          tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon name={focused ? 'code-slash' : 'code-slash-outline'} color={color} />
+          tabBarLabel: ({ focused }) => (
+            <Text
+              className={`${focused ? 'font-bold text-light-tabIconSelected' : 'text-light-tabIconDefault'} text-xs`}
+            >
+              Account
+            </Text>
+          ),
+          tabBarIcon: ({ focused, size }) => (
+            <TabBarIcon
+              name={focused ? 'notifications-sharp' : 'notifications-outline'}
+              className={`${focused ? 'text-light-tabIconSelected' : ' text-light-tabIconDefault'}`}
+              size={size}
+            />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="account"
+        options={{
+          tabBarLabel: ({ focused }) => (
+            <Text
+              className={`${focused ? 'font-bold text-light-tabIconSelected' : 'text-light-tabIconDefault'} text-xs`}
+            >
+              Account
+            </Text>
+          ),
+          tabBarIcon: ({ focused, size }) => (
+            <TabBarIcon
+              name={focused ? 'person-sharp' : 'person-outline'}
+              className={`${focused ? 'text-light-tabIconSelected' : ' text-light-tabIconDefault'}`}
+              size={size}
+            />
           ),
         }}
       />
