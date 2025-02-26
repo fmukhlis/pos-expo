@@ -1,15 +1,23 @@
 import { Action, configureStore, ThunkAction } from "@reduxjs/toolkit";
 import productReducer from "./Product/productSlice";
 import productCategoryReducer from "./Product/categorySlice";
+import storeSliceReducer from "./Store/storeSlice";
+import paymentMethodReducer from "./PaymentMethod/paymentMethodSlice";
 import { listenerMiddleware } from "./reduxListenerMiddleware";
+import { apiSlice } from "./apiSlice";
 
 export const reduxStore = configureStore({
   reducer: {
     product: productReducer,
     productCategory: productCategoryReducer,
+    store: storeSliceReducer,
+    paymentMethod: paymentMethodReducer,
+    [apiSlice.reducerPath]: apiSlice.reducer,
   },
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().prepend(listenerMiddleware.middleware),
+    getDefaultMiddleware()
+      .prepend(listenerMiddleware.middleware)
+      .concat(apiSlice.middleware),
 });
 
 export type AppStore = typeof reduxStore;

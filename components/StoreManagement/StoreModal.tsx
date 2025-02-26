@@ -1,124 +1,134 @@
-import { View, Text, Modal, ModalProps, TouchableOpacity } from 'react-native'
 import React from 'react'
+import { View, Text, Modal, TouchableOpacity } from 'react-native'
+
+import Toast from 'react-native-toast-message'
+
 import { Icon } from '../Icon'
-import PrimaryInput from '../PrimaryInput'
-import { PrimaryButton } from '../PrimaryButton'
-import { StoreData, StoreProps, useStore } from '@/contexts/StoreContext'
-import ErrorModal from '../ErrorModal'
+import { useAppSelector } from '../reduxHooks'
 import { DangerButton } from '../DangerButton'
+import { PrimaryButton } from '../PrimaryButton'
+import { useSession } from '@/contexts/SessionContext'
+
+import {
+    useDestroyStoreMutation,
+    useLazyGetStoreQuery,
+    useStoreStoreMutation,
+    useUpdateStoreMutation
+} from '../services/store'
+
+import PrimaryInput from '../PrimaryInput'
+import CustomActivityIndicator from '../CustomActivityIndicator'
 
 const StoreModal = ({
-    mode = 'create',
-    onVisibleChange = () => { },
-    onRequestClose,
-    store,
+    onClose,
     visible = false,
     ...props
 }: StoreModalProps) => {
 
-    const [data, setData] = React.useState(() => {
-        if (mode === 'edit' && store) {
-            const { id, ...storeData } = store
-            return storeData
-        }
-        return {
-            name: '',
-            address: '',
-            phone: '',
-            email: ''
-        }
+    const { user } = useSession()
+
+    const userId = user!.id
+    const storeId = useAppSelector(({ store }) => (store.selectedStoreId))
+
+    const [data, setData] = React.useState({
+        name: '',
+        address: '',
+        phone: '',
+        email: ''
     })
 
-    const [modalVisible, setModalVisible] = React.useState(visible)
+    const [getStore, getStoreResult] = useLazyGetStoreQuery()
+    const [storeStore, storeStoreResult] = useStoreStoreMutation()
+    const [updateStore, updateStoreResult] = useUpdateStoreMutation()
+    const [destroyStore, destroyStoreResult] = useDestroyStoreMutation()
 
-    const {
-        createStore,
-        createStoreLoading,
-        errors,
-        deleteStore,
-        deleteStoreLoading,
-        loadStores,
-        setErrors,
-        updateStore,
-        updateStoreLoading,
-    } = useStore()
-
-    const save = () => {
-        if (mode === 'edit') {
-            if (store) {
-                updateStore({
-                    storeId: store.id,
-                    data,
-                    onSuccess: () => {
-                        onVisibleChange(false)
-                        loadStores()
-                    },
-                    onFailed: (errorData) => {
-                        setErrors((prev) => ({
-                            ...prev,
-                            updateStore: Object.values(errorData.errors)[0] as string
-                        }))
-                    }
-                })
-            }
-        } else {
-            createStore({
-                data,
-                onSuccess: () => {
-                    onVisibleChange(false)
-                    loadStores()
-                },
-                onFailed: (errorData) => {
-                    setErrors((prev) => ({
-                        ...prev,
-                        createStore: Object.values(errorData.errors)[0] as string
-                    }))
-                }
+    const handleSave = () => {
+        if (storeId) {
+            updateStore({
+                userId,
+                storeId,
+                ...data
             })
+                .unwrap()
+                .then(() => { onClose() })
+                .catch((error) => {
+                    Toast.show({
+                        type: 'error',
+                        text1: 'Error ' + error.status,
+                        text2: error.data.message
+                    })
+                })
+        } else {
+            storeStore({ userId, ...data })
+                .unwrap()
+                .then(() => { onClose() })
+                .catch((error) => {
+                    Toast.show({
+                        type: 'error',
+                        text1: 'Error ' + error.status,
+                        text2: error.data.message
+                    })
+                })
         }
     }
 
-    React.useEffect(() => {
-        setModalVisible(visible)
-        if (visible) {
-            if (mode === 'edit' && store) {
-                const { id, ...storeData } = store
-                setData(storeData)
-            }
-        } else {
-            setData({
-                name: '',
-                address: '',
-                phone: '',
-                email: ''
-            })
+    const handleDelete = () => {
+        if (storeId) {
+            destroyStore({ userId, storeId })
+                .unwrap()
+                .then(() => { onClose() })
+                .catch((error) => {
+                    Toast.show({
+                        type: 'error',
+                        text1: 'Error ' + error.status,
+                        text2: error.data.message
+                    })
+                })
         }
-    }, [visible])
+    }
+
+    const handleNameChange = (name: string) => {
+        setData((prev) => ({ ...prev, name }))
+    }
+
+    const handleAddressChange = (address: string) => {
+        setData((prev) => ({ ...prev, address }))
+    }
+
+    const handlePhoneChange = (phone: string) => {
+        setData((prev) => ({ ...prev, phone }))
+    }
+
+    const handleEmailChange = (email: string) => {
+        setData((prev) => ({ ...prev, email }))
+    }
+
+    React.useEffect(() => {
+        if (storeId) {
+            getStore({ storeId }).unwrap()
+                .then(({ id, createdAt, owner, ...rest }) => {
+                    setData(rest)
+                })
+                .catch((error) => {
+                    Toast.show({
+                        type: 'error',
+                        text1: 'Error ' + error.status,
+                        text2: error.data.message,
+                    })
+                })
+        } else {
+            setData({ name: '', address: '', phone: '', email: '' })
+        }
+    }, [storeId])
 
     return (
         <>
-            <ErrorModal
-                onVisibleChange={() => {
-                    setErrors((prev) => ({
-                        ...prev,
-                        createStore: ''
-                    }))
-                }}
-                errorMessage={errors.createStore}
-            />
             <Modal
                 {...props}
                 animationType='slide'
-                visible={modalVisible}
+                visible={visible}
                 transparent={true}
-                onRequestClose={(event) => {
-                    if (onRequestClose) {
-                        onRequestClose(event)
-                    }
-                    if (!createStoreLoading && !updateStoreLoading && !deleteStoreLoading) {
-                        onVisibleChange(false)
-                    }
-                }}
+                onRequestClose={() => { onClose() }}
             >
                 <View className='flex-1 flex-row items-end justify-center'>
                     <View
@@ -132,114 +142,77 @@ const StoreModal = ({
                             shadowRadius: 4,
                             elevation: 5
                         }}
-                        className='m-1 bg-white p-4 flex-1'
+                        className={`m-1 p-4 flex-1 bg-white ${getStoreResult.isFetching ? 'opacity-80' : ''}`}
                     >
-                        <View className='flex-row justify-between items-center mb-4'>
-                            <TouchableOpacity
-                                onPress={() => {
-                                    if (!createStoreLoading && !updateStoreLoading && !deleteStoreLoading) {
-                                        onVisibleChange(false)
-                                    }
-                                }}
-                                className='w-[35] h-[35] items-center justify-center bg-gray-200 rounded'
-                            >
-                                <Icon name='close' className='text-gray-700' />
-                            </TouchableOpacity>
-                            <PrimaryButton
-                                isProcessing={createStoreLoading || updateStoreLoading}
-                                className='h-[35]'
-                                disabled={deleteStoreLoading}
-                                onPress={() => { save() }}
-                            >
-                                Save
-                            </PrimaryButton>
-                        </View>
-                        <Text className='text-2xl font-bold mb-3'>
-                            {mode === 'create' ? 'Create Store' : 'Edit Store'}
-                        </Text>
-                        <View>
-                            <Text className='text-base font-semibold mb-3'>Store Details</Text>
-                            <PrimaryInput
-                                autoCapitalize='words'
-                                className='h-[40]'
-                                containerClassName='mb-3'
-                                placeholder='Store name...'
-                                value={data.name}
-                                onChangeText={(value) => {
-                                    setData((prev) => ({
-                                        ...prev,
-                                        name: value,
-                                    }))
-                                }}
-                            />
-                            <PrimaryInput
-                                className='h-[40]'
-                                containerClassName='mb-3'
-                                placeholder='Address...'
-                                value={data.address}
-                                onChangeText={(value) => {
-                                    setData((prev) => ({
-                                        ...prev,
-                                        address: value,
-                                    }))
-                                }}
-                            />
-                            <Text className='text-base font-semibold mb-3 '>Store Contact</Text>
-                            <PrimaryInput
-                                className='h-[40]'
-                                keyboardType='number-pad'
-                                containerClassName='mb-3'
-                                placeholder='Phone number...'
-                                value={data.phone}
-                                onChangeText={(value) => {
-                                    setData((prev) => ({
-                                        ...prev,
-                                        phone: value,
-                                    }))
-                                }}
-                            />
-                            <PrimaryInput
-                                keyboardType='email-address'
-                                autoCapitalize='none'
-                                className='h-[40]'
-                                containerClassName=''
-                                placeholder='Email...'
-                                value={data.email}
-                                onChangeText={(value) => {
-                                    setData((prev) => ({
-                                        ...prev,
-                                        email: value,
-                                    }))
-                                }}
-                            />
-                        </View>
-                        {mode === 'edit' &&
-                            <View className='items-center mt-4'>
-                                <DangerButton
-                                    onPress={() => {
-                                        if (store) {
-                                            deleteStore({
-                                                storeId: store.id,
-                                                onSuccess: () => {
-                                                    onVisibleChange(false)
-                                                    loadStores()
-                                                },
-                                                onFailed: (errorData) => {
-                                                    setErrors((prev) => ({
-                                                        ...prev,
-                                                        deleteStore: Object.values(errorData.errors)[0] as string
-                                                    }))
-                                                }
-                                            })
-                                        }
-                                    }}
-                                    disabled={createStoreLoading || updateStoreLoading}
-                                    isProcessing={deleteStoreLoading}
-                                    className='h-[40] px-5 bg-red-500 rounded border-2 border-rose-300'
-                                >
-                                    Delete Store
-                                </DangerButton>
-                            </View>
+                        {getStoreResult.isFetching
+                            ? <View className='h-[460]'><CustomActivityIndicator size={'large'} className='m-auto' /></View>
+                            : <>
+                                <View className='flex-row justify-between items-center mb-4'>
+                                    <TouchableOpacity
+                                        onPress={() => { onClose() }}
+                                        className='w-[40] h-[40] items-center justify-center bg-gray-200 rounded'
+                                    >
+                                        <Icon name='close' className='text-gray-700' />
+                                    </TouchableOpacity>
+                                    <PrimaryButton
+                                        isProcessing={updateStoreResult.isLoading || storeStoreResult.isLoading}
+                                        className='h-[40]'
+                                        onPress={handleSave}
+                                    >
+                                        Save
+                                    </PrimaryButton>
+                                </View>
+                                <Text className='text-2xl font-bold mb-3'>
+                                    {storeId ? 'Edit Store' : 'Create Store'}
+                                </Text>
+                                <View>
+                                    <Text className='text-base font-semibold mb-3'>Store Details</Text>
+                                    <PrimaryInput
+                                        autoCapitalize='words'
+                                        className='h-[40]'
+                                        containerClassName='mb-3'
+                                        placeholder='Store name...'
+                                        value={data.name}
+                                        onChangeText={handleNameChange}
+                                    />
+                                    <PrimaryInput
+                                        className='h-[40]'
+                                        containerClassName='mb-3'
+                                        placeholder='Address...'
+                                        value={data.address}
+                                        onChangeText={handleAddressChange}
+                                    />
+                                    <Text className='text-base font-semibold mb-3 '>Store Contact</Text>
+                                    <PrimaryInput
+                                        className='h-[40]'
+                                        keyboardType='number-pad'
+                                        containerClassName='mb-3'
+                                        placeholder='Phone number...'
+                                        value={data.phone}
+                                        onChangeText={handlePhoneChange}
+                                    />
+                                    <PrimaryInput
+                                        keyboardType='email-address'
+                                        autoCapitalize='none'
+                                        className='h-[40]'
+                                        containerClassName=''
+                                        placeholder='Email...'
+                                        value={data.email}
+                                        onChangeText={handleEmailChange}
+                                    />
+                                </View>
+                                {storeId &&
+                                    <View className='items-center mt-7 pt-4 border-t border-gray-300'>
+                                        <DangerButton
+                                            onPress={handleDelete}
+                                            isProcessing={destroyStoreResult.isLoading}
+                                            className='h-[40] px-5 rounded'
+                                        >
+                                            Delete Store
+                                        </DangerButton>
+                                    </View>
+                                }
+                            </>
                         }
                     </View>
                 </View>
@@ -251,7 +224,5 @@ const StoreModal = ({
 export default StoreModal
 
 interface StoreModalProps extends React.ComponentPropsWithoutRef<typeof Modal> {
-    onVisibleChange?: (visible: boolean) => void
-    store?: StoreProps | undefined | null
-    mode?: 'create' | 'edit'
+    onClose: () => void
 }

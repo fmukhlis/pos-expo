@@ -7,25 +7,35 @@ import { router } from 'expo-router'
 import useCategory from '@/components/Product/useCategory'
 import ManageCategoryModal from '@/components/Product/ManageCategoryModal'
 import useFilterItemsByString from '@/components/useFilterItemsByString'
+import { useGetProductCategoriesQuery } from '@/components/services/productCategory'
+import { useStore } from '@/contexts/StoreContext'
+import { skipToken } from '@reduxjs/toolkit/query'
 
 const ProductCategory = () => {
 
-    const categories = useAppSelector((state) => (state.productCategory.categories))
-    const loading = useAppSelector((state) => (state.productCategory.loading))
+    const { selectedStore } = useStore()
+
+    const {
+        data: categories,
+        isFetching,
+        refetch,
+    } = useGetProductCategoriesQuery(selectedStore
+        ? { storeId: selectedStore.id }
+        : skipToken
+    )
 
     const {
         filterText,
         filteredItems,
         setFilterText
     } = useFilterItemsByString({
-        items: categories,
+        items: categories ?? [],
         targetFieldName: 'name'
     })
 
     // Show and hide <CreateCategoryModal/>, fetch categories on mounted,
     // and expose the fetchCategories function to refetch the categories    
     const {
-        fetchCategories,
         modalVisible,
         showManageCategoryModal,
         hideManageCategoryModal,
@@ -101,8 +111,8 @@ const ProductCategory = () => {
                 }}
                 refreshControl={
                     <RefreshControl
-                        refreshing={loading.getCategories}
-                        onRefresh={fetchCategories}
+                        refreshing={isFetching}
+                        onRefresh={refetch}
                     />}
             />
         </View>

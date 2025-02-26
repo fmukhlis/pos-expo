@@ -4,7 +4,7 @@ export interface ProductCategory {
   productsCount: number;
 }
 
-export interface ProductCategoryDetails extends ProductCategory {
+export interface DetailedProductCategory extends ProductCategory {
   products: {
     id: number;
     name: string;

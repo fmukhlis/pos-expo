@@ -1,122 +1,100 @@
-import { View, Text, Modal, TouchableOpacity } from 'react-native'
 import React from 'react'
-import { Icon } from '../Icon'
-import { PrimaryButton } from '../PrimaryButton'
+import Toast from 'react-native-toast-message'
+import { View, Text, Modal } from 'react-native'
+
+import { useAppSelector } from '../reduxHooks'
+import { PrimaryButtonSM } from '../PrimaryButton'
+import { SecondaryButtonSM } from '../SecondaryButton'
+
+import {
+    useLazyGetPaymentMethodQuery,
+    useStorePaymentMethodMutation,
+    useUpdatePaymentMethodMutation
+} from '../services/paymentMethods'
+
 import PrimaryInput from '../PrimaryInput'
-import { SecondaryButton } from '../SecondaryButton'
-import { useSession } from '@/contexts/SessionContext'
-import usePaymentMethodAPI from './usePaymentMethod'
-import { usePaymentMethod } from '@/contexts/PaymentMethodContext'
-import { useStore } from '@/contexts/StoreContext'
+import CustomActivityIndicator from '../CustomActivityIndicator'
 
 const PaymentMethodModal = ({
-    mode = 'create',
     visible = false,
-    onVisibleChange = (visible) => { },
-    onRequestClose,
+    onClose,
     ...props
 }: PaymentMethodModalProps) => {
 
-    const { session } = useSession()
-    const { selectedStore } = useStore()
+    const storeId = useAppSelector(({ store }) => (store.selectedStoreId))!
+    const paymentMethodId = useAppSelector(({ paymentMethod }) => (paymentMethod.selectedPaymentMethodId))
 
-    const {
-        paymentMethods,
-        selectedPaymentMethodIndex,
-        setPaymentMethods
-    } = usePaymentMethod()
+    const [getPaymentMethod, getPaymentMethodResult] = useLazyGetPaymentMethodQuery()
+    const [storePaymentMethod, storePaymentMethodResult] = useStorePaymentMethodMutation()
+    const [updatePaymentMethod, updatePaymentMethodResult] = useUpdatePaymentMethodMutation()
 
-    const {
-        createPaymentMethod,
-        createPaymentMethodLoading,
-        getPaymentMethods,
-        updatePaymentMethod,
-        updatePaymentMethodLoading,
-    } = usePaymentMethodAPI()
-
-    const [modalVisible, setModalVisible] = React.useState(visible)
-
-    const [data, setData] = React.useState(() => {
-        if (mode === 'edit' && selectedPaymentMethodIndex !== null) {
-            const { id, ...paymentMethodData } = paymentMethods[selectedPaymentMethodIndex]
-            return paymentMethodData
-        }
-
-        return {
-            name: '',
-            destination: ''
-        }
+    const [data, setData] = React.useState({
+        name: '',
+        destination: ''
     })
 
+    const handleNameChange = (name: string) => {
+        setData((prev) => ({ ...prev, name }))
+    }
+
+    const handleDestinationChange = (destination: string) => {
+        setData((prev) => ({ ...prev, destination }))
+    }
+
     const save = () => {
-        if (mode === 'edit') {
-            if (selectedPaymentMethodIndex !== null) {
-                updatePaymentMethod({
-                    data,
-                    storeId: selectedStore?.id,
-                    paymentMethodId: paymentMethods[selectedPaymentMethodIndex].id,
-                    bearerToken: session,
-                    onSuccess: () => {
-                        onVisibleChange(false)
-                        getPaymentMethods({
-                            storeId: selectedStore?.id,
-                            bearerToken: session,
-                            onSuccess: (paymentMethods) => {
-                                setPaymentMethods(paymentMethods)
-                            }
-                        })
-                    }
-                })
-            }
-        } else {
-            createPaymentMethod({
-                data,
-                storeId: selectedStore?.id,
-                bearerToken: session,
-                onSuccess: () => {
-                    onVisibleChange(false)
-                    getPaymentMethods({
-                        storeId: selectedStore?.id,
-                        bearerToken: session,
-                        onSuccess: (paymentMethods) => {
-                            setPaymentMethods(paymentMethods)
-                        }
+        if (paymentMethodId) {
+            updatePaymentMethod({ storeId, paymentMethodId, ...data })
+                .unwrap()
+                .then(() => { onClose() })
+                .catch((error) => {
+                    Toast.show({
+                        type: 'error',
+                        text1: 'Error ' + error.status,
+                        text2: error.data.message
                     })
-                }
-            })
+                })
+        } else {
+            storePaymentMethod({ storeId, ...data })
+                .unwrap()
+                .then(() => { onClose() })
+                .catch((error) => {
+                    Toast.show({
+                        type: 'error',
+                        text1: 'Error ' + error.status,
+                        text2: error.data.message
+                    })
+                })
         }
     }
 
     React.useEffect(() => {
-        setModalVisible(visible)
-        if (visible) {
-            if (mode === 'edit' && selectedPaymentMethodIndex !== null) {
-                const { id, ...paymentMethodData } = paymentMethods[selectedPaymentMethodIndex]
-                setData(paymentMethodData)
-            }
+        if (paymentMethodId) {
+            getPaymentMethod({ paymentMethodId, storeId }).unwrap()
+                .then(({ id, ...rest }) => {
+                    setData(rest)
+                })
+                .catch((error) => {
+                    Toast.show({
+                        type: 'error',
+                        text1: 'Error ' + error.status,
+                        text2: error.data.message,
+                    })
+                })
         } else {
             setData({
                 name: '',
                 destination: '',
             })
         }
-    }, [visible])
+    }, [paymentMethodId])
 
     return (
         <Modal
             {...props}
             transparent
             animationType='fade'
-            visible={modalVisible}
-            onRequestClose={(event) => {
-                if (onRequestClose) {
-                    onRequestClose(event)
-                } else {
-                    if (!createPaymentMethodLoading) {
-                        onVisibleChange(false)
-                    }
-                }
-            }}
+            visible={visible}
+            onRequestClose={() => { onClose() }}
         >
             <View className='flex-1 items-center justify-center'>
                 <View
@@ -130,58 +108,50 @@ const PaymentMethodModal = ({
                         shadowRadius: 4,
                         elevation: 5,
                     }}
-                    className='bg-white p-5 w-10/12'
+                    className='bg-white p-6 w-10/12'
                 >
-                    <Text className='text-xl font-bold mb-5'>
-                        {mode === 'create' ? 'Add ' : 'Edit '}
-                        Payment Method
-                    </Text>
-                    <PrimaryInput
-                        autoCapitalize='words'
-                        className='h-[35]'
-                        containerClassName='mb-3'
-                        placeholder='Payment name...'
-                        value={data.name}
-                        onChangeText={(name) => {
-                            setData((prev) => ({
-                                ...prev,
-                                name
-                            }))
-                        }}
-                    />
-                    <PrimaryInput
-                        autoCapitalize='none'
-                        className='h-[35]'
-                        containerClassName='mb-4'
-                        placeholder='Payment destination...'
-                        value={data.destination}
-                        onChangeText={(destination) => {
-                            setData((prev) => ({
-                                ...prev,
-                                destination
-                            }))
-                        }}
-                    />
-                    <View
-                        className='flex-row items-center justify-end space-x-3'
-                    >
-                        <SecondaryButton
-                            disabled={createPaymentMethodLoading || updatePaymentMethodLoading}
-                            onPress={() => {
-                                onVisibleChange(false)
-                            }}
-                            className='h-[35]'
-                        >
-                            Cancel
-                        </SecondaryButton>
-                        <PrimaryButton
-                            isProcessing={createPaymentMethodLoading || updatePaymentMethodLoading}
-                            onPress={save}
-                            className='h-[35]'
-                        >
-                            Save
-                        </PrimaryButton>
-                    </View>
+                    {getPaymentMethodResult.isFetching
+                        ? <View ><CustomActivityIndicator size={'large'} className='m-auto' /></View>
+                        : <>
+                            <Text className='text-lg font-bold mb-5'>
+                                {paymentMethodId ? 'Edit ' : 'Add '}
+                                Payment Method
+                            </Text>
+                            <PrimaryInput
+                                autoCapitalize='words'
+                                className='h-[35] text-sm'
+                                containerClassName='mb-3'
+                                placeholder='Payment name...'
+                                value={data.name}
+                                onChangeText={handleNameChange}
+                            />
+                            <PrimaryInput
+                                autoCapitalize='none'
+                                className='h-[35] text-sm'
+                                containerClassName='mb-3'
+                                placeholder='Payment destination...'
+                                value={data.destination}
+                                onChangeText={handleDestinationChange}
+                            />
+                            <View
+                                className='flex-row items-center justify-end space-x-3 mt-2'
+                            >
+                                <SecondaryButtonSM
+                                    onPress={() => { onClose() }}
+                                    className='h-[35]'
+                                >
+                                    Cancel
+                                </SecondaryButtonSM>
+                                <PrimaryButtonSM
+                                    isProcessing={storePaymentMethodResult.isLoading || updatePaymentMethodResult.isLoading}
+                                    onPress={save}
+                                    className='h-[35]'
+                                >
+                                    Save
+                                </PrimaryButtonSM>
+                            </View>
+                        </>
+                    }
                 </View>
             </View>
         </Modal>
@@ -191,6 +161,5 @@ const PaymentMethodModal = ({
 export default PaymentMethodModal
 
 interface PaymentMethodModalProps extends React.ComponentPropsWithoutRef<typeof Modal> {
-    onVisibleChange?: (visible: boolean) => void
-    mode?: 'create' | 'edit'
+    onClose: () => void
 }

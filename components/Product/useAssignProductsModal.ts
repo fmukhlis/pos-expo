@@ -1,27 +1,34 @@
-import { View, Text } from "react-native";
 import React from "react";
 import { useAppDispatch, useAppSelector } from "../reduxHooks";
 import { setData } from "./categorySlice";
+import { useGetProductsQuery } from "../services/product";
+import { useStore } from "@/contexts/StoreContext";
+import { skipToken } from "@reduxjs/toolkit/query";
 
 export default function useAssignProductsModal({
-  visible,
+  visible = false,
   onClose = () => {},
 }: {
   visible: boolean | undefined;
   onClose: () => void;
 }) {
-  const [modalVisible, setModalVisible] = React.useState(visible);
+  const { selectedStore } = useStore();
 
   const data = useAppSelector((state) => state.productCategory.data);
-  const products = useAppSelector((state) => state.product.products);
+
+  const { data: products, isFetching } = useGetProductsQuery(
+    selectedStore ? { storeId: selectedStore.id } : skipToken
+  );
 
   const dispatch = useAppDispatch();
 
   const [assignableProducts, setAssignableProducts] = React.useState(
-    products.map((product) => ({
-      ...product,
-      isChecked: false,
-    }))
+    products
+      ? products.map((product) => ({
+          ...product,
+          isChecked: data.productIds.includes(product.id),
+        }))
+      : []
   );
 
   const assignProduct = (itemId: number) => {
@@ -39,19 +46,22 @@ export default function useAssignProductsModal({
   };
 
   React.useEffect(() => {
-    setModalVisible(visible);
-    setAssignableProducts(
-      products.map((product) => ({
-        ...product,
-        isChecked: data.productIds.includes(product.id),
-      }))
-    );
+    if (visible) {
+      setAssignableProducts(
+        products
+          ? products.map((product) => ({
+              ...product,
+              isChecked: data.productIds.includes(product.id),
+            }))
+          : []
+      );
+    }
   }, [visible]);
 
   return {
-    modalVisible,
     assignProduct,
     assignableProducts,
     save,
+    isFetching,
   };
 }

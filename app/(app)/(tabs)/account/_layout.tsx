@@ -3,7 +3,6 @@ import React from 'react'
 import { Stack } from 'expo-router'
 import { StoreProvider } from '@/contexts/StoreContext'
 import { Icon } from '@/components/Icon'
-import { useSession } from '@/contexts/SessionContext'
 
 const HomeLayout = () => {
     return (

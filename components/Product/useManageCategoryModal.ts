@@ -1,87 +1,91 @@
 import React from "react";
 import { useAppDispatch, useAppSelector } from "../reduxHooks";
-import {
-  destroyCategory,
-  getCategory,
-  resetData,
-  setData,
-  storeCategory,
-  updateCategory,
-} from "./categorySlice";
+import { resetData, setData } from "./categorySlice";
 import { useStore } from "@/contexts/StoreContext";
 import { Alert } from "react-native";
+import {
+  useDestroyProductCategoryMutation,
+  useLazyGetProductCategoryQuery,
+  useStoreProductCategoryMutation,
+  useUpdateProductCategoryMutation,
+} from "../services/productCategory";
+import Toast from "react-native-toast-message";
 
 export default function useManageCategoryModal({
-  onClose = () => {},
   visible,
+  onClose = () => {},
 }: {
   visible: boolean | undefined;
   onClose: () => void;
 }) {
-  const loading = useAppSelector((state) => state.productCategory.loading);
   const selectedCategoryId = useAppSelector(
-    (state) => state.productCategory.selectedCategoryId
+    ({ productCategory }) => productCategory.selectedCategoryId
   );
   const { name, productIds } = useAppSelector(
-    (state) => state.productCategory.data
+    ({ productCategory }) => productCategory.data
   );
 
   const dispatch = useAppDispatch();
 
   const { selectedStore } = useStore();
 
+  const [getCategory, getCategoryResult] = useLazyGetProductCategoryQuery();
+  const [storeCategory, storeCategoryResult] =
+    useStoreProductCategoryMutation();
+  const [updateCategory, updateCategoryResult] =
+    useUpdateProductCategoryMutation();
+  const [destroyCategory, destroyCategoryResult] =
+    useDestroyProductCategoryMutation();
+
   const save = () => {
     if (selectedStore) {
-      if (selectedCategoryId) {
-        const payload = {
-          productCategoryId: selectedCategoryId,
-          storeId: selectedStore.id,
-          name,
-          productIds,
-        };
+      let payload = {
+        storeId: selectedStore.id,
+        name,
+        productIds,
+      };
 
-        dispatch(updateCategory(payload))
+      if (selectedCategoryId) {
+        updateCategory({ ...payload, productCategoryId: selectedCategoryId })
           .unwrap()
           .then(() => {
             onClose();
+          })
+          .catch((error) => {
+            Toast.show({
+              type: "error",
+              text1: "Error " + error.status,
+              text2: error.data.message,
+              autoHide: true,
+              swipeable: false,
+            });
           });
       } else {
-        const payload = {
-          storeId: selectedStore.id,
-          name,
-          productIds,
-        };
-
-        dispatch(storeCategory(payload))
+        storeCategory(payload)
           .unwrap()
           .then(() => {
             onClose();
+          })
+          .catch((error) => {
+            Toast.show({
+              type: "error",
+              text1: "Error " + error.status,
+              text2: error.data.message,
+              autoHide: true,
+              swipeable: false,
+            });
           });
       }
     }
   };
 
-  const [modalVisibility, setModalVisibility] = React.useState({
-    self: visible,
-    assignProducts: false,
-  });
+  const [modalVisible, setModalVisible] = React.useState(false);
 
   const showAssignProductsModal = () => {
-    setModalVisibility((prev) => {
-      return {
-        ...prev,
-        assignProducts: true,
-      };
-    });
+    setModalVisible(true);
   };
-
   const hideAssignProductsModal = () => {
-    setModalVisibility((prev) => {
-      return {
-        ...prev,
-        assignProducts: false,
-      };
-    });
+    setModalVisible(false);
   };
 
   const setCategoryName = (text: string) => {
@@ -105,7 +109,7 @@ export default function useManageCategoryModal({
                 storeId: selectedStore.id,
                 productCategoryId: selectedCategoryId,
               };
-              dispatch(destroyCategory(payload))
+              destroyCategory(payload)
                 .unwrap()
                 .then(() => {
                   onClose();
@@ -118,19 +122,17 @@ export default function useManageCategoryModal({
   };
 
   React.useEffect(() => {
-    setModalVisibility((prev) => {
-      return {
-        ...prev,
-        self: visible,
-      };
-    });
     if (visible) {
       if (selectedCategoryId && selectedStore) {
         const payload = {
           storeId: selectedStore.id,
           productCategoryId: selectedCategoryId,
         };
-        dispatch(getCategory(payload));
+        getCategory(payload)
+          .unwrap()
+          .then(({ name, products }) => {
+            dispatch(setData({ name, products }));
+          });
       }
     } else {
       dispatch(resetData());
@@ -139,11 +141,14 @@ export default function useManageCategoryModal({
 
   return {
     confirmDeletion,
-    modalVisibility,
+    modalVisible,
     showAssignProductsModal,
     hideAssignProductsModal,
     setCategoryName,
     save,
-    loading,
+    getCategoryResult,
+    storeCategoryResult,
+    updateCategoryResult,
+    destroyCategoryResult,
   };
 }

@@ -1,12 +1,8 @@
-import { View, Text } from 'react-native'
 import React from 'react'
-import usePaymentMethodAPI from '@/components/PaymentMethod/usePaymentMethod'
 
 const PaymentMethodContext = React.createContext<PaymentMethodContextProps>({
-    paymentMethods: [],
-    setPaymentMethods: () => { },
-    selectedPaymentMethodIndex: null,
-    setSelectedPaymentMethodIndex: () => { }
+    selectedPaymentMethodId: null,
+    setSelectedPaymentMethodId: () => { }
 })
 
 export const usePaymentMethod = () => {
@@ -19,33 +15,19 @@ export const usePaymentMethod = () => {
 
 export const PaymentMethodProvider = ({ children }: { children: React.ReactNode }) => {
 
-    const [paymentMethods, setPaymentMethods] = React.useState<PaymentMethodProps[]>([])
-    const [selectedPaymentMethodIndex, setSelectedPaymentMethodIndex] = React.useState<number | null>(null)
+    const [selectedPaymentMethodId, setSelectedPaymentMethodId] = React.useState<number | null>(null)
 
     return (
         <PaymentMethodContext.Provider value={{
-            paymentMethods,
-            selectedPaymentMethodIndex,
-            setPaymentMethods,
-            setSelectedPaymentMethodIndex,
+            selectedPaymentMethodId,
+            setSelectedPaymentMethodId,
         }}>
             {children}
         </PaymentMethodContext.Provider>
     )
 }
 
-export interface PaymentMethodProps extends PaymentMethodData {
-    id: number
-}
-
-export interface PaymentMethodData {
-    name: string
-    destination: string
-}
-
 interface PaymentMethodContextProps {
-    paymentMethods: PaymentMethodProps[]
-    setPaymentMethods: React.Dispatch<React.SetStateAction<PaymentMethodProps[]>>
-    selectedPaymentMethodIndex: number | null
-    setSelectedPaymentMethodIndex: React.Dispatch<React.SetStateAction<number | null>>
+    selectedPaymentMethodId: number | null
+    setSelectedPaymentMethodId: React.Dispatch<React.SetStateAction<number | null>>
 }

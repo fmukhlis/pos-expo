@@ -10,7 +10,7 @@ const AssignableProductsList = ({ products, onItemClick = () => { } }: {
     return (
         products.length
             ?
-            products.map((product, index) => {
+            products.map((product) => {
                 return (
                     <TouchableHighlight
                         key={product.id}

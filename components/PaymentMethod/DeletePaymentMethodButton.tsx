@@ -1,33 +1,24 @@
-import { View, Text, TouchableHighlight, Pressable } from 'react-native'
 import React from 'react'
+import { Text, TouchableHighlight, Pressable } from 'react-native'
+
 import { Icon } from '../Icon'
-import { useSession } from '@/contexts/SessionContext'
-import { useStore } from '@/contexts/StoreContext'
-import { usePaymentMethod } from '@/contexts/PaymentMethodContext'
-import usePaymentMethodAPI from './usePaymentMethod'
+import { useAppSelector } from '../reduxHooks'
+import CustomActivityIndicator from '../CustomActivityIndicator'
+import { useDestroyPaymentMethodMutation } from '../services/paymentMethods'
 
-const DeletePaymentMethodButton = ({ className, paymentMethodId, onPress, onSuccess, style, ...props }: DeletePaymentMethodButtonProps) => {
+const DeletePaymentMethodButton = ({ paymentMethodId, ...props }: DeletePaymentMethodButtonProps) => {
 
-  const { session: bearerToken } = useSession()
-  const { selectedStore } = useStore()
+  const storeId = useAppSelector(({ store }) => (store.selectedStoreId))!
 
-  const { deletePaymentMethod, deletePaymentMethodLoading } = usePaymentMethodAPI()
+  const [destroyPaymentMethod, destroyPaymentMethodResult] = useDestroyPaymentMethodMutation()
+
+  const handleDelete = () => { destroyPaymentMethod({ paymentMethodId, storeId }) }
 
   return (
     <Pressable
       {...props}
-      onLongPress={() => {
-        deletePaymentMethod({
-          bearerToken,
-          storeId: selectedStore?.id,
-          paymentMethodId,
-          onSuccess: () => {
-            if (onSuccess) {
-              onSuccess()
-            }
-          }
-        })
-      }}
+      disabled={destroyPaymentMethodResult.isLoading}
+      onLongPress={handleDelete}
       style={({ pressed }) => {
         return ([
           {
@@ -36,16 +27,21 @@ const DeletePaymentMethodButton = ({ className, paymentMethodId, onPress, onSucc
             justifyContent: 'center',
             alignItems: 'center'
           },
-          style
+          {
+            marginRight: 5,
+            height: 40,
+            paddingLeft: 10,
+            paddingRight: 10
+          }
         ])
       }}
       delayLongPress={2000}
     >
       {({ pressed }) => {
         return (
-          deletePaymentMethodLoading
+          destroyPaymentMethodResult.isLoading
             ?
-            <Text className='text-sm text-red-500'>Deleting...</Text>
+            <CustomActivityIndicator size={'small'} />
             : (pressed
               ?
               <Text className='text-sm text-red-500'>Hold 2 Seconds</Text>
@@ -60,7 +56,6 @@ const DeletePaymentMethodButton = ({ className, paymentMethodId, onPress, onSucc
 
 export default DeletePaymentMethodButton
 
-interface DeletePaymentMethodButtonProps extends React.ComponentPropsWithoutRef<typeof TouchableHighlight> {
+interface DeletePaymentMethodButtonProps extends Omit<React.ComponentPropsWithoutRef<typeof TouchableHighlight>, 'style' | 'onLongPress'> {
   paymentMethodId: number
-  onSuccess?: () => void
 }

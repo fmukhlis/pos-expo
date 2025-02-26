@@ -1,9 +1,9 @@
-import { View, Text, TouchableOpacity, TouchableHighlight, Alert } from 'react-native'
+import { View, Text, TouchableOpacity, TouchableHighlight, Alert, ActivityIndicator } from 'react-native'
 import React from 'react'
 import BasicModal from '../BasicModal'
 import { Icon } from '../Icon'
 import PrimaryInput from '../PrimaryInput'
-import { SecondaryButtonSM } from '../SecondaryButton'
+import { SecondaryButton, SecondaryButtonSM } from '../SecondaryButton'
 import { PrimaryButton } from '../PrimaryButton'
 import { useAppSelector } from '../reduxHooks'
 import AssignableProductsList from './AssignableProductsList'
@@ -12,7 +12,6 @@ import useManageCategoryModal from './useManageCategoryModal'
 import useAssignProductsModal from './useAssignProductsModal'
 import useFilterItemsByString from '../useFilterItemsByString'
 import LoadingComponent from '../LoadingComponent'
-import { DangerButton, DangerButtonSM } from '../DangerButton'
 
 const ManageCategoryModal = ({
     onClose = () => { },
@@ -31,42 +30,47 @@ const ManageCategoryModal = ({
     const {
         hideAssignProductsModal,
         showAssignProductsModal,
-        modalVisibility,
+        modalVisible,
         setCategoryName,
         save,
-        loading,
-        confirmDeletion
+        confirmDeletion,
+        getCategoryResult,
+        storeCategoryResult,
+        destroyCategoryResult,
+        updateCategoryResult,
     } = useManageCategoryModal({ visible, onClose })
 
     return (
         <>
             <BasicModal
                 {...props}
-                visible={modalVisibility.self}
+                visible={visible}
                 onRequestClose={() => { onClose() }}
                 containerClassName='px-5 pt-5 pb-3 mt-auto bg-white border-t-2 border-gray-100'
-            >{loading.getCategory
+            >{getCategoryResult.isFetching
                 ?
-                <View className='h-[320]'>
+                <View className='h-[315]'>
                     <LoadingComponent />
                 </View>
                 :
                 <>
-                    <View className='flex-row justify-between'>
+                    <View className='flex-row justify-between items-center'>
                         <TouchableOpacity
                             onPress={() => { onClose() }}
                         >
                             <Icon name='close' />
                         </TouchableOpacity>
-                        <PrimaryButton
-                            isProcessing={loading.storeCategory || loading.updateCategory}
-                            className='w-[100] h-[40]'
-                            onPress={save}
-                        >
-                            Save
-                        </PrimaryButton>
+                        {selectedCategoryId &&
+                            <TouchableOpacity
+                                onPress={confirmDeletion}
+                            >
+                                {destroyCategoryResult.isLoading
+                                    ? <ActivityIndicator size={25} color="#ffffff" />
+                                    : <Icon name='trash-outline' className='text-rose-500' size={27} />}
+                            </TouchableOpacity>
+                        }
                     </View>
-                    <View className='mt-1'>
+                    <View className='mt-3'>
                         <Text className='text-lg font-bold'>
                             {selectedCategoryId ? 'Edit Category' : 'Create Category'}
                         </Text>
@@ -74,37 +78,39 @@ const ManageCategoryModal = ({
                     <View className='mt-3'>
                         <PrimaryInput
                             placeholder='Category name...'
-                            className='h-[40]'
+                            className='h-[45]'
                             value={categoryName}
                             onChangeText={setCategoryName}
                         />
-                        <SecondaryButtonSM
-                            className='h-[40] mt-3'
+                        <SecondaryButton
+                            className='h-[45] mt-3'
                             onPress={showAssignProductsModal}
                         >
                             Assign Products
-                        </SecondaryButtonSM>
+                        </SecondaryButton>
                     </View>
                     <View className='p-2.5 bg-gray-100 mt-3 rounded'>
-                        <AssignedProductsList products={assignedProducts} />
+                        <AssignedProductsList
+                            products={assignedProducts}
+                            onProductTouched={() => { onClose() }}
+                        />
                     </View>
-                    {selectedCategoryId &&
-                        <View className='border-t mt-7 pt-3 border-gray-300'>
-                            <DangerButtonSM
-                                isProcessing={loading.destroyCategory}
-                                className='h-[40]'
-                                onPress={confirmDeletion}>
-                                Delete
-                            </DangerButtonSM>
-                        </View>
-                    }
+                    <View className='border-t mt-3 pt-3 border-gray-300'>
+                        <PrimaryButton
+                            isProcessing={storeCategoryResult.isLoading || updateCategoryResult.isLoading}
+                            className='h-[45]'
+                            onPress={save}
+                        >
+                            Save
+                        </PrimaryButton>
+                    </View>
                 </>
                 }
             </BasicModal>
             <AssignProductsModal
                 animationType='slide'
                 onClose={hideAssignProductsModal}
-                visible={modalVisibility.assignProducts}
+                visible={modalVisible}
             />
         </>
     )
@@ -123,14 +129,11 @@ const AssignProductsModal = ({
     // sync the checkmarked product with store data on every
     // visibility change
     const {
-        modalVisible,
         assignProduct,
         assignableProducts,
-        save
-    } = useAssignProductsModal({
-        visible,
-        onClose
-    })
+        save,
+        isFetching,
+    } = useAssignProductsModal({ onClose, visible })
 
     const { filterText, filteredItems, setFilterText } = useFilterItemsByString({
         items: assignableProducts,
@@ -144,7 +147,7 @@ const AssignProductsModal = ({
     return (
         <BasicModal
             {...props}
-            visible={modalVisible}
+            visible={visible}
             onRequestClose={save}
             containerClassName='mt-auto p-5 bg-white h-[90%]'
         >
@@ -177,10 +180,14 @@ const AssignProductsModal = ({
                 </TouchableHighlight>
             </View>
             <View className='mt-3 rounded'>
-                <AssignableProductsList
-                    products={filteredItems}
-                    onItemClick={assignProduct}
-                />
+                {
+                    isFetching
+                        ? <LoadingComponent />
+                        : <AssignableProductsList
+                            products={filteredItems}
+                            onItemClick={assignProduct}
+                        />
+                }
             </View>
         </BasicModal>
     )

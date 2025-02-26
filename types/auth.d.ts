@@ -3,7 +3,7 @@ export interface UnauthorizedRequest {
 }
 
 export interface UserModel {
-  id: string;
+  id: number;
   fullName: string;
   email: string;
   emailVerifiedAt: string;

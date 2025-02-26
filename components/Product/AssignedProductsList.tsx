@@ -1,8 +1,11 @@
-import { View, Text } from 'react-native'
+import { View, Text, TouchableOpacity } from 'react-native'
 import React from 'react'
-import { ProductProps } from '@/types/product'
+import { Link } from 'expo-router'
+import { router } from 'expo-router'
+import { Icon } from '../Icon'
 
-const AssignedProductsList = ({ products }: {
+const AssignedProductsList = ({ products, onProductTouched }: {
+    onProductTouched: () => void
     products: { id: number; name: string; }[]
 }) => {
     return (
@@ -10,9 +13,20 @@ const AssignedProductsList = ({ products }: {
             ? <View className='flex-row flex-wrap gap-1 justify-center'>
                 {products.map((product) => {
                     return (
-                        <View key={product.id} className='px-3 py-1 rounded bg-gray-200 border border-gray-400'>
-                            <Text>{product.name}</Text>
-                        </View>
+                        <TouchableOpacity
+                            key={product.id}
+                            className='pl-3 pr-2 py-1 rounded bg-sky-200 border border-sky-400 flex-row items-center'
+                            onPress={() => {
+                                onProductTouched()
+                                router.navigate({
+                                    pathname: '/(app)/(tabs)/account/store-management/product/[id]',
+                                    params: { id: product.id }
+                                })
+                            }}
+                        >
+                            <Text className='text-blue-500 font-medium'>{product.name}</Text>
+                            <Icon name='arrow-forward-outline' size={15} className='text-blue-500 ml-2' />
+                        </TouchableOpacity>
                     )
                 })}
             </View>
