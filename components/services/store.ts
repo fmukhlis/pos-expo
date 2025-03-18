@@ -23,12 +23,14 @@ const storeAPI = apiSlice.injectEndpoints({
       }),
       transformResponse: (response: { data: Store }) => response.data,
       async onQueryStarted({ userId }, { dispatch, queryFulfilled }) {
-        const result = await queryFulfilled;
-        dispatch(
-          storeAPI.util.updateQueryData("getStores", { userId }, (draft) => {
-            draft.push(result.data);
-          })
-        );
+        try {
+          const result = await queryFulfilled;
+          dispatch(
+            storeAPI.util.updateQueryData("getStores", { userId }, (draft) => {
+              draft.push(result.data);
+            })
+          );
+        } catch (error) {}
       },
     }),
     updateStore: build.mutation<Store, UpdateStoreArg>({
@@ -39,15 +41,17 @@ const storeAPI = apiSlice.injectEndpoints({
       }),
       transformResponse: (response: { data: Store }) => response.data,
       async onQueryStarted({ userId, storeId }, { dispatch, queryFulfilled }) {
-        const result = await queryFulfilled;
-        dispatch(
-          storeAPI.util.updateQueryData("getStores", { userId }, (draft) => {
-            const index = draft.findIndex(({ id }) => id === storeId);
-            if (index !== -1) {
-              draft.splice(index, 1, result.data);
-            }
-          })
-        );
+        try {
+          const result = await queryFulfilled;
+          dispatch(
+            storeAPI.util.updateQueryData("getStores", { userId }, (draft) => {
+              const index = draft.findIndex(({ id }) => id === storeId);
+              if (index !== -1) {
+                draft.splice(index, 1, result.data);
+              }
+            })
+          );
+        } catch (error) {}
       },
     }),
     destroyStore: build.mutation<void, DestroyStoreArg>({
@@ -56,15 +60,17 @@ const storeAPI = apiSlice.injectEndpoints({
         method: "DELETE",
       }),
       async onQueryStarted({ userId, storeId }, { dispatch, queryFulfilled }) {
-        await queryFulfilled;
-        dispatch(
-          storeAPI.util.updateQueryData("getStores", { userId }, (draft) => {
-            const index = draft.findIndex(({ id }) => id === storeId);
-            if (index !== -1) {
-              draft.splice(index, 1);
-            }
-          })
-        );
+        try {
+          await queryFulfilled;
+          dispatch(
+            storeAPI.util.updateQueryData("getStores", { userId }, (draft) => {
+              const index = draft.findIndex(({ id }) => id === storeId);
+              if (index !== -1) {
+                draft.splice(index, 1);
+              }
+            })
+          );
+        } catch (error) {}
       },
     }),
   }),
