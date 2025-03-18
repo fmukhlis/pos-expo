@@ -1,0 +1,13 @@
+services:
+  app:
+    build: .
+    ports:
+      - 8081:8081
+      - 19000:19000
+      - 19001:19001
+      - 19002:19002
+    working_dir: /app
+    volumes:
+      - ./:/app
+    stdin_open: true
+    tty: true
