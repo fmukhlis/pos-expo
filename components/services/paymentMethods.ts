@@ -31,16 +31,18 @@ const paymentMethodAPI = apiSlice.injectEndpoints({
       }),
       transformResponse: (response: { data: PaymentMethod }) => response.data,
       async onQueryStarted({ storeId }, { dispatch, queryFulfilled }) {
-        const result = await queryFulfilled;
-        dispatch(
-          paymentMethodAPI.util.updateQueryData(
-            "getPaymentMethods",
-            { storeId },
-            (draft) => {
-              draft.push(result.data);
-            }
-          )
-        );
+        try {
+          const result = await queryFulfilled;
+          dispatch(
+            paymentMethodAPI.util.updateQueryData(
+              "getPaymentMethods",
+              { storeId },
+              (draft) => {
+                draft.push(result.data);
+              }
+            )
+          );
+        } catch (error) {}
       },
     }),
     updatePaymentMethod: build.mutation<PaymentMethod, UpdatePaymentMethodArg>({
@@ -54,19 +56,23 @@ const paymentMethodAPI = apiSlice.injectEndpoints({
         { paymentMethodId, storeId },
         { dispatch, queryFulfilled }
       ) {
-        const result = await queryFulfilled;
-        dispatch(
-          paymentMethodAPI.util.updateQueryData(
-            "getPaymentMethods",
-            { storeId },
-            (draft) => {
-              const index = draft.findIndex(({ id }) => id === paymentMethodId);
-              if (index !== -1) {
-                draft.splice(index, 1, result.data);
+        try {
+          const result = await queryFulfilled;
+          dispatch(
+            paymentMethodAPI.util.updateQueryData(
+              "getPaymentMethods",
+              { storeId },
+              (draft) => {
+                const index = draft.findIndex(
+                  ({ id }) => id === paymentMethodId
+                );
+                if (index !== -1) {
+                  draft.splice(index, 1, result.data);
+                }
               }
-            }
-          )
-        );
+            )
+          );
+        } catch (error) {}
       },
     }),
     destroyPaymentMethod: build.mutation<void, DestroyPaymentMethodArg>({
@@ -78,19 +84,23 @@ const paymentMethodAPI = apiSlice.injectEndpoints({
         { paymentMethodId, storeId },
         { dispatch, queryFulfilled }
       ) {
-        await queryFulfilled;
-        dispatch(
-          paymentMethodAPI.util.updateQueryData(
-            "getPaymentMethods",
-            { storeId },
-            (draft) => {
-              const index = draft.findIndex(({ id }) => id === paymentMethodId);
-              if (index !== -1) {
-                draft.splice(index, 1);
+        try {
+          await queryFulfilled;
+          dispatch(
+            paymentMethodAPI.util.updateQueryData(
+              "getPaymentMethods",
+              { storeId },
+              (draft) => {
+                const index = draft.findIndex(
+                  ({ id }) => id === paymentMethodId
+                );
+                if (index !== -1) {
+                  draft.splice(index, 1);
+                }
               }
-            }
-          )
-        );
+            )
+          );
+        } catch (error) {}
       },
     }),
   }),
