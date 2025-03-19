@@ -22,6 +22,28 @@ const permissionAPI = apiSlice.injectEndpoints({
         { type: "Permission", id },
       ],
     }),
+    storePermission: build.mutation<Permission, StorePermissionArg>({
+      query: ({ storeId, ...body }) => ({
+        url: `/stores/${storeId}/permissions`,
+        method: "POST",
+        body,
+      }),
+      transformResponse: (data: { data: Permission }) => data.data,
+      async onQueryStarted({ storeId }, { dispatch, queryFulfilled }) {
+        try {
+          const result = await queryFulfilled;
+          dispatch(
+            permissionAPI.util.updateQueryData(
+              "getPermissions",
+              { storeId },
+              (draft) => {
+                draft.push(result.data);
+              }
+            )
+          );
+        } catch (error) {}
+      },
+    }),
     updatePermission: build.mutation<Permission, UpdatePermissionArg>({
       query: ({ permissionId, storeId, ...body }) => ({
         url: `/stores/${storeId}/permissions/${permissionId}`,
@@ -82,6 +104,7 @@ const permissionAPI = apiSlice.injectEndpoints({
 export const {
   useGetPermissionsQuery,
   useLazyGetPermissionQuery,
+  useStorePermissionMutation,
   useUpdatePermissionMutation,
   useDestroyPermissionMutation,
 } = permissionAPI;
