@@ -1,5 +1,9 @@
 import { apiSlice } from "../apiSlice";
-import { Permission, PermissionPayload } from "@/types/permission";
+import {
+  DetailedPermission,
+  Permission,
+  PermissionPayload,
+} from "@/types/permission";
 
 const permissionAPI = apiSlice.injectEndpoints({
   overrideExisting: true,
@@ -9,10 +13,78 @@ const permissionAPI = apiSlice.injectEndpoints({
       transformResponse: (data: { data: Permission[] }) => data.data,
       providesTags: [{ type: "Permission", id: "LIST" }],
     }),
+    getPermission: build.query<DetailedPermission, GetPermissionArg>({
+      query: ({ permissionId, storeId }) => ({
+        url: `/stores/${storeId}/permissions/${permissionId}`,
+      }),
+      transformResponse: (data: { data: DetailedPermission }) => data.data,
+      providesTags: (result, error, { permissionId: id }) => [
+        { type: "Permission", id },
+      ],
+    }),
+    updatePermission: build.mutation<Permission, UpdatePermissionArg>({
+      query: ({ permissionId, storeId, ...body }) => ({
+        url: `/stores/${storeId}/permissions/${permissionId}`,
+        method: "PUT",
+        body,
+      }),
+      transformResponse: (data: { data: Permission }) => data.data,
+      async onQueryStarted(
+        { permissionId, storeId },
+        { dispatch, queryFulfilled }
+      ) {
+        try {
+          const result = await queryFulfilled;
+          dispatch(
+            permissionAPI.util.updateQueryData(
+              "getPermissions",
+              { storeId },
+              (draft) => {
+                const index = draft.findIndex(({ id }) => id === permissionId);
+                if (index !== -1) {
+                  draft.splice(index, 1, result.data);
+                }
+              }
+            )
+          );
+        } catch (error) {}
+      },
+    }),
+    destroyPermission: build.mutation<void, DestroyPermissionArg>({
+      query: ({ permissionId, storeId }) => ({
+        url: `/stores/${storeId}/permissions/${permissionId}`,
+        method: "DELETE",
+      }),
+      async onQueryStarted(
+        { permissionId, storeId },
+        { dispatch, queryFulfilled }
+      ) {
+        try {
+          await queryFulfilled;
+          dispatch(
+            permissionAPI.util.updateQueryData(
+              "getPermissions",
+              { storeId },
+              (draft) => {
+                const index = draft.findIndex(({ id }) => id === permissionId);
+                if (index !== -1) {
+                  draft.splice(index, 1);
+                }
+              }
+            )
+          );
+        } catch (error) {}
+      },
+    }),
   }),
 });
 
-export const { useGetPermissionsQuery } = permissionAPI;
+export const {
+  useGetPermissionsQuery,
+  useLazyGetPermissionQuery,
+  useUpdatePermissionMutation,
+  useDestroyPermissionMutation,
+} = permissionAPI;
 
 interface GetPermissionsArg {
   storeId: number;
@@ -24,5 +96,5 @@ interface GetPermissionArg {
 }
 
 type StorePermissionArg = GetPermissionsArg & PermissionPayload;
-type UpdatePermissionArg = GetPermissionsArg & PermissionPayload;
-type DeletePermissionArg = GetPermissionArg;
+type UpdatePermissionArg = GetPermissionArg & PermissionPayload;
+type DestroyPermissionArg = GetPermissionArg;

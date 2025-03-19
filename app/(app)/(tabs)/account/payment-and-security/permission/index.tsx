@@ -1,21 +1,18 @@
+import React from "react";
 import {
   View,
   Text,
   RefreshControl,
   TouchableHighlight,
   TouchableOpacity,
+  FlatList,
 } from "react-native";
-import React from "react";
-import { FlatList } from "react-native";
-import usePermissionAPI from "@/components/Permission/usePermissionAPI";
-import { usePermission } from "@/contexts/PermissionContext";
-import { useStore } from "@/contexts/StoreContext";
-import { PrimaryButtonSM } from "@/components/PrimaryButton";
+import { router } from "expo-router";
+
 import { Icon } from "@/components/Icon";
-import { Link, router } from "expo-router";
-import { useGetPermissionsQuery } from "@/components/services/permission";
 import { useAppSelector } from "@/components/reduxHooks";
 import { useLazyGetStoreQuery } from "@/components/services/store";
+import { useGetPermissionsQuery } from "@/components/services/permission";
 import LoadingComponent from "@/components/LoadingComponent";
 
 const Permission = () => {
@@ -72,10 +69,10 @@ const Permission = () => {
         ListHeaderComponent={() => (
           <View className="px-4 pt-4">
             <Text className="text-lg font-bold mb-2">Permissions</Text>
-            {permissions && (
+            {permissions && permissions.length > 0 && (
               <Text className="text-base mb-2">
                 You have added{" "}
-                <Text className="font-medium">{permissions.length}</Text>{" "}
+                <Text className="font-medium">{permissions?.length}</Text>{" "}
                 permissions on{" "}
                 <Text className="font-medium">{getStoreResult.data?.name}</Text>
                 .

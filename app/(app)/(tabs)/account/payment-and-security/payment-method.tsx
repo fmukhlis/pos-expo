@@ -62,7 +62,7 @@ const PaymentMethod = () => {
           <View className="px-4 pt-4">
             <PaymentMethodModal visible={modalVisible} onClose={hideModal} />
             <Text className="text-lg font-bold mb-2">Payment Methods</Text>
-            {paymentMethods && (
+            {paymentMethods && paymentMethods.length > 0 && (
               <Text className="text-base mb-4">
                 You have added
                 <Text className="font-medium">

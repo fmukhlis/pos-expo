@@ -1,201 +1,175 @@
-import { View, Text, Switch, ActivityIndicator } from 'react-native'
-import React from 'react'
-import PrimaryInput from '@/components/PrimaryInput'
-import { PrimaryButton } from '@/components/PrimaryButton'
-import { DangerButton } from '@/components/DangerButton'
-import usePermissionAPI from '@/components/Permission/usePermissionAPI'
-import { router, useLocalSearchParams } from 'expo-router'
-import { usePermission } from '@/contexts/PermissionContext'
-import { useTheme } from '@/contexts/ThemeProvider'
-import { Colors } from '@/constants/Colors';
+import React from "react";
+import Toast from "react-native-toast-message";
+import { View, Text, Switch } from "react-native";
+import { router, useLocalSearchParams } from "expo-router";
+
+import {
+  useDestroyPermissionMutation,
+  useLazyGetPermissionQuery,
+  useUpdatePermissionMutation,
+} from "@/components/services/permission";
+import PrimaryInput from "@/components/PrimaryInput";
+import { DangerButton } from "@/components/DangerButton";
+import { useAppSelector } from "@/components/reduxHooks";
+import { PrimaryButton } from "@/components/PrimaryButton";
+import LoadingComponent from "@/components/LoadingComponent";
 
 const Edit = () => {
+  const { id }: { id: string } = useLocalSearchParams();
 
-    const { colorScheme } = useTheme()
+  const storeId = useAppSelector(({ store }) => store.selectedStoreId)!;
 
-    const { setPermissions } = usePermission()
+  const [getPermission, getPermissionResult] = useLazyGetPermissionQuery();
+  const [updatePermission, updatePermissionResult] =
+    useUpdatePermissionMutation();
+  const [destroyPermission, destroyPermissionResult] =
+    useDestroyPermissionMutation();
 
-    const { deletePermission, getPermission, getPermissions, updatePermission } = usePermissionAPI()
+  const [data, setData] = React.useState({
+    authorizationCode: "",
+    refund: true,
+    modifyBill: true,
+  });
 
-    const { id: permissionId }: { id: string } = useLocalSearchParams()
+  const changeAuthorizationCode = (authorizationCode: string) => {
+    setData((prev) => {
+      return {
+        ...prev,
+        authorizationCode,
+      };
+    });
+  };
 
-    const [getPermissionLoading, setGetPermissionLoading] = React.useState(false)
-    const [isSaving, setIsSaving] = React.useState(false)
-    const [isDeleting, setIsDeleting] = React.useState(false)
+  const changeRefund = (refund: boolean) => {
+    setData((prev) => {
+      return {
+        ...prev,
+        refund,
+      };
+    });
+  };
 
-    const [data, setData] = React.useState({
-        authorizationCode: '',
-        refund: true,
-        modifyBill: true,
-    })
+  const changeModifyBill = (modifyBill: boolean) => {
+    setData((prev) => {
+      return {
+        ...prev,
+        modifyBill,
+      };
+    });
+  };
 
-    const changeAuthorizationCode = (authorizationCode: string) => {
-        setData((prev) => {
-            return {
-                ...prev,
-                authorizationCode
-            }
+  const save = () => {
+    const permissionId = parseInt(id, 10);
+    if (!isNaN(permissionId)) {
+      updatePermission({ permissionId, storeId, ...data })
+        .unwrap()
+        .then(() => {
+          router.back();
         })
+        .catch((error) => {
+          Toast.show({
+            type: "error",
+            text1: `Error ${error.status}`,
+            text2: error.data.message,
+          });
+        });
     }
+  };
 
-    const changeRefund = (refund: boolean) => {
-        setData((prev) => {
-            return {
-                ...prev,
-                refund
-            }
+  const performDelete = () => {
+    const permissionId = parseInt(id, 10);
+    if (!isNaN(permissionId)) {
+      destroyPermission({ permissionId, storeId })
+        .unwrap()
+        .then(() => {
+          router.back();
         })
+        .catch((error) => {
+          Toast.show({
+            type: "error",
+            text1: `Error ${error.status}`,
+            text2: error.data.message,
+          });
+        });
     }
+  };
 
-    const changeModifyBill = (modifyBill: boolean) => {
-        setData((prev) => {
-            return {
-                ...prev,
-                modifyBill
-            }
+  React.useEffect(() => {
+    const permissionId = parseInt(id, 10);
+    if (!isNaN(permissionId)) {
+      getPermission({ permissionId, storeId })
+        .unwrap()
+        .then(({ id, authorizationCode, modifyBill, refund }) => {
+          setData({
+            authorizationCode,
+            modifyBill: modifyBill ? true : false,
+            refund: refund ? true : false,
+          });
         })
+        .catch((error) => {
+          Toast.show({
+            type: "error",
+            text1: `Error ${error.status}`,
+            text2: error.data.message,
+          });
+        });
     }
+  }, []);
 
-    const save = () => {
-        updatePermission({
-            permissionId: parseInt(permissionId),
-            data,
-            onStart: () => {
-                setIsSaving(true)
-            },
-            onSuccess: () => {
-                getPermissions({
-                    onSuccess: (permissions) => {
-                        setPermissions(permissions)
-                    },
-                    onFinish: () => {
-                        setIsSaving(false)
-                        if (router.canGoBack()) {
-                            router.back()
-                        }
-                    }
-                })
-            },
-            onFailed: (errMsg) => {
-                setIsSaving(false)
-                console.log(errMsg)
-            }
-        })
-    }
+  if (getPermissionResult.isFetching) {
+    return <LoadingComponent />;
+  }
 
-    const performDelete = () => {
-        deletePermission({
-            permissionId: parseInt(permissionId),
-            onStart: () => {
-                setIsDeleting(true)
-            },
-            onSuccess: () => {
-                getPermissions({
-                    onSuccess: (permissions) => {
-                        setPermissions(permissions)
-                    },
-                    onFinish: () => {
-                        setIsDeleting(false)
-                        if (router.canGoBack()) {
-                            router.back()
-                        }
-                    }
-                })
-            },
-            onFailed: (errMsg) => {
-                setIsDeleting(false)
-                console.log(errMsg)
-            }
-        })
-    }
-
-    React.useEffect(() => {
-        getPermission({
-            permissionId: parseInt(permissionId),
-            onStart: () => {
-                setGetPermissionLoading(true)
-            },
-            onSuccess: ({ authorizationCode, modifyBill, refund }) => {
-                setGetPermissionLoading(false)
-                setData({
-                    authorizationCode,
-                    modifyBill: !!modifyBill,
-                    refund: !!refund
-                })
-            },
-            onFailed: () => {
-                router.back()
-            }
-        })
-    }, [])
-
-    if (getPermissionLoading) {
-        return (
-            <View className='flex-1 justify-center items-center bg-white'>
-                <ActivityIndicator
-                    size={'large'}
-                    color={colorScheme === 'dark' ? Colors.dark.highlightedText : Colors.light.highlightedText}
-                />
-            </View>
-        )
-    }
-
-    return (
-        <View className='flex-1 px-4 pt-4 bg-white'>
-            <Text className='text-lg font-bold mb-2'>Edit Permission</Text>
-            <Text className='my-3 text-base font-medium'>Set Authorization Code</Text>
-            <PrimaryInput
-                keyboardType='number-pad'
-                className='h-[40]'
-                containerClassName='mb-5'
-                type='password'
-                placeholder='Enter a 6-digit pin'
-                value={data.authorizationCode}
-                onChangeText={changeAuthorizationCode}
-            />
-            <Text className='text-base font-medium mb-3'>Permission Abilities</Text>
-            <View className='flex-row justify-between items-center border-t border-gray-300 py-3 px-2'>
-                <View className='w-9/12'>
-                    <Text className='font-medium text-sm mb-0.5'>Can Modify Bill</Text>
-                    <Text className='text-gray-500 text-sm'>The pin can be used for modifying bills.</Text>
-                </View>
-                <Switch
-                    onValueChange={changeModifyBill}
-                    value={data.modifyBill}
-                />
-            </View>
-            <View className='flex-row justify-between items-center border-y border-gray-300 py-3 px-2'>
-                <View className='w-9/12'>
-                    <Text className='font-medium text-sm mb-0.5'>Can Refund Payment</Text>
-                    <Text className='text-gray-500 text-sm'>The pin can be used for refunding payments.</Text>
-                </View>
-                <Switch
-                    onValueChange={changeRefund}
-                    value={data.refund}
-                />
-            </View>
-            <View
-                className='flex-row py-8'
-            >
-                <DangerButton
-                    isProcessing={isDeleting}
-                    disabled={isSaving}
-                    onPress={performDelete}
-                    className='px-4'
-                >
-                    Delete
-                </DangerButton>
-                <PrimaryButton
-                    isProcessing={isSaving}
-                    disabled={isSaving}
-                    onPress={save}
-                    className='ml-auto px-14 h-[40]'
-                >
-                    Save
-                </PrimaryButton>
-            </View>
+  return (
+    <View className="flex-1 px-4 pt-4 bg-white">
+      <Text className="text-lg font-bold mb-2">Edit Permission</Text>
+      <Text className="my-3 text-base font-medium">Set Authorization Code</Text>
+      <PrimaryInput
+        keyboardType="number-pad"
+        className="h-[40]"
+        containerClassName="mb-5"
+        type="password"
+        placeholder="Enter a 6-digit pin"
+        value={data.authorizationCode}
+        onChangeText={changeAuthorizationCode}
+      />
+      <Text className="text-base font-medium mb-3">Permission Abilities</Text>
+      <View className="flex-row justify-between items-center border-t border-gray-300 py-3 px-2">
+        <View className="w-9/12">
+          <Text className="font-medium text-sm mb-0.5">Can Modify Bill</Text>
+          <Text className="text-gray-500 text-sm">
+            The pin can be used for modifying bills.
+          </Text>
         </View>
-    )
-}
+        <Switch onValueChange={changeModifyBill} value={data.modifyBill} />
+      </View>
+      <View className="flex-row justify-between items-center border-y border-gray-300 py-3 px-2">
+        <View className="w-9/12">
+          <Text className="font-medium text-sm mb-0.5">Can Refund Payment</Text>
+          <Text className="text-gray-500 text-sm">
+            The pin can be used for refunding payments.
+          </Text>
+        </View>
+        <Switch onValueChange={changeRefund} value={data.refund} />
+      </View>
+      <View className="flex-row py-8">
+        <DangerButton
+          isProcessing={destroyPermissionResult.isLoading}
+          onPress={performDelete}
+          className="px-4"
+        >
+          Delete
+        </DangerButton>
+        <PrimaryButton
+          isProcessing={updatePermissionResult.isLoading}
+          onPress={save}
+          className="ml-auto px-14 h-[40]"
+        >
+          Save
+        </PrimaryButton>
+      </View>
+    </View>
+  );
+};
 
-export default Edit
+export default Edit;
