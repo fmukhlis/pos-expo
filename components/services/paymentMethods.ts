@@ -1,9 +1,9 @@
+import { apiSlice } from "../apiSlice";
 import {
   DetailedPaymentMethod,
   PaymentMethod,
   PaymentMethodPayload,
 } from "@/types/payment-method";
-import { apiSlice } from "../apiSlice";
 
 const paymentMethodAPI = apiSlice.injectEndpoints({
   overrideExisting: true,
