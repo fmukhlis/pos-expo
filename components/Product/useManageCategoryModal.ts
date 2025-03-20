@@ -1,7 +1,6 @@
 import React from "react";
 import { useAppDispatch, useAppSelector } from "../reduxHooks";
 import { resetData, setData } from "./categorySlice";
-import { useStore } from "@/contexts/StoreContext";
 import { Alert } from "react-native";
 import {
   useDestroyProductCategoryMutation,
@@ -27,7 +26,7 @@ export default function useManageCategoryModal({
 
   const dispatch = useAppDispatch();
 
-  const { selectedStore } = useStore();
+  const storeId = useAppSelector(({ store }) => store.selectedStoreId)!;
 
   const [getCategory, getCategoryResult] = useLazyGetProductCategoryQuery();
   const [storeCategory, storeCategoryResult] =
@@ -38,44 +37,42 @@ export default function useManageCategoryModal({
     useDestroyProductCategoryMutation();
 
   const save = () => {
-    if (selectedStore) {
-      let payload = {
-        storeId: selectedStore.id,
-        name,
-        productIds,
-      };
+    let payload = {
+      storeId,
+      name,
+      productIds,
+    };
 
-      if (selectedCategoryId) {
-        updateCategory({ ...payload, productCategoryId: selectedCategoryId })
-          .unwrap()
-          .then(() => {
-            onClose();
-          })
-          .catch((error) => {
-            Toast.show({
-              type: "error",
-              text1: "Error " + error.status,
-              text2: error.data.message,
-              autoHide: true,
-              swipeable: false,
-            });
+    if (selectedCategoryId) {
+      updateCategory({ ...payload, productCategoryId: selectedCategoryId })
+        .unwrap()
+        .then(() => {
+          onClose();
+        })
+        .catch((error) => {
+          Toast.show({
+            type: "error",
+            text1: "Error " + error.status,
+            text2: error.data.message,
+            autoHide: true,
+            swipeable: false,
           });
-      } else {
-        storeCategory(payload)
-          .unwrap()
-          .then(() => {
-            onClose();
-          })
-          .catch((error) => {
-            Toast.show({
-              type: "error",
-              text1: "Error " + error.status,
-              text2: error.data.message,
-              autoHide: true,
-              swipeable: false,
-            });
+        });
+    } else {
+      storeCategory(payload)
+        .unwrap()
+        .then(() => {
+          onClose();
+        })
+        .catch((error) => {
+          Toast.show({
+            type: "error",
+            text1: "Error " + error.status,
+            text2: error.data.message,
+            autoHide: true,
+            swipeable: false,
           });
-      }
+        });
     }
   };
 
@@ -104,9 +101,9 @@ export default function useManageCategoryModal({
         {
           text: "OK",
           onPress: async () => {
-            if (selectedCategoryId && selectedStore) {
+            if (selectedCategoryId) {
               const payload = {
-                storeId: selectedStore.id,
+                storeId,
                 productCategoryId: selectedCategoryId,
               };
               destroyCategory(payload)
@@ -123,9 +120,9 @@ export default function useManageCategoryModal({
 
   React.useEffect(() => {
     if (visible) {
-      if (selectedCategoryId && selectedStore) {
+      if (selectedCategoryId) {
         const payload = {
-          storeId: selectedStore.id,
+          storeId,
           productCategoryId: selectedCategoryId,
         };
         getCategory(payload)

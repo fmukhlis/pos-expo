@@ -2,7 +2,6 @@ import React from "react";
 import { useAppDispatch, useAppSelector } from "../reduxHooks";
 import { setData } from "./categorySlice";
 import { useGetProductsQuery } from "../services/product";
-import { useStore } from "@/contexts/StoreContext";
 import { skipToken } from "@reduxjs/toolkit/query";
 
 export default function useAssignProductsModal({
@@ -12,13 +11,11 @@ export default function useAssignProductsModal({
   visible: boolean | undefined;
   onClose: () => void;
 }) {
-  const { selectedStore } = useStore();
+  const storeId = useAppSelector(({ store }) => store.selectedStoreId)!;
 
   const data = useAppSelector((state) => state.productCategory.data);
 
-  const { data: products, isFetching } = useGetProductsQuery(
-    selectedStore ? { storeId: selectedStore.id } : skipToken
-  );
+  const { data: products, isFetching } = useGetProductsQuery({ storeId });
 
   const dispatch = useAppDispatch();
 

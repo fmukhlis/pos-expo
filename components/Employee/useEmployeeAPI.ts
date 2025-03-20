@@ -2,15 +2,16 @@ import { View, Text } from "react-native";
 import React from "react";
 import axios from "axios";
 import api from "@/utils/api";
-import { useStore } from "@/contexts/StoreContext";
 import { useSession } from "@/contexts/SessionContext";
 import {
   EmployeeInvitationProps,
   EmployeeProps,
 } from "@/contexts/EmployeeContext";
+import { useAppSelector } from "../reduxHooks";
 
 export default function useEmployeeAPI() {
-  const { selectedStore } = useStore();
+  const storeId = useAppSelector(({ store }) => store.selectedStoreId)!;
+
   const { session: bearerToken } = useSession();
 
   const getUserByEmail = async (param: GetUserByEmailParam) => {
@@ -45,14 +46,11 @@ export default function useEmployeeAPI() {
       if (param.onStart) {
         param.onStart();
       }
-      const response = await api.get(
-        "/stores/" + selectedStore?.id + "/employees",
-        {
-          headers: {
-            Authorization: "Bearer " + bearerToken,
-          },
-        }
-      );
+      const response = await api.get("/stores/" + storeId + "/employees", {
+        headers: {
+          Authorization: "Bearer " + bearerToken,
+        },
+      });
       if (param.onSuccess) {
         param.onSuccess(response.data.data);
       }
@@ -75,7 +73,7 @@ export default function useEmployeeAPI() {
         param.onStart();
       }
       const response = await api.post(
-        "/stores/" + selectedStore?.id + "/invitations",
+        "/stores/" + storeId + "/invitations",
         param.data,
         {
           headers: {
@@ -105,7 +103,7 @@ export default function useEmployeeAPI() {
         param.onStart();
       }
       const response = await api.delete(
-        "/stores/" + selectedStore?.id + "/invitations/" + param.invitationId,
+        "/stores/" + storeId + "/invitations/" + param.invitationId,
         {
           headers: {
             Authorization: "Bearer " + bearerToken,
@@ -166,10 +164,9 @@ export default function useEmployeeAPI() {
       if (param.onStart) {
         param.onStart();
       }
-      const response = await api.get(
-        "/stores/" + selectedStore?.id + "/invitations",
-        { headers: { Authorization: "Bearer " + bearerToken } }
-      );
+      const response = await api.get("/stores/" + storeId + "/invitations", {
+        headers: { Authorization: "Bearer " + bearerToken },
+      });
       if (param.onSuccess) {
         param.onSuccess(response.data.data);
       }
@@ -256,11 +253,7 @@ export default function useEmployeeAPI() {
         param.onStart();
       }
       const response = await api.patch(
-        "/stores/" +
-          selectedStore?.id +
-          "/employees/" +
-          param.employeeId +
-          "/terminate",
+        "/stores/" + storeId + "/employees/" + param.employeeId + "/terminate",
         {},
         { headers: { Authorization: "Bearer " + bearerToken } }
       );
