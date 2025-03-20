@@ -85,11 +85,16 @@ const employeeAPI = apiSlice.injectEndpoints({
         invalidatesTags: [{ type: "IncomingEmployeeInvitation", id: "LIST" }],
       }),
     }),
-    getUserByEmail: build.query<any, GetUserByEmailArg>({
+    getUserByEmail: build.query<
+      { id: number; fullName: string },
+      GetUserByEmailArg
+    >({
       query: (params) => ({
         url: `/user/search-by-email`,
         params,
       }),
+      transformResponse: (data: { data: { id: number; fullName: string } }) =>
+        data.data,
     }),
   }),
 });

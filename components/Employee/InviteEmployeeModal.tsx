@@ -1,85 +1,67 @@
-import { View, Text, Modal, TouchableHighlight } from "react-native";
 import React from "react";
+import { View, Text, Modal, TouchableHighlight } from "react-native";
+
+import PrimaryInput from "../PrimaryInput";
 import useEmployeeAPI from "./useEmployeeAPI";
 import { Icon } from "../Icon";
+import { useAppSelector } from "../reduxHooks";
 import { PrimaryButton } from "../PrimaryButton";
-import PrimaryInput from "../PrimaryInput";
 import { SecondaryButtonSM } from "../SecondaryButton";
 import { useEmployee } from "@/contexts/EmployeeContext";
-import { useAppSelector } from "../reduxHooks";
+import {
+  useInviteEmployeesMutation,
+  useLazyGetUserByEmailQuery,
+} from "../services/employee";
+import Toast from "react-native-toast-message";
 
 const InviteEmployeeModal = ({
-  visible = false,
-  onVisibleChange = () => {},
+  visible,
+  onClose = () => {},
   ...props
 }: InviteEmployeeModalProps) => {
-  const { setEmployeeInvitations } = useEmployee();
-
   const storeId = useAppSelector(({ store }) => store.selectedStoreId)!;
 
-  const { getOutgoingEmployeeInvitations, getUserByEmail, inviteEmployees } =
-    useEmployeeAPI();
+  const [inviteEmployees, inviteEmployeesResult] = useInviteEmployeesMutation();
+  const [getUserByEmail, getUserByEmailResult] = useLazyGetUserByEmailQuery();
 
   const [users, setUsers] = React.useState<{ id: number; fullName: string }[]>(
     []
   );
 
-  const [modalVisible, setModalVisible] = React.useState(visible);
-
   const [email, setEmail] = React.useState("");
 
-  const [getUserByEmailLoading, setGetUserByEmailLoading] =
-    React.useState(false);
-  const [inviteEmployeesLoading, setInviteEmployeesLoading] =
-    React.useState(false);
-
   const invite = () => {
-    inviteEmployees({
-      data: {
-        userIds: users.map((user) => user.id),
-      },
-      onStart: () => {
-        setInviteEmployeesLoading(true);
-      },
-      onSuccess: () => {
-        getOutgoingEmployeeInvitations({
-          storeId,
-          onSuccess: (invitations) => {
-            setEmployeeInvitations(
-              invitations.filter(
-                (invitation) => invitation.status != "Accepted"
-              )
-            );
-            setInviteEmployeesLoading(false);
-            onVisibleChange(false);
-          },
+    inviteEmployees({ storeId, userIds: users.map((user) => user.id) })
+      .unwrap()
+      .then(() => {
+        onClose();
+      })
+      .catch((error) => {
+        Toast.show({
+          type: "error",
+          text1: `Error ${error.status}`,
+          text2: error.data.message,
         });
-      },
-      onFailed: (error) => {
-        console.log(error);
-        setInviteEmployeesLoading(false);
-      },
-    });
+      });
   };
 
   const addUser = () => {
-    getUserByEmail({
-      data: { email },
-      onStart: () => {
-        setGetUserByEmailLoading(true);
-      },
-      onSuccess: (user) => {
+    getUserByEmail({ email })
+      .unwrap()
+      .then((result) => {
+        setUsers((prev) => [...prev, result]);
         setEmail("");
-        setUsers((prev) => [...prev, user]);
-      },
-      onFinish: () => {
-        setGetUserByEmailLoading(false);
-      },
-    });
+      })
+      .catch((error) => {
+        Toast.show({
+          type: "error",
+          text1: `Error ${error.status}`,
+          text2: error.data.message,
+        });
+      });
   };
 
   React.useEffect(() => {
-    setModalVisible(visible);
     if (visible) {
       setEmail("");
       setUsers([]);
@@ -87,7 +69,7 @@ const InviteEmployeeModal = ({
   }, [visible]);
 
   return (
-    <Modal {...props} transparent animationType="fade" visible={modalVisible}>
+    <Modal {...props} transparent animationType="fade" visible={visible}>
       <View className="flex-1 justify-center items-center">
         <View
           style={{
@@ -107,14 +89,13 @@ const InviteEmployeeModal = ({
               underlayColor={"#e5e7eb"}
               className="rounded"
               onPress={() => {
-                onVisibleChange(false);
+                onClose();
               }}
             >
               <Icon name="close" />
             </TouchableHighlight>
             <PrimaryButton
-              disabled={getUserByEmailLoading}
-              isProcessing={inviteEmployeesLoading}
+              isProcessing={inviteEmployeesResult.isLoading}
               onPress={invite}
               className="px-5"
             >
@@ -135,15 +116,14 @@ const InviteEmployeeModal = ({
               }}
             />
             <SecondaryButtonSM
-              disabled={inviteEmployeesLoading}
-              isProcessing={getUserByEmailLoading}
+              isProcessing={getUserByEmailResult.isFetching}
               onPress={addUser}
               className="ml-1"
             >
               Add
             </SecondaryButtonSM>
           </View>
-          <Text className="text-[13px] text-gray-400 mb-2">
+          <Text className="text-[13px] text-gray-400 mb-2 mt-1">
             *You can only invite an employee with their email.
           </Text>
           {users.map((user) => (
@@ -166,5 +146,5 @@ export default InviteEmployeeModal;
 
 interface InviteEmployeeModalProps
   extends React.ComponentPropsWithoutRef<typeof Modal> {
-  onVisibleChange?: (visible: boolean) => void;
+  onClose?: () => void;
 }

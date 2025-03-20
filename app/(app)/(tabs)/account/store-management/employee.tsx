@@ -71,8 +71,8 @@ const Employee = () => {
     <View className="flex-1 bg-white p-4 relative">
       <InviteEmployeeModal
         visible={inviteEmployeeModalVisible}
-        onVisibleChange={(visible) => {
-          setInviteEmployeeModalVisible(visible);
+        onClose={() => {
+          setInviteEmployeeModalVisible(false);
         }}
         onRequestClose={() => {
           setInviteEmployeeModalVisible(false);
