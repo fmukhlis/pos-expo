@@ -10,6 +10,8 @@ export const apiSlice = createApi({
     "PaymentMethod",
     "Permission",
     "Employee",
+    "IncomingEmployeeInvitation",
+    "OutgoingEmployeeInvitation",
   ],
   baseQuery: fetchBaseQuery({
     baseUrl: process.env.EXPO_PUBLIC_API_URL,
