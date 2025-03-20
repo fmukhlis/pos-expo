@@ -1,15 +1,18 @@
-import { View, Text, Switch } from "react-native";
 import React from "react";
-import PrimaryInput from "@/components/PrimaryInput";
-import { PrimaryButton } from "@/components/PrimaryButton";
-import { DangerButton } from "@/components/DangerButton";
+import Toast from "react-native-toast-message";
 import { router } from "expo-router";
-import { usePermission } from "@/contexts/PermissionContext";
+import { View, Text, Switch } from "react-native";
+
+import PrimaryInput from "@/components/PrimaryInput";
+import { useAppSelector } from "@/components/reduxHooks";
+import { PrimaryButton } from "@/components/PrimaryButton";
+import { useStorePermissionMutation } from "@/components/services/permission";
 
 const Create = () => {
-  const { setPermissions } = usePermission();
+  const storeId = useAppSelector(({ store }) => store.selectedStoreId)!;
 
-  const [isLoading, setIsLoading] = React.useState(false);
+  const [storePermission, storePermissionResult] = useStorePermissionMutation();
+
   const [data, setData] = React.useState({
     authorizationCode: "",
     refund: true,
@@ -44,29 +47,18 @@ const Create = () => {
   };
 
   const save = () => {
-    createPermission({
-      data,
-      onStart: () => {
-        setIsLoading(true);
-      },
-      onSuccess: () => {
-        getPermissions({
-          onSuccess: (permissions) => {
-            setPermissions(permissions);
-          },
-          onFinish: () => {
-            setIsLoading(false);
-            if (router.canGoBack()) {
-              router.back();
-            }
-          },
+    storePermission({ storeId, ...data })
+      .unwrap()
+      .then(() => {
+        router.back();
+      })
+      .catch((error) => {
+        Toast.show({
+          type: "error",
+          text1: `Error ${error.status}`,
+          text2: error.data.message,
         });
-      },
-      onFailed: (errMsg) => {
-        setIsLoading(false);
-        console.log(errMsg);
-      },
-    });
+      });
   };
 
   return (
@@ -108,7 +100,7 @@ const Create = () => {
                     Delete
                 </DangerButton> */}
         <PrimaryButton
-          isProcessing={isLoading}
+          isProcessing={storePermissionResult.isLoading}
           onPress={save}
           className="flex-1 h-[40]"
         >
