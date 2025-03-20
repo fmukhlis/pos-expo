@@ -7,7 +7,7 @@ export interface Employee {
 
 export interface DetailedEmployee extends Employee {}
 
-interface EmployeeInvitation {
+interface EmployeeInvitation extends Omit<EmployeeProps, "status"> {
   status: "Pending" | "Accepted" | "Declined";
   invitedAt: string;
 }

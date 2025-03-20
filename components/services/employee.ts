@@ -36,7 +36,7 @@ const employeeAPI = apiSlice.injectEndpoints({
         } catch (error) {}
       },
     }),
-    getOutgoindInvitations: build.query<
+    getOutgoingInvitations: build.query<
       EmployeeInvitation[],
       GetOutgoingInvitationsArg
     >({
@@ -97,7 +97,7 @@ const employeeAPI = apiSlice.injectEndpoints({
 export const {
   useGetEmployeesQuery,
   useTerminateEmployeeMutation,
-  useGetOutgoindInvitationsQuery,
+  useGetOutgoingInvitationsQuery,
   useInviteEmployeesMutation,
   useDisinviteEmployeeMutation,
   useGetIncomingInvitationsQuery,
