@@ -13,6 +13,7 @@ import ManageModifierModal from "@/components/Product/ManageModifierModal";
 import ManageVariantModal from "@/components/Product/ManageVariantModal";
 import { Icon } from "@/components/Icon";
 import { ProductPayload } from "@/types/product";
+import { useAppSelector } from "@/components/reduxHooks";
 import { PrimaryButton } from "@/components/PrimaryButton";
 import { SecondaryButton } from "@/components/SecondaryButton";
 import { DangerTouchable } from "@/components/DangerTouchable";
@@ -22,7 +23,6 @@ import {
   useStoreProductMutation,
   useUpdateProductMutation,
 } from "@/components/services/product";
-import { useAppSelector } from "@/components/reduxHooks";
 
 const ManageProduct = () => {
   const { id } = useLocalSearchParams<{ id: string }>();

@@ -8,12 +8,11 @@ import {
   TouchableHighlight,
   RefreshControl,
 } from "react-native";
-import { Icon } from "@/components/Icon";
 
 import PrimaryInput from "@/components/PrimaryInput";
-import { useSession } from "@/contexts/SessionContext";
+import { Icon } from "@/components/Icon";
+import { useAppSelector } from "@/components/reduxHooks";
 import { useGetProductsQuery } from "@/components/services/product";
-import { useAppDispatch, useAppSelector } from "@/components/reduxHooks";
 
 const Products = () => {
   const storeId = useAppSelector(({ store }) => store.selectedStoreId)!;

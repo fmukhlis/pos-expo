@@ -1,21 +1,14 @@
-import React from 'react'
-import { Stack } from 'expo-router'
-import { PaymentMethodProvider } from '@/contexts/PaymentMethodContext'
-import { PermissionProvider } from '@/contexts/PermissionContext'
+import React from "react";
+import { Stack } from "expo-router";
 
 const PaymentAndSecurityLayout = () => {
+  return (
+    <Stack
+      screenOptions={{
+        headerShown: false,
+      }}
+    />
+  );
+};
 
-    return (
-        <PaymentMethodProvider>
-            <PermissionProvider>
-                <Stack
-                    screenOptions={{
-                        headerShown: false
-                    }}
-                />
-            </PermissionProvider>
-        </PaymentMethodProvider>
-    )
-}
-
-export default PaymentAndSecurityLayout
+export default PaymentAndSecurityLayout;

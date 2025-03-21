@@ -7,16 +7,15 @@ import {
   TouchableOpacity,
 } from "react-native";
 
+import LoadingComponent from "@/components/LoadingComponent";
+import PaymentMethodModal from "@/components/PaymentMethod/PaymentMethodModal";
+import DeletePaymentMethodButton from "@/components/PaymentMethod/DeletePaymentMethodButton";
 import { Icon } from "@/components/Icon";
 import { PrimaryButton } from "@/components/PrimaryButton";
 import { useLazyGetStoreQuery } from "@/components/services/store";
 import { useAppDispatch, useAppSelector } from "@/components/reduxHooks";
 import { useGetPaymentMethodsQuery } from "@/components/services/paymentMethod";
 import { setSelectedPaymentMethodId } from "@/components/PaymentMethod/paymentMethodSlice";
-
-import LoadingComponent from "@/components/LoadingComponent";
-import PaymentMethodModal from "@/components/PaymentMethod/PaymentMethodModal";
-import DeletePaymentMethodButton from "@/components/PaymentMethod/DeletePaymentMethodButton";
 
 const PaymentMethod = () => {
   const storeId = useAppSelector(({ store }) => store.selectedStoreId)!;

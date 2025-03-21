@@ -3,16 +3,16 @@ import Toast from "react-native-toast-message";
 import { View, Text, Switch } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 
+import LoadingComponent from "@/components/LoadingComponent";
+import PrimaryInput from "@/components/PrimaryInput";
+import { DangerButton } from "@/components/DangerButton";
+import { useAppSelector } from "@/components/reduxHooks";
+import { PrimaryButton } from "@/components/PrimaryButton";
 import {
   useDestroyPermissionMutation,
   useLazyGetPermissionQuery,
   useUpdatePermissionMutation,
 } from "@/components/services/permission";
-import PrimaryInput from "@/components/PrimaryInput";
-import { DangerButton } from "@/components/DangerButton";
-import { useAppSelector } from "@/components/reduxHooks";
-import { PrimaryButton } from "@/components/PrimaryButton";
-import LoadingComponent from "@/components/LoadingComponent";
 
 const Edit = () => {
   const { id }: { id: string } = useLocalSearchParams();

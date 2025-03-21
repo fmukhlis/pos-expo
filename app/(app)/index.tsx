@@ -1,28 +1,25 @@
-import { View, Text } from 'react-native'
-import React from 'react'
-import { useSession } from '@/contexts/SessionContext'
-import { useTheme } from '@/contexts/ThemeProvider'
-import LoadingPage from '@/components/LoadingPage'
-import { Redirect } from 'expo-router'
+import React from "react";
+import { Redirect } from "expo-router";
+
+import LoadingPage from "@/components/LoadingPage";
+import { useSession } from "@/contexts/SessionContext";
 
 const LoadingState = () => {
+  const [isLoading, setIsLoading] = React.useState(true);
 
-    const [isLoading, setIsLoading] = React.useState(true)
+  const { syncUserLoading } = useSession();
 
-    const { syncUserLoading } = useSession()
-    const { colorScheme } = useTheme()
-
-    React.useEffect(() => {
-        if (!syncUserLoading) {
-            setIsLoading(false)
-        }
-    }, [syncUserLoading])
-
-    if (isLoading) {
-        return <LoadingPage colorScheme={colorScheme} />
+  React.useEffect(() => {
+    if (!syncUserLoading) {
+      setIsLoading(false);
     }
+  }, [syncUserLoading]);
 
-    return (<Redirect href={'/(checkout)'} />)
-}
+  if (isLoading) {
+    return <LoadingPage />;
+  }
 
-export default LoadingState
+  return <Redirect href={"/(checkout)"} />;
+};
+
+export default LoadingState;

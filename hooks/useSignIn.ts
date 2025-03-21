@@ -6,7 +6,7 @@ import { useSession } from "@/contexts/SessionContext";
 import { useTheme } from "@/contexts/ThemeProvider";
 
 function useSignIn() {
-  const { signIn, signInLoading, sessionLoading } = useSession();
+  const { signIn, signInLoading } = useSession();
   const { colorScheme } = useTheme();
 
   const [form, setForm] = useState({
@@ -42,7 +42,6 @@ function useSignIn() {
     handleEmailChange,
     handlePasswordChange,
     handleSubmit,
-    sessionLoading,
     signInLoading,
   };
 }

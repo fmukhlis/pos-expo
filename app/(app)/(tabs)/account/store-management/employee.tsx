@@ -10,112 +10,76 @@ import {
 } from "react-native";
 
 import PrimaryInput from "@/components/PrimaryInput";
-import useEmployeeAPI from "@/components/Employee/useEmployeeAPI";
 import InviteEmployeeModal from "@/components/Employee/InviteEmployeeModal";
 import { Icon } from "@/components/Icon";
 import { useAppSelector } from "@/components/reduxHooks";
-import { EmployeeProps, useEmployee } from "@/contexts/EmployeeContext";
+import {
+  useDisinviteEmployeeMutation,
+  useGetEmployeesQuery,
+  useGetOutgoingInvitationsQuery,
+  useTerminateEmployeeMutation,
+} from "@/components/services/employee";
 
 const Employee = () => {
-  const {
-    employees,
-    setEmployees,
-    employeeInvitations,
-    setEmployeeInvitations,
-  } = useEmployee();
-
   const storeId = useAppSelector(({ store }) => store.selectedStoreId)!;
 
   const {
-    disinviteEmployee,
-    getEmployees,
-    getOutgoingEmployeeInvitations,
-    terminateEmployee,
-  } = useEmployeeAPI();
+    data: employees,
+    isFetching: employeesFetching,
+    refetch: refetchEmployee,
+  } = useGetEmployeesQuery({ storeId });
 
-  const [filteredEmployees, setFilteredEmployees] = React.useState<
-    EmployeeProps[]
-  >([]);
+  const {
+    data: employeeInvitations,
+    isFetching: employeeInvitationsFetching,
+    refetch: refetchEmployeeInviations,
+  } = useGetOutgoingInvitationsQuery({ storeId });
 
-  const [getEmployeesLoading, setGetEmployeesLoading] = React.useState(false);
-
-  const [
-    getOutgoingEmployeeInvitationsLoading,
-    setGetOutgoingEmployeeInvitationsLoading,
-  ] = React.useState(false);
+  const [terminateEmployee, terminateEmployeeResult] =
+    useTerminateEmployeeMutation();
+  const [disinviteEmployee, disinviteEmployeeResult] =
+    useDisinviteEmployeeMutation();
 
   const [filter, setFilter] = React.useState("");
+
+  const filteredEmployees = React.useMemo(() => {
+    if (employees) {
+      return employees.filter((value) =>
+        value.userName.toLowerCase().includes(filter.toLowerCase())
+      );
+    }
+    return [];
+  }, [employees, filter]);
+
+  const pendingInvitations = React.useMemo(() => {
+    if (employeeInvitations) {
+      return employeeInvitations.filter((value) => value.status !== "Accepted");
+    }
+    return [];
+  }, [employeeInvitations]);
 
   const [inviteEmployeeModalVisible, setInviteEmployeeModalVisible] =
     React.useState(false);
 
   const reloadScreensData = () => {
-    getEmployees({
-      onStart: () => {
-        setGetEmployeesLoading(true);
-      },
-      onSuccess: (employees) => {
-        setFilter("");
-        setEmployees(employees);
-        setFilteredEmployees(employees);
-      },
-      onFinish: () => {
-        setGetEmployeesLoading(false);
-      },
-    });
-
-    getOutgoingEmployeeInvitations({
-      storeId,
-      onStart: () => {
-        setGetOutgoingEmployeeInvitationsLoading(true);
-      },
-      onSuccess: (invitations) => {
-        setEmployeeInvitations(
-          invitations.filter((invitation) => invitation.status != "Accepted")
-        );
-      },
-      onFinish: () => {
-        setGetOutgoingEmployeeInvitationsLoading(false);
-      },
-    });
+    refetchEmployee();
+    refetchEmployeeInviations();
   };
 
   const terminate = (employeeId: number) => {
-    terminateEmployee({
-      employeeId,
-      onSuccess: () => {
-        reloadScreensData();
-      },
-    });
+    terminateEmployee({ employeeId, storeId });
   };
 
-  const disinvite = (employeeInvitationId: number) => {
-    disinviteEmployee({
-      invitationId: employeeInvitationId,
-      onSuccess: () => {
-        reloadScreensData();
-      },
-    });
+  const disinvite = (invitationId: number) => {
+    disinviteEmployee({ invitationId, storeId });
   };
-
-  React.useEffect(() => {
-    reloadScreensData();
-  }, []);
-
-  React.useEffect(() => {
-    setFilteredEmployees(() => {
-      return employees.filter((value) =>
-        value.userName.toLowerCase().includes(filter.toLowerCase())
-      );
-    });
-  }, [filter]);
 
   return (
     <View className="flex-1 bg-white p-4 relative">
       <InviteEmployeeModal
         visible={inviteEmployeeModalVisible}
-        onVisibleChange={(visible) => {
-          setInviteEmployeeModalVisible(visible);
+        onClose={() => {
+          setInviteEmployeeModalVisible(false);
         }}
         onRequestClose={() => {
           setInviteEmployeeModalVisible(false);
@@ -166,7 +130,9 @@ const Employee = () => {
                 <Text className="text-lg font-bold">Employees</Text>
                 <View className="w-[25] h-[25] rounded-full bg-rose-600">
                   <Text className="m-auto text-[11px] font-bold text-white">
-                    {employees.length < 100 ? employees.length : "99+"}
+                    {employees && employees.length < 100
+                      ? employees.length
+                      : "99+"}
                   </Text>
                 </View>
               </View>
@@ -190,7 +156,7 @@ const Employee = () => {
           }
           refreshControl={
             <RefreshControl
-              refreshing={getEmployeesLoading}
+              refreshing={employeesFetching}
               onRefresh={reloadScreensData}
             />
           }
@@ -230,7 +196,7 @@ const Employee = () => {
               </View>
             );
           }}
-          data={employeeInvitations}
+          data={pendingInvitations}
           ListHeaderComponent={
             <View className="">
               <View className="flex-row justify-between items-center mb-3">
