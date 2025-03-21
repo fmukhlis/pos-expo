@@ -1,30 +1,27 @@
-import { Redirect, Stack } from 'expo-router'
+import { Redirect, Stack } from "expo-router";
 
-import { useSession } from '@/contexts/SessionContext'
-import { useTheme } from '@/contexts/ThemeProvider'
+import { useSession } from "@/contexts/SessionContext";
 
-import LoadingPage from '@/components/LoadingPage'
-import VerifyEmail from '@/components/VerifyEmail'
+import VerifyEmail from "@/components/VerifyEmail";
 
 function AuthLayout() {
+  const { session, user } = useSession();
 
-    const { session, user } = useSession()
+  if (!session) {
+    return <Redirect href="/welcome" />;
+  }
 
-    if (!session) {
-        return <Redirect href='/welcome' />
-    }
+  if (user && !user.emailVerifiedAt) {
+    return <VerifyEmail />;
+  }
 
-    if (user && !user.emailVerifiedAt) {
-        return <VerifyEmail />
-    }
-
-    return (
-        <>
-            <Stack screenOptions={{ headerShown: false }} >
-                <Stack.Screen name='(tabs)' />
-            </Stack>
-        </>
-    )
+  return (
+    <>
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="(tabs)" />
+      </Stack>
+    </>
+  );
 }
 
-export default AuthLayout
+export default AuthLayout;
