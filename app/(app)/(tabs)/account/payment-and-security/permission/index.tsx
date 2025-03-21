@@ -9,11 +9,11 @@ import {
 } from "react-native";
 import { router } from "expo-router";
 
+import LoadingComponent from "@/components/LoadingComponent";
 import { Icon } from "@/components/Icon";
 import { useAppSelector } from "@/components/reduxHooks";
 import { useLazyGetStoreQuery } from "@/components/services/store";
 import { useGetPermissionsQuery } from "@/components/services/permission";
-import LoadingComponent from "@/components/LoadingComponent";
 
 const Permission = () => {
   const storeId = useAppSelector(({ store }) => store.selectedStoreId)!;

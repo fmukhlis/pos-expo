@@ -7,18 +7,17 @@ import {
   TouchableHighlight,
 } from "react-native";
 
-import { StatusBar } from "expo-status-bar";
 import { Redirect, router } from "expo-router";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import CustomActivityIndicator from "@/components/CustomActivityIndicator";
 import { Icon } from "@/components/Icon";
 import { useSession } from "@/contexts/SessionContext";
 import { DangerButtonLG } from "@/components/DangerButton";
 import { useGetStoresQuery } from "@/components/services/store";
 import { setSelectedStoreId } from "@/components/Store/storeSlice";
 import { useAppDispatch, useAppSelector } from "@/components/reduxHooks";
-import CustomActivityIndicator from "@/components/CustomActivityIndicator";
 
 export default function HomeScreen() {
   const { user, session, signOut, signOutLoading } = useSession();
@@ -142,7 +141,6 @@ export default function HomeScreen() {
           <Text className="text-gray-400">Version 1.0</Text>
         </View>
       </View>
-      <StatusBar style="auto" />
     </View>
   );
 }

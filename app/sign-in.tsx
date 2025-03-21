@@ -1,16 +1,14 @@
-import { View, Text, Image, KeyboardAvoidingView } from 'react-native'
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
-import { Link } from 'expo-router'
+import { Link } from "expo-router";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { View, Text, Image, KeyboardAvoidingView } from "react-native";
 
-import { Colors } from '@/constants/Colors'
-import useSignIn from '@/hooks/useSignIn'
-
-import TransparentScreen from '@/components/TransparentScreen'
-import { PrimaryButtonLG } from '@/components/PrimaryButton'
-import PrimaryInput from '@/components/PrimaryInput'
+import useSignIn from "@/hooks/useSignIn";
+import PrimaryInput from "@/components/PrimaryInput";
+import TransparentScreen from "@/components/TransparentScreen";
+import { Colors } from "@/constants/Colors";
+import { PrimaryButtonLG } from "@/components/PrimaryButton";
 
 const SignIn = () => {
-
   const {
     colorScheme,
     form,
@@ -18,58 +16,62 @@ const SignIn = () => {
     handlePasswordChange,
     handleSubmit,
     signInLoading,
-  } = useSignIn()
+  } = useSignIn();
 
   const {
     bottom: paddingBottom,
     left: paddingLeft,
     right: paddingRight,
-    top: paddingTop
+    top: paddingTop,
   } = useSafeAreaInsets();
 
   return (
     <View
       style={{ paddingBottom, paddingLeft, paddingRight, paddingTop }}
-      className='relative flex-1 bg-light-primaryBackground dark:bg-dark-primaryBackground'
+      className="relative flex-1 bg-light-primaryBackground dark:bg-dark-primaryBackground"
     >
-      <View
-        className={`justify-center items-center p-5 h-full`}
-      >
+      <View className={`justify-center items-center p-5 h-full`}>
         <Image
-          tintColor={colorScheme === 'dark' ? Colors.dark.accent : Colors.light.accent}
-          source={require('@/assets/images/logo-small.png')}
-          className='w-[150px] h-[100px]'
-          resizeMode='contain'
+          tintColor={
+            colorScheme === "dark" ? Colors.dark.accent : Colors.light.accent
+          }
+          source={require("@/assets/images/logo-small.png")}
+          className="w-[150px] h-[100px]"
+          resizeMode="contain"
         />
         <Text
           className={`text-light-primaryText dark:text-dark-primaryText text-xl font-bold mt-3 mb-5`}
         >
           Sign In
         </Text>
-        <KeyboardAvoidingView className='w-full'>
-          <View className='space-y-3 w-full'>
+        <KeyboardAvoidingView className="w-full">
+          <View className="space-y-3 w-full">
             <View>
-              <Text className='text-[15px] text-light-primaryText dark:text-dark-primaryText font-medium'>Email</Text>
+              <Text className="text-[15px] text-light-primaryText dark:text-dark-primaryText font-medium">
+                Email
+              </Text>
               <PrimaryInput
-                autoCapitalize='none'
+                autoCapitalize="none"
                 value={form.email}
                 onChangeText={handleEmailChange}
-                containerClassName='mt-2 h-11'
+                containerClassName="mt-2 h-11"
               />
             </View>
             <View>
-              <Text className='text-[15px] text-light-primaryText dark:text-dark-primaryText font-medium'>Password</Text>
+              <Text className="text-[15px] text-light-primaryText dark:text-dark-primaryText font-medium">
+                Password
+              </Text>
               <PrimaryInput
-                autoCapitalize='none'
+                autoCapitalize="none"
                 value={form.password}
                 onChangeText={handlePasswordChange}
-                containerClassName='mt-2 h-11'
-                type='password'
+                containerClassName="mt-2 h-11"
+                type="password"
               />
             </View>
           </View>
           <PrimaryButtonLG
-            className='w-full mt-5 h-12 flex-row'
+            className="w-full mt-5 h-12 flex-row"
             isProcessing={signInLoading}
             onPress={handleSubmit}
           >
@@ -96,7 +98,7 @@ const SignIn = () => {
       </View>
       {signInLoading && <TransparentScreen />}
     </View>
-  )
-}
+  );
+};
 
-export default SignIn
+export default SignIn;

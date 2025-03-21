@@ -1,20 +1,19 @@
-import { View, Text, FlatList, RefreshControl } from "react-native";
 import React from "react";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import useEmployeeAPI from "@/components/Employee/useEmployeeAPI";
-import { useSession } from "@/contexts/SessionContext";
-import { EmployeeInvitationProps } from "@/contexts/EmployeeContext";
 import dayjs from "dayjs";
+import { skipToken } from "@reduxjs/toolkit/query";
 import relativeTime from "dayjs/plugin/relativeTime";
+import { View, Text, FlatList, RefreshControl } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+import { Icon } from "@/components/Icon";
+import { useSession } from "@/contexts/SessionContext";
 import { PrimaryButtonSM } from "@/components/PrimaryButton";
 import { SecondaryButtonSM } from "@/components/SecondaryButton";
-import { Icon } from "@/components/Icon";
 import {
   useAcceptInvitationMutation,
   useDeclineInvitationMutation,
   useGetIncomingInvitationsQuery,
 } from "@/components/services/employee";
-import { skipToken } from "@reduxjs/toolkit/query";
 
 const Notification = () => {
   const {

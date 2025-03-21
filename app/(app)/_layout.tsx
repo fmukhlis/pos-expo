@@ -1,8 +1,7 @@
 import { Redirect, Stack } from "expo-router";
 
-import { useSession } from "@/contexts/SessionContext";
-
 import VerifyEmail from "@/components/VerifyEmail";
+import { useSession } from "@/contexts/SessionContext";
 
 function AuthLayout() {
   const { session, user } = useSession();
