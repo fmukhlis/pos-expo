@@ -51,6 +51,13 @@ const Employee = () => {
     return [];
   }, [employees, filter]);
 
+  const pendingInvitations = React.useMemo(() => {
+    if (employeeInvitations) {
+      return employeeInvitations.filter((value) => value.status !== "Accepted");
+    }
+    return [];
+  }, [employeeInvitations]);
+
   const [inviteEmployeeModalVisible, setInviteEmployeeModalVisible] =
     React.useState(false);
 
@@ -189,7 +196,7 @@ const Employee = () => {
               </View>
             );
           }}
-          data={employeeInvitations}
+          data={pendingInvitations}
           ListHeaderComponent={
             <View className="">
               <View className="flex-row justify-between items-center mb-3">
