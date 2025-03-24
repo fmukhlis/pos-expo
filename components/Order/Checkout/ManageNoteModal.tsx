@@ -12,50 +12,53 @@ import { z } from "zod";
 const Schema = z
   .object({
     note: z
-      .string({ required_error: "Note should not be null" })
-      .min(1, { message: "Must contain at least 1 character" })
+      .string()
       .max(200, { message: "Must contain at most 200 characters" }),
   })
   .required();
 
 const ManageNoteModal = ({
-  onClose = () => {},
+  customItem,
   visible,
+  onRequestClose,
+  onSave = () => {},
   ...props
 }: ManageNoteModalProps) => {
   const {
     control,
     formState: { errors, isValid },
     handleSubmit,
-    reset,
+    setValue,
     watch,
   } = useForm({
     resolver: zodResolver(Schema),
-    defaultValues: { note: "" },
+    mode: "all",
   });
 
   const onSubmit: SubmitHandler<SchemaProps> = (data) => {
     if (isValid) {
-      onClose();
+      onSave(data.note);
     }
   };
 
-  const note = watch("note", "");
+  const note = watch("note", customItem.note);
+
+  React.useEffect(() => {
+    if (visible) {
+      setValue("note", customItem.note, { shouldValidate: true });
+    }
+  }, [visible]);
 
   return (
     <BasicModal
       {...props}
+      onRequestClose={onRequestClose}
       animationType="slide"
       visible={visible}
       containerClassName="flex-1 bg-white p-5"
     >
       <View className="flex-row justify-between mb-5">
-        <SecondaryTouchable
-          className="w-[45] h-[45]"
-          onPress={() => {
-            onClose();
-          }}
-        >
+        <SecondaryTouchable className="w-[45] h-[45]" onPress={onRequestClose}>
           <Icon name="close" className="text-gray-600 m-auto" />
         </SecondaryTouchable>
         <PrimaryTouchable
@@ -99,7 +102,7 @@ const ManageNoteModal = ({
         </View>
       </View>
       <Text className="mt-3 text-gray-400">
-        This note will be applied to your RpXXX item
+        This note will be applied to your {customItem.price} item
       </Text>
     </BasicModal>
   );
@@ -109,7 +112,11 @@ export default ManageNoteModal;
 
 interface ManageNoteModalProps
   extends React.ComponentPropsWithoutRef<typeof BasicModal> {
-  onClose?: () => void;
+  onSave?: (value: string) => void;
+  customItem: {
+    note: string;
+    price: string;
+  };
 }
 
 type SchemaProps = z.infer<typeof Schema>;
