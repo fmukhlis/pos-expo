@@ -1,13 +1,16 @@
-import { View, Text, TextInput, KeyboardAvoidingView } from "react-native";
 import React from "react";
+
+import { z } from "zod";
+import { View, Text } from "react-native";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm, Controller, SubmitHandler } from "react-hook-form";
+
 import BasicModal from "@/components/BasicModal";
-import { SecondaryTouchable } from "@/components/SecondaryTouchable";
+import PrimaryInput from "@/components/PrimaryInput";
+
 import { Icon } from "@/components/Icon";
 import { PrimaryTouchable } from "@/components/PrimaryTouchable";
-import PrimaryInput from "@/components/PrimaryInput";
-import { useForm, Controller, SubmitHandler } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+import { SecondaryTouchable } from "@/components/SecondaryTouchable";
 
 const Schema = z
   .object({
