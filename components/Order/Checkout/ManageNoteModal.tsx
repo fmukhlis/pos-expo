@@ -11,6 +11,7 @@ import PrimaryInput from "@/components/PrimaryInput";
 import { Icon } from "@/components/Icon";
 import { PrimaryTouchable } from "@/components/PrimaryTouchable";
 import { SecondaryTouchable } from "@/components/SecondaryTouchable";
+import { currencyFormat } from "@/utils/defaultFormat";
 
 const Schema = z
   .object({
@@ -105,7 +106,8 @@ const ManageNoteModal = ({
         </View>
       </View>
       <Text className="mt-3 text-gray-400">
-        This note will be applied to your {customItem.price} item
+        This note will be applied to your{" "}
+        {currencyFormat.format(Number(customItem.price))} item
       </Text>
     </BasicModal>
   );
