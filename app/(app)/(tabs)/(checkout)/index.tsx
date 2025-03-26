@@ -30,11 +30,19 @@ const Keypad = () => {
         customItem={{ note, price: customAmount }}
       />
       <View className="flex-1 pt-16 bg-white">
-        <View className="h-[215] items-center justify-center">
+        <View className="h-[225] items-center justify-center">
           <Text className="text-5xl text-center mb-3">
             {currencyFormat.format(Number(customAmount))}
           </Text>
-          {!!note && <Text className="mb-5 text-gray-500">{note}</Text>}
+          {!!note && (
+            <Text
+              className="mb-3 text-gray-500 text-center w-[300]"
+              ellipsizeMode="tail"
+              numberOfLines={3}
+            >
+              {note}
+            </Text>
+          )}
           {!!Number(customAmount) && (
             <TouchableOpacity
               onPress={showNoteModal}
