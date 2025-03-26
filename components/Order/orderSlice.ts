@@ -36,10 +36,13 @@ const orderSlice = createSlice({
         state.totalCharge = 0;
       }
     },
+    setSelectedItemId: (state, { payload }: PayloadAction<string | null>) => {
+      state.selectedItemId = payload;
+    },
   },
 });
 
-export const { addItem, removeItem } = orderSlice.actions;
+export const { addItem, removeItem, setSelectedItemId } = orderSlice.actions;
 
 export default orderSlice.reducer;
 
