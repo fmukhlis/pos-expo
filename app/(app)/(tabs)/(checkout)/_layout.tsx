@@ -1,30 +1,30 @@
 import React from "react";
+
 import { Tabs } from "expo-router";
 import { View, Text } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+import ReviewSaleModal from "@/components/Order/Checkout/ReviewSaleModal";
 
 import { ItemProvider } from "@/contexts/ItemContext";
-import { PrimaryButtonLG } from "@/components/PrimaryButton";
+import { useAppSelector } from "@/components/reduxHooks";
+import { PrimaryTouchableLG } from "@/components/PrimaryTouchable";
 
 const CheckoutLayout = () => {
-  const {
-    bottom: paddingBottom,
-    left: paddingLeft,
-    right: paddingRight,
-    top: paddingTop,
-  } = useSafeAreaInsets();
+  const items = useAppSelector(({ order }) => order.items);
+
+  const [saleModalVisible, setSaleModalVisible] = React.useState(false);
+
+  const hideSaleModal = () => {
+    setSaleModalVisible(false);
+  };
+
+  const showSaleModal = () => {
+    setSaleModalVisible(true);
+  };
 
   return (
     <ItemProvider>
-      <View
-        style={{
-          paddingBottom,
-          paddingLeft,
-          paddingRight,
-          paddingTop,
-        }}
-        className="flex-1 relative"
-      >
+      <View className="flex-1 relative">
         <Tabs
           screenOptions={{
             headerShown: false,
@@ -36,15 +36,17 @@ const CheckoutLayout = () => {
               top: 10,
               left: "50%",
               transform: [{ translateX: -150 }],
-              backgroundColor: "#00000011",
+              backgroundColor: "#f3f4f6",
               elevation: 0,
               shadowOpacity: 0,
-              borderTopWidth: 0,
-              height: 42,
+              height: 53,
               width: 300,
               borderRadius: 6,
               paddingLeft: 2,
               paddingRight: 2,
+              borderWidth: 2,
+              borderTopWidth: 2,
+              borderColor: "rgba(209, 213, 219, 0.4)",
             },
             tabBarShowLabel: false,
           }}
@@ -56,11 +58,14 @@ const CheckoutLayout = () => {
               tabBarIcon: ({ color, focused, size }) => (
                 <View
                   className={`${
-                    focused ? "font-bold bg-gray-100" : "bg-transparent"
-                  } 
-                                h-[35] w-[95] rounded-md justify-center items-center`}
+                    focused ? "border bg-gray-200" : "bg-transparent"
+                  } border-t-gray-200 border-r-gray-200 border-b-gray-300 border-l-gray-300  h-[40] w-[95] rounded justify-center items-center`}
                 >
-                  <Text className="text-gray-500 text-sm font-bold">
+                  <Text
+                    className={`${
+                      focused ? "font-bold" : ""
+                    } text-gray-500 text-base`}
+                  >
                     Favorites
                   </Text>
                 </View>
@@ -74,11 +79,14 @@ const CheckoutLayout = () => {
               tabBarIcon: ({ color, focused, size }) => (
                 <View
                   className={`${
-                    focused ? "font-bold bg-gray-100" : "bg-transparent"
-                  } 
-                                h-[35] w-[95] rounded-md justify-center items-center`}
+                    focused ? "border bg-gray-200" : "bg-transparent"
+                  }  border-t-gray-200 border-r-gray-200 border-b-gray-300 border-l-gray-300 h-[40] w-[95] rounded justify-center items-center`}
                 >
-                  <Text className="text-gray-500 text-sm font-bold">
+                  <Text
+                    className={`${
+                      focused ? "font-bold" : ""
+                    } text-gray-500 text-base`}
+                  >
                     Keypad
                   </Text>
                 </View>
@@ -92,11 +100,14 @@ const CheckoutLayout = () => {
               tabBarIcon: ({ color, focused, size }) => (
                 <View
                   className={`${
-                    focused ? "font-bold bg-gray-100" : "bg-transparent"
-                  } 
-                                h-[35] w-[95] rounded-md justify-center items-center`}
+                    focused ? "border bg-gray-200" : "bg-transparent"
+                  } border-t-gray-200 border-r-gray-200 border-b-gray-300 border-l-gray-300  h-[40] w-[95] rounded-md justify-center items-center`}
                 >
-                  <Text className="text-gray-500 text-sm font-bold">
+                  <Text
+                    className={`${
+                      focused ? "font-bold" : ""
+                    } text-gray-500 text-base`}
+                  >
                     Library
                   </Text>
                 </View>
@@ -104,8 +115,21 @@ const CheckoutLayout = () => {
             }}
           />
         </Tabs>
-        <View className="p-4">
-          <PrimaryButtonLG className="h-12">Charge Rp0.00</PrimaryButtonLG>
+        <View className="px-5 py-5 bg-white">
+          <ReviewSaleModal
+            visible={saleModalVisible}
+            onRequestClose={hideSaleModal}
+          />
+          <PrimaryTouchableLG onPress={showSaleModal} className="h-[60]">
+            <Text className="text-[17px] font-bold text-white">
+              Review sale
+            </Text>
+            <Text className="text-sm text-white">
+              {items.length > 1
+                ? `${items.length} items`
+                : `${items.length} item`}
+            </Text>
+          </PrimaryTouchableLG>
         </View>
       </View>
     </ItemProvider>
