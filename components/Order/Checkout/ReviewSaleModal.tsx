@@ -10,6 +10,7 @@ import {
 } from "react-native";
 
 import BasicModal from "@/components/BasicModal";
+import ManageItemModal from "./ManageItemModal";
 
 import { Icon } from "@/components/Icon";
 import { currencyFormat } from "@/utils/defaultFormat";
@@ -22,6 +23,7 @@ const ReviewSaleModal = ({
   visible,
   ...props
 }: ReviewSaleModalProps) => {
+  const selectedItemId = useAppSelector(({ order }) => order.selectedItemId);
   const totalCharge = useAppSelector(({ order }) => order.totalCharge);
   const items = useAppSelector(({ order }) => order.items);
 
@@ -46,6 +48,17 @@ const ReviewSaleModal = ({
     );
   };
 
+  const [modalVisible, setModalVisible] = React.useState(false);
+
+  const hideModal = () => {
+    setModalVisible(false);
+  };
+
+  const showModal = (itemId: string) => {
+    dispatch(setSelectedItemId(itemId));
+    setModalVisible(true);
+  };
+
   return (
     <BasicModal
       {...props}
@@ -54,6 +67,11 @@ const ReviewSaleModal = ({
       visible={visible}
       containerClassName="h-[95%] mt-auto bg-white p-5"
     >
+      <ManageItemModal
+        visible={modalVisible}
+        onRequestClose={hideModal}
+        item={items.find((item) => item.id === selectedItemId)}
+      />
       <View className="flex-row justify-between items-center mb-5">
         <TouchableOpacity className="w-[30]" onPress={onRequestClose}>
           <Icon name="close" size={25} className="m-auto" />
@@ -79,17 +97,36 @@ const ReviewSaleModal = ({
               key={item.id}
               className="rounded"
               underlayColor={"#f3f4f6"}
-              onPress={() => {}}
+              onPress={() => {
+                showModal(item.id);
+              }}
             >
-              <View className="flex-row justify-between px-1.5 py-2">
-                <View className="w-[190]">
-                  <Text
-                    className="text-base font-medium"
-                    numberOfLines={1}
-                    ellipsizeMode="tail"
-                  >
-                    {item.productVariantId ? "Item Name" : "Custom amount"}
-                  </Text>
+              <View className="flex-row px-1.5 py-2">
+                <View className="w-[195]">
+                  <View className="flex-row items-center">
+                    {Number(item.quantity) > 1 ? (
+                      <>
+                        <Text
+                          className="text-base font-medium max-w-[140]"
+                          numberOfLines={1}
+                          ellipsizeMode="tail"
+                        >
+                          {item.productVariantId
+                            ? "Item Name"
+                            : "Custom amount"}
+                        </Text>
+                        <Text className="text-sm text-gray-500 ml-1">{`x ${item.quantity}`}</Text>
+                      </>
+                    ) : (
+                      <Text
+                        className="text-base font-medium w-full"
+                        numberOfLines={1}
+                        ellipsizeMode="tail"
+                      >
+                        {item.productVariantId ? "Item Name" : "Custom amount"}
+                      </Text>
+                    )}
+                  </View>
                   {!!item.note && (
                     <Text
                       className="text-sm text-gray-500"
@@ -100,10 +137,16 @@ const ReviewSaleModal = ({
                     </Text>
                   )}
                 </View>
-                <Text className="text-base">
+                <Text
+                  className="text-base text-right ml-auto w-[105]"
+                  ellipsizeMode="tail"
+                  numberOfLines={1}
+                >
                   {item.productVariantId
                     ? "Item Price"
-                    : currencyFormat.format(Number(item.customAmount))}
+                    : currencyFormat.format(
+                        Number(item.customAmount) * Number(item.quantity)
+                      )}
                 </Text>
               </View>
             </TouchableHighlight>
