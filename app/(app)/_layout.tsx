@@ -1,6 +1,7 @@
 import { Redirect, Stack } from "expo-router";
 
 import VerifyEmail from "@/components/VerifyEmail";
+
 import { useSession } from "@/contexts/SessionContext";
 
 function AuthLayout() {
@@ -15,11 +16,9 @@ function AuthLayout() {
   }
 
   return (
-    <>
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="(tabs)" />
-      </Stack>
-    </>
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="(tabs)" />
+    </Stack>
   );
 }
 

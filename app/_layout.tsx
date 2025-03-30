@@ -42,30 +42,20 @@ export default function RootLayout() {
   }
 
   return (
-    <View
-      className="flex-1"
-      style={{
-        paddingBottom,
-        paddingLeft,
-        paddingRight,
-        paddingTop,
-      }}
-    >
-      <Provider store={reduxStore}>
-        <ThemeProvider value={{ colorScheme }}>
-          <SessionProvider>
-            <Stack screenOptions={{ headerShown: false }} />
-            <StatusBar
-              backgroundColor={
-                colorScheme === "dark"
-                  ? Colors.dark.primaryBackground
-                  : Colors.light.primaryBackground
-              }
-            />
-            <Toast />
-          </SessionProvider>
-        </ThemeProvider>
-      </Provider>
-    </View>
+    <Provider store={reduxStore}>
+      <ThemeProvider value={{ colorScheme }}>
+        <SessionProvider>
+          <Stack screenOptions={{ headerShown: false }} />
+          <StatusBar
+            backgroundColor={
+              colorScheme === "dark"
+                ? Colors.dark.primaryBackground
+                : Colors.light.primaryBackground
+            }
+          />
+          <Toast />
+        </SessionProvider>
+      </ThemeProvider>
+    </Provider>
   );
 }

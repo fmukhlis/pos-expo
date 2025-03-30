@@ -1,5 +1,5 @@
 import React from "react";
-import { router } from "expo-router";
+
 import {
   View,
   Text,
@@ -8,13 +8,14 @@ import {
   TouchableHighlight,
   RefreshControl,
 } from "react-native";
+import { router } from "expo-router";
 
 import PrimaryInput from "@/components/PrimaryInput";
 import useCategory from "@/components/Product/useCategory";
 import useFilterItemsByString from "@/components/useFilterItemsByString";
 import ManageCategoryModal from "@/components/Product/ManageCategoryModal";
+
 import { Icon } from "@/components/Icon";
-import { skipToken } from "@reduxjs/toolkit/query";
 import { useAppSelector } from "@/components/reduxHooks";
 import { useGetProductCategoriesQuery } from "@/components/services/productCategory";
 

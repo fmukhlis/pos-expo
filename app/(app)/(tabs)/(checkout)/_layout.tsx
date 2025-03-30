@@ -33,7 +33,7 @@ const CheckoutLayout = () => {
               display: "flex",
               justifyContent: "center",
               alignItems: "center",
-              top: 10,
+              top: 40,
               left: "50%",
               transform: [{ translateX: -150 }],
               backgroundColor: "#f3f4f6",

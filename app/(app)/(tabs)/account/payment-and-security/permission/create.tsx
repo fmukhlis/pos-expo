@@ -1,9 +1,11 @@
 import React from "react";
 import Toast from "react-native-toast-message";
+
 import { router } from "expo-router";
 import { View, Text, Switch } from "react-native";
 
 import PrimaryInput from "@/components/PrimaryInput";
+
 import { useAppSelector } from "@/components/reduxHooks";
 import { PrimaryButton } from "@/components/PrimaryButton";
 import { useStorePermissionMutation } from "@/components/services/permission";

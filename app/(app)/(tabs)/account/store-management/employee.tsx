@@ -1,16 +1,17 @@
 import React from "react";
-import { TouchableHighlight } from "react-native";
 import {
   View,
   Text,
+  Alert,
   FlatList,
   RefreshControl,
   TouchableOpacity,
-  Alert,
+  TouchableHighlight,
 } from "react-native";
 
 import PrimaryInput from "@/components/PrimaryInput";
 import InviteEmployeeModal from "@/components/Employee/InviteEmployeeModal";
+
 import { Icon } from "@/components/Icon";
 import { useAppSelector } from "@/components/reduxHooks";
 import {

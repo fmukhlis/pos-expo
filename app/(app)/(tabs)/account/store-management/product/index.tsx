@@ -1,5 +1,5 @@
 import React from "react";
-import { router } from "expo-router";
+
 import {
   View,
   Text,
@@ -8,8 +8,10 @@ import {
   TouchableHighlight,
   RefreshControl,
 } from "react-native";
+import { router } from "expo-router";
 
 import PrimaryInput from "@/components/PrimaryInput";
+
 import { Icon } from "@/components/Icon";
 import { useAppSelector } from "@/components/reduxHooks";
 import { useGetProductsQuery } from "@/components/services/product";

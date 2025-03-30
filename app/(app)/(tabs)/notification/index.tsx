@@ -1,34 +1,29 @@
 import React from "react";
 import dayjs from "dayjs";
-import { skipToken } from "@reduxjs/toolkit/query";
 import relativeTime from "dayjs/plugin/relativeTime";
-import { View, Text, FlatList, RefreshControl } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { Icon } from "@/components/Icon";
-import { useSession } from "@/contexts/SessionContext";
-import { PrimaryButtonSM } from "@/components/PrimaryButton";
-import { SecondaryButtonSM } from "@/components/SecondaryButton";
+import { skipToken } from "@reduxjs/toolkit/query";
+import { View, Text, FlatList, RefreshControl } from "react-native";
+
 import {
   useAcceptInvitationMutation,
   useDeclineInvitationMutation,
   useGetIncomingInvitationsQuery,
 } from "@/components/services/employee";
+import { Icon } from "@/components/Icon";
+import { useSession } from "@/contexts/SessionContext";
+import { PrimaryButtonSM } from "@/components/PrimaryButton";
+import { SecondaryButtonSM } from "@/components/SecondaryButton";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const Notification = () => {
-  const {
-    bottom: paddingBottom,
-    left: paddingLeft,
-    right: paddingRight,
-    top: paddingTop,
-  } = useSafeAreaInsets();
-
   const { user } = useSession();
 
   const [acceptInvitation, acceptInvitationResult] =
     useAcceptInvitationMutation();
   const [declineInvitation, declineInvitationResult] =
     useDeclineInvitationMutation();
+
   const {
     data: invitations,
     isFetching,
@@ -58,15 +53,7 @@ const Notification = () => {
   }, []);
 
   return (
-    <View
-      style={{
-        paddingBottom,
-        paddingLeft,
-        paddingRight,
-        paddingTop,
-      }}
-      className="flex-1"
-    >
+    <SafeAreaView className="flex-1">
       <View className="flex-1 py-1 bg-white">
         <Text className="px-5 text-2xl font-bold mb-4">Notifications</Text>
         <FlatList
@@ -147,7 +134,7 @@ const Notification = () => {
           }
         />
       </View>
-    </View>
+    </SafeAreaView>
   );
 };
 

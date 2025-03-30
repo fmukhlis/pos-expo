@@ -1,4 +1,5 @@
 import React from "react";
+
 import { useLocalSearchParams, useNavigation, router } from "expo-router";
 import { View, Text, ScrollView, Alert, TouchableOpacity } from "react-native";
 
@@ -11,6 +12,7 @@ import CurrencyTextInput from "@/components/CurrencyTextInput";
 import ManageOptionModal from "@/components/Product/ManageOptionModal";
 import ManageModifierModal from "@/components/Product/ManageModifierModal";
 import ManageVariantModal from "@/components/Product/ManageVariantModal";
+
 import { Icon } from "@/components/Icon";
 import { ProductPayload } from "@/types/product";
 import { useAppSelector } from "@/components/reduxHooks";
@@ -295,220 +297,222 @@ const ManageProduct = () => {
   }
 
   return (
-    <ScrollView className="flex-1 bg-white px-4">
-      <ManageModifierModal
-        visible={modalVisibility.manageModifier}
-        initialData={
-          typeof selectedModifierIndex === "number"
-            ? data.availableModifiers?.[selectedModifierIndex]
-            : null
-        }
-        onSave={handleManageModifierModalSave}
-        onClose={hideManageModifierModal}
-      />
-      <ManageOptionModal
-        visible={modalVisibility.manageOption}
-        initialData={
-          typeof selectedOptionIndex === "number"
-            ? data.availableOptions?.[selectedOptionIndex]
-            : null
-        }
-        onSave={handleManageOptionModalSave}
-        onClose={hideManageOptionModal}
-      />
-      <ManageVariantModal
-        productName={data.name}
-        initialData={data.availableVariants[selectedVariantIndex]}
-        visible={modalVisibility.manageVariant}
-        onSave={handleManageVariantModalSave}
-        onClose={hideManageVariantModal}
-      />
-      <View className="flex-row items-center mt-4">
-        <TouchableOpacity
-          onPress={() => {
-            router.back();
-          }}
-          className="w-[40] h-[40] rounded bg-gray-200"
-        >
-          <Icon name="arrow-back" size={25} className="m-auto" />
-        </TouchableOpacity>
-        <Text className="mx-auto text-lg font-semibold">
-          {product ? "Edit Product" : "Create Product"}
-        </Text>
-        <DangerTouchable
-          isProcessing={deleteResult.isLoading}
-          onPress={destroy}
-          disabled={!productId}
-          className="w-[40] h-[40] rounded"
-        >
-          <Icon name="trash" size={25} className="text-rose-50" />
-        </DangerTouchable>
-      </View>
-      <View className="mt-5">
-        <Text className="text-base font-medium">Details</Text>
-      </View>
-      <View className="mt-3">
-        <PrimaryInput
-          autoCapitalize="words"
-          placeholder="Product name..."
-          className="h-[40] text-sm"
-          value={data.name}
-          onChangeText={changeName}
+    <View className="flex-1">
+      <ScrollView className="flex-1 bg-white px-4">
+        <ManageModifierModal
+          visible={modalVisibility.manageModifier}
+          initialData={
+            typeof selectedModifierIndex === "number"
+              ? data.availableModifiers?.[selectedModifierIndex]
+              : null
+          }
+          onSave={handleManageModifierModalSave}
+          onClose={hideManageModifierModal}
         />
-      </View>
-      <View className="mt-5">
-        <Text className="text-base font-medium mb-2">Modifier sets</Text>
-        {data.availableModifiers?.length ? (
-          data.availableModifiers.map((availableModifier, index) => (
-            <Modifier
-              key={`${index}`}
-              modifier={availableModifier}
-              onPressEdit={() => {
-                setSelectedModifierIndex(index);
-                showManageModifierModal();
-              }}
-              onPressRemove={() => {
-                Alert.alert(
-                  "Remove modifier set",
-                  "Are you sure want to remove this modifier set?",
-                  [
-                    { text: "CANCEL" },
-                    {
-                      text: "REMOVE",
-                      onPress: () => {
-                        dispatchData({ type: "REMOVE_MODIFIER", index });
-                      },
-                    },
-                  ]
-                );
-              }}
-            />
-          ))
-        ) : (
-          <Text className="mt-1 text-gray-400">
-            You don't set the modifier sets yet.
+        <ManageOptionModal
+          visible={modalVisibility.manageOption}
+          initialData={
+            typeof selectedOptionIndex === "number"
+              ? data.availableOptions?.[selectedOptionIndex]
+              : null
+          }
+          onSave={handleManageOptionModalSave}
+          onClose={hideManageOptionModal}
+        />
+        <ManageVariantModal
+          productName={data.name}
+          initialData={data.availableVariants[selectedVariantIndex]}
+          visible={modalVisibility.manageVariant}
+          onSave={handleManageVariantModalSave}
+          onClose={hideManageVariantModal}
+        />
+        <View className="flex-row items-center mt-4">
+          <TouchableOpacity
+            onPress={() => {
+              router.back();
+            }}
+            className="w-[40] h-[40] rounded bg-gray-200"
+          >
+            <Icon name="arrow-back" size={25} className="m-auto" />
+          </TouchableOpacity>
+          <Text className="mx-auto text-lg font-semibold">
+            {product ? "Edit Product" : "Create Product"}
           </Text>
-        )}
-      </View>
-      <View className="mt-4">
-        <SecondaryButton
-          onPress={() => {
-            setSelectedModifierIndex(null);
-            showManageModifierModal();
-          }}
-          className="h-[40]"
-        >
-          Add Modifiers
-        </SecondaryButton>
-      </View>
-      <View className="mt-5">
-        <Text className="text-base font-medium">Options</Text>
-        <Text className="mt-1 mb-2">
-          Add a custom set of options to create variations for an item. For
-          example, add a size option to create variations for small, medium and
-          large.
-        </Text>
-        {data.availableOptions?.length ? (
-          data.availableOptions.map((availableOption, index) => (
-            <Option
-              key={`${index}`}
-              option={availableOption}
-              onPressEdit={() => {
-                setSelectedOptionIndex(index);
-                showManageOptionModal();
-              }}
-              onPressRemove={() => {
-                Alert.alert(
-                  "Remove option set",
-                  "Are you sure want to remove this option set?",
-                  [
-                    { text: "CANCEL" },
-                    {
-                      text: "REMOVE",
-                      onPress: () => {
-                        dispatchData({ type: "REMOVE_OPTION", index });
-                      },
-                    },
-                  ]
-                );
-              }}
-            />
-          ))
-        ) : (
-          <Text className="mt-1 text-gray-400">
-            You don't set the options yet.
-          </Text>
-        )}
-      </View>
-      <View className="mt-4">
-        <SecondaryButton
-          onPress={() => {
-            setSelectedOptionIndex(null);
-            showManageOptionModal();
-          }}
-          className="h-[40]"
-        >
-          Add Options
-        </SecondaryButton>
-      </View>
-      {data.availableOptions?.length ? (
+          <DangerTouchable
+            isProcessing={deleteResult.isLoading}
+            onPress={destroy}
+            disabled={!productId}
+            className="w-[40] h-[40] rounded"
+          >
+            <Icon name="trash" size={25} className="text-rose-50" />
+          </DangerTouchable>
+        </View>
         <View className="mt-5">
-          <Text className="text-base font-medium mb-1.5">Variants</Text>
-          {data.availableVariants.map((availableVariant, index) => (
-            <Variant
-              key={`${index}`}
-              variant={availableVariant}
-              onPress={() => {
-                setSelectedVariantIndex(index);
-                showManageVariantModal();
-              }}
-            />
-          ))}
+          <Text className="text-base font-medium">Details</Text>
         </View>
-      ) : (
-        <View>
+        <View className="mt-3">
+          <PrimaryInput
+            autoCapitalize="words"
+            placeholder="Product name..."
+            className="h-[40] text-sm"
+            value={data.name}
+            onChangeText={changeName}
+          />
+        </View>
+        <View className="mt-5">
+          <Text className="text-base font-medium mb-2">Modifier sets</Text>
+          {data.availableModifiers?.length ? (
+            data.availableModifiers.map((availableModifier, index) => (
+              <Modifier
+                key={`${index}`}
+                modifier={availableModifier}
+                onPressEdit={() => {
+                  setSelectedModifierIndex(index);
+                  showManageModifierModal();
+                }}
+                onPressRemove={() => {
+                  Alert.alert(
+                    "Remove modifier set",
+                    "Are you sure want to remove this modifier set?",
+                    [
+                      { text: "CANCEL" },
+                      {
+                        text: "REMOVE",
+                        onPress: () => {
+                          dispatchData({ type: "REMOVE_MODIFIER", index });
+                        },
+                      },
+                    ]
+                  );
+                }}
+              />
+            ))
+          ) : (
+            <Text className="mt-1 text-gray-400">
+              You don't set the modifier sets yet.
+            </Text>
+          )}
+        </View>
+        <View className="mt-4">
+          <SecondaryButton
+            onPress={() => {
+              setSelectedModifierIndex(null);
+              showManageModifierModal();
+            }}
+            className="h-[40]"
+          >
+            Add Modifiers
+          </SecondaryButton>
+        </View>
+        <View className="mt-5">
+          <Text className="text-base font-medium">Options</Text>
+          <Text className="mt-1 mb-2">
+            Add a custom set of options to create variations for an item. For
+            example, add a size option to create variations for small, medium
+            and large.
+          </Text>
+          {data.availableOptions?.length ? (
+            data.availableOptions.map((availableOption, index) => (
+              <Option
+                key={`${index}`}
+                option={availableOption}
+                onPressEdit={() => {
+                  setSelectedOptionIndex(index);
+                  showManageOptionModal();
+                }}
+                onPressRemove={() => {
+                  Alert.alert(
+                    "Remove option set",
+                    "Are you sure want to remove this option set?",
+                    [
+                      { text: "CANCEL" },
+                      {
+                        text: "REMOVE",
+                        onPress: () => {
+                          dispatchData({ type: "REMOVE_OPTION", index });
+                        },
+                      },
+                    ]
+                  );
+                }}
+              />
+            ))
+          ) : (
+            <Text className="mt-1 text-gray-400">
+              You don't set the options yet.
+            </Text>
+          )}
+        </View>
+        <View className="mt-4">
+          <SecondaryButton
+            onPress={() => {
+              setSelectedOptionIndex(null);
+              showManageOptionModal();
+            }}
+            className="h-[40]"
+          >
+            Add Options
+          </SecondaryButton>
+        </View>
+        {data.availableOptions?.length ? (
           <View className="mt-5">
-            <Text className="text-base font-medium">Price and Inventory</Text>
+            <Text className="text-base font-medium mb-1.5">Variants</Text>
+            {data.availableVariants.map((availableVariant, index) => (
+              <Variant
+                key={`${index}`}
+                variant={availableVariant}
+                onPress={() => {
+                  setSelectedVariantIndex(index);
+                  showManageVariantModal();
+                }}
+              />
+            ))}
           </View>
-          <PrimaryInput
-            autoCapitalize="characters"
-            containerClassName="mt-3"
-            className="h-[40] text-sm"
-            placeholder="SKU"
-            value={data.availableVariants[0].sku}
-            onChangeText={changeSku}
-          />
-          <CurrencyTextInput
-            autoCapitalize="none"
-            keyboardType="numeric"
-            containerClassName="mt-3"
-            className="h-[40] text-sm"
-            placeholder="Price"
-            value={data.availableVariants[0].price}
-            onValueChange={changePrice}
-          />
-          <PrimaryInput
-            autoCapitalize="none"
-            keyboardType="numeric"
-            containerClassName="mt-3"
-            className="h-[40] text-sm"
-            placeholder="Stock"
-            value={data.availableVariants[0].stock}
-            onChangeText={changeStock}
-          />
+        ) : (
+          <View>
+            <View className="mt-5">
+              <Text className="text-base font-medium">Price and Inventory</Text>
+            </View>
+            <PrimaryInput
+              autoCapitalize="characters"
+              containerClassName="mt-3"
+              className="h-[40] text-sm"
+              placeholder="SKU"
+              value={data.availableVariants[0].sku}
+              onChangeText={changeSku}
+            />
+            <CurrencyTextInput
+              autoCapitalize="none"
+              keyboardType="numeric"
+              containerClassName="mt-3"
+              className="h-[40] text-sm"
+              placeholder="Price"
+              value={data.availableVariants[0].price}
+              onValueChange={changePrice}
+            />
+            <PrimaryInput
+              autoCapitalize="none"
+              keyboardType="numeric"
+              containerClassName="mt-3"
+              className="h-[40] text-sm"
+              placeholder="Stock"
+              value={data.availableVariants[0].stock}
+              onChangeText={changeStock}
+            />
+          </View>
+        )}
+        <View className="mt-7 py-3 border-t border-gray-300">
+          <PrimaryButton
+            disabled={!validateData(data)}
+            isProcessing={createResult.isLoading || updateResult.isLoading}
+            onPress={submit}
+            className="h-[45]"
+          >
+            Save
+          </PrimaryButton>
         </View>
-      )}
-      <View className="mt-7 py-3 border-t border-gray-300">
-        <PrimaryButton
-          disabled={!validateData(data)}
-          isProcessing={createResult.isLoading || updateResult.isLoading}
-          onPress={submit}
-          className="h-[45]"
-        >
-          Save
-        </PrimaryButton>
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 };
 
