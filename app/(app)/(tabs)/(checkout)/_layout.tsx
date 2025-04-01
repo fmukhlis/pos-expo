@@ -115,12 +115,12 @@ const CheckoutLayout = () => {
             }}
           />
         </Tabs>
-        <View className="px-5 py-5 bg-white">
+        <View className="p-3 bg-white border-t-2 border-gray-300/80">
           <ReviewSaleModal
             visible={saleModalVisible}
             onRequestClose={hideSaleModal}
           />
-          <PrimaryTouchableLG onPress={showSaleModal} className="h-[60]">
+          <PrimaryTouchableLG onPress={showSaleModal} className="h-[55]">
             <Text className="text-[17px] font-bold text-white">
               Review sale
             </Text>
