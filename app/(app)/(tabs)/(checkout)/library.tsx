@@ -1,49 +1,111 @@
-import { View, Text, FlatList, TextInput, RefreshControl } from 'react-native'
-import React, { useContext, useEffect, useState } from 'react'
-import { ItemContext } from '@/contexts/ItemContext'
-import PrimaryInput from '@/components/PrimaryInput'
-import { Icon } from '@/components/Icon'
-import api from '@/utils/api'
+import React from "react";
+
+import {
+  View,
+  Text,
+  FlatList,
+  RefreshControl,
+  TouchableOpacity,
+} from "react-native";
+import { Link } from "expo-router";
+import { skipToken } from "@reduxjs/toolkit/query";
+import { SafeAreaView } from "react-native-safe-area-context";
+
+import PrimaryInput from "@/components/PrimaryInput";
+
+import { Icon } from "@/components/Icon";
+import { useAppSelector } from "@/components/reduxHooks";
+import { useGetProductCategoriesQuery } from "@/components/services/productCategory";
 
 const Library = () => {
+  const storeId = useAppSelector(({ store }) => store.selectedStoreId);
 
-    const { items, fetchItems, isLoading } = useContext(ItemContext)
+  const {
+    data: categories,
+    refetch,
+    isFetching,
+  } = useGetProductCategoriesQuery(storeId ? { storeId } : skipToken);
 
-    return (
-        <View className='flex-1 border border-red-500'>
-            <FlatList
-                data={items}
-                ListHeaderComponent={() => (
-                    <View className='mt-[65]'>
-                        <PrimaryInput placeholder='Search...' className='text-sm h-12' />
-                    </View>
-                )}
-                renderItem={({ item }) => (
-                    <View className='mt-1 p-1 h-[52] bg-gray-200/50 rounded border border-gray-300 flex-1 flex-row space-x-3'>
-                        <View className='w-[52] bg-red-200 justify-center items-center'>
-                            <Text className='font-bold text-2xl'>IT</Text>
-                        </View>
-                        <View className='justify-center flex-1'>
-                            <Text className='font-bold text-base'>{item.name}</Text>
-                            <Text>{item.availableVariants.length} variants</Text>
-                        </View>
-                        <View className='items-end flex-1 justify-center'>
-                            <Icon name='add' className='text-gray-500' />
-                        </View>
-                    </View>
-                )}
-                keyExtractor={({ id }) => (`${id}`)}
-                ListEmptyComponent={() => (
-                    <View className='p-1 h-[52] bg-gray-200/50 rounded border border-gray-300 flex-1 flex-row space-x-3'>
-                        <View className='justify-center items-center flex-1'>
-                            <Text className='text-sm'>No products found</Text>
-                        </View>
-                    </View>
-                )}
-                refreshControl={<RefreshControl progressViewOffset={68} onRefresh={fetchItems} refreshing={isLoading} />}
+  return (
+    <SafeAreaView className="flex-1 pt-[40] bg-white">
+      <FlatList
+        data={categories}
+        ListHeaderComponent={() => (
+          <View className="mb-4">
+            <PrimaryInput
+              placeholder="Search..."
+              className="text-base h-[50]"
+              containerClassName="rounded-none"
             />
-        </View>
-    )
-}
+            <Link href={"/profile"} asChild>
+              <TouchableOpacity activeOpacity={0.8}>
+                <View className="flex-row">
+                  <View className="w-[55] h-[55] bg-blue-500">
+                    <Icon name="cube-outline" className="text-white m-auto" />
+                  </View>
+                  <View className="flex-1 border-b border-gray-300 flex-row items-center">
+                    <Text className="ml-3 font-medium text-base">
+                      All Items
+                    </Text>
+                    <Icon
+                      name="chevron-forward"
+                      className="ml-auto"
+                      size={25}
+                    />
+                  </View>
+                </View>
+              </TouchableOpacity>
+            </Link>
+          </View>
+        )}
+        renderItem={({ item, index }) => (
+          <Link href={"/profile"} asChild>
+            <TouchableOpacity activeOpacity={0.8}>
+              <View className="flex-row bg-gray-50">
+                <View
+                  className={`${
+                    index ? "border-b" : "border-y"
+                  } w-[55] h-[55] bg-blue-500 border-blue-300`}
+                >
+                  <Text className="m-auto text-2xl font-medium text-gray-50">
+                    {item.name.substring(0, 2)}
+                  </Text>
+                </View>
+                <View
+                  className={`${
+                    index ? "border-b" : "border-y"
+                  } flex-1 border-gray-300 flex-row items-center`}
+                >
+                  <View className="ml-3">
+                    <Text className="font-medium text-base">{item.name}</Text>
+                    <Text className="text-sm text-gray-500">
+                      {item.productsCount} items
+                    </Text>
+                  </View>
+                  <Icon name="chevron-forward" className="ml-auto" size={25} />
+                </View>
+              </View>
+            </TouchableOpacity>
+          </Link>
+        )}
+        keyExtractor={({ id }) => `${id}`}
+        ListEmptyComponent={() => (
+          <View className="p-1 h-[55] bg-gray-200/50 rounded border border-gray-300 flex-1 flex-row space-x-3">
+            <View className="justify-center items-center flex-1">
+              <Text className="text-sm">No product categories found</Text>
+            </View>
+          </View>
+        )}
+        refreshControl={
+          <RefreshControl
+            progressViewOffset={68}
+            onRefresh={refetch}
+            refreshing={isFetching}
+          />
+        }
+      />
+    </SafeAreaView>
+  );
+};
 
-export default Library
+export default Library;
