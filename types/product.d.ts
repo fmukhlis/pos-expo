@@ -3,16 +3,6 @@ import { ProductCategory } from "./product-category";
 export interface Product {
   id: number;
   name: string;
-  availableModifiers: (ProductModifierCategory & {
-    values: ProductModifier[];
-  })[];
-  availableOptions: (ProductOptionCategory & { values: ProductOption[] })[];
-  availableVariants: ProductVariant[];
-}
-
-export interface DetailedProduct {
-  id: number;
-  name: string;
   category: ProductCategory;
   availableModifiers: (ProductModifierCategory & {
     values: ProductModifier[];
@@ -20,6 +10,8 @@ export interface DetailedProduct {
   availableOptions: (ProductOptionCategory & { values: ProductOption[] })[];
   availableVariants: ProductVariant[];
 }
+
+export interface DetailedProduct extends Product {}
 
 export interface ProductPayload {
   name: string;

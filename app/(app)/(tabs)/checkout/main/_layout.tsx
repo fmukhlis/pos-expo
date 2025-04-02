@@ -8,6 +8,7 @@ import ReviewSaleModal from "@/components/Order/Checkout/ReviewSaleModal";
 import { ItemProvider } from "@/contexts/ItemContext";
 import { useAppSelector } from "@/components/reduxHooks";
 import { PrimaryTouchableLG } from "@/components/PrimaryTouchable";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const CheckoutLayout = () => {
   const items = useAppSelector(({ order }) => order.items);
@@ -24,7 +25,7 @@ const CheckoutLayout = () => {
 
   return (
     <ItemProvider>
-      <View className="flex-1 relative">
+      <SafeAreaView className="flex-1 relative">
         <Tabs
           screenOptions={{
             headerShown: false,
@@ -131,7 +132,7 @@ const CheckoutLayout = () => {
             </Text>
           </PrimaryTouchableLG>
         </View>
-      </View>
+      </SafeAreaView>
     </ItemProvider>
   );
 };

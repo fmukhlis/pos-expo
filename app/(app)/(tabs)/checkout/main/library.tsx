@@ -27,17 +27,17 @@ const Library = () => {
   } = useGetProductCategoriesQuery(storeId ? { storeId } : skipToken);
 
   return (
-    <SafeAreaView className="flex-1 pt-[40] bg-white">
+    <SafeAreaView className="flex-1 pt-[42] bg-white">
       <FlatList
         data={categories}
-        ListHeaderComponent={() => (
-          <View className="mb-4">
+        ListHeaderComponent={
+          <View className="mb-3">
             <PrimaryInput
-              placeholder="Search..."
+              placeholder="Search category..."
               className="text-base h-[50]"
               containerClassName="rounded-none"
             />
-            <Link href={"/profile"} asChild>
+            <Link href={"/checkout/0"} asChild>
               <TouchableOpacity activeOpacity={0.8}>
                 <View className="flex-row">
                   <View className="w-[55] h-[55] bg-blue-500">
@@ -57,9 +57,9 @@ const Library = () => {
               </TouchableOpacity>
             </Link>
           </View>
-        )}
+        }
         renderItem={({ item, index }) => (
-          <Link href={"/profile"} asChild>
+          <Link href={`/checkout/${item.id}`} asChild>
             <TouchableOpacity activeOpacity={0.8}>
               <View className="flex-row bg-gray-50">
                 <View
@@ -97,11 +97,7 @@ const Library = () => {
           </View>
         )}
         refreshControl={
-          <RefreshControl
-            progressViewOffset={68}
-            onRefresh={refetch}
-            refreshing={isFetching}
-          />
+          <RefreshControl onRefresh={refetch} refreshing={isFetching} />
         }
       />
     </SafeAreaView>
