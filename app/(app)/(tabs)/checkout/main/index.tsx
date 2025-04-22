@@ -12,9 +12,9 @@ import { SafeAreaView } from "react-native-safe-area-context";
 const Keypad = () => {
   const {
     note,
+    price,
     hideNoteModal,
     showNoteModal,
-    customAmount,
     addCustomItem,
     handleModalSave,
     noteModalVisible,
@@ -28,11 +28,11 @@ const Keypad = () => {
         onSave={handleModalSave}
         visible={noteModalVisible}
         onRequestClose={hideNoteModal}
-        customItem={{ note, price: customAmount }}
+        customItem={{ note, price }}
       />
       <View className="h-[235] items-center justify-center">
         <Text className="text-5xl text-center mb-3">
-          {currencyFormat.format(Number(customAmount))}
+          {currencyFormat.format(Number(price))}
         </Text>
         {!!note && (
           <Text
@@ -43,7 +43,7 @@ const Keypad = () => {
             {note}
           </Text>
         )}
-        {!!Number(customAmount) && (
+        {!!Number(price) && (
           <TouchableOpacity
             onPress={showNoteModal}
             className="border border-gray-300 rounded w-28 h-9 items-center justify-center bg-gray-50"
