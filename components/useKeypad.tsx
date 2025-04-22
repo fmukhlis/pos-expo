@@ -4,11 +4,11 @@ import { addItem } from "./Order/orderSlice";
 import { useAppDispatch } from "./reduxHooks";
 
 export default function useKeypad() {
-  const [customAmount, setCustomAmount] = React.useState("");
+  const [price, setPrice] = React.useState("");
   const [note, setNote] = React.useState("");
 
   const updateCustomAmount = (number: string) => {
-    setCustomAmount((prev) => {
+    setPrice((prev) => {
       if (prev.length >= 8) {
         return prev;
       }
@@ -17,15 +17,17 @@ export default function useKeypad() {
   };
 
   const clearCurrentInput = () => {
-    setCustomAmount("");
+    setPrice("");
     setNote("");
   };
 
   const dispatch = useAppDispatch();
 
   const addCustomItem = () => {
-    dispatch(addItem({ customAmount, note }));
-    clearCurrentInput();
+    if (Number(price) > 0) {
+      dispatch(addItem({ price, note, discount: "" }));
+      clearCurrentInput();
+    }
   };
 
   const [noteModalVisible, setNoteModalVisible] = React.useState(false);
@@ -45,9 +47,9 @@ export default function useKeypad() {
 
   return {
     note,
+    price,
     hideNoteModal,
     showNoteModal,
-    customAmount,
     addCustomItem,
     handleModalSave,
     noteModalVisible,

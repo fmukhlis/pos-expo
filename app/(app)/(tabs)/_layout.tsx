@@ -16,7 +16,7 @@ export default function TabLayout() {
       }}
     >
       <Tabs.Screen
-        name="(checkout)"
+        name="checkout"
         options={{
           tabBarLabel: ({ focused }) => (
             <Text
