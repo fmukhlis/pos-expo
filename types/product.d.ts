@@ -3,6 +3,7 @@ import { ProductCategory } from "./product-category";
 export interface Product {
   id: number;
   name: string;
+  category: ProductCategory | null;
   availableModifiers: (ProductModifierCategory & {
     values: ProductModifier[];
   })[];
@@ -10,16 +11,7 @@ export interface Product {
   availableVariants: ProductVariant[];
 }
 
-export interface DetailedProduct {
-  id: number;
-  name: string;
-  category: ProductCategory;
-  availableModifiers: (ProductModifierCategory & {
-    values: ProductModifier[];
-  })[];
-  availableOptions: (ProductOptionCategory & { values: ProductOption[] })[];
-  availableVariants: ProductVariant[];
-}
+export interface DetailedProduct extends Product {}
 
 export interface ProductPayload {
   name: string;
@@ -71,7 +63,7 @@ export interface ProductVariant {
   id: number;
   price: number;
   stock: number;
-  sku: string;
+  sku: string | null;
   status: "Active" | "Inactive";
   productOptions: ProductOption[];
 }

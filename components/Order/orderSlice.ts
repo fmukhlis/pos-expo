@@ -3,9 +3,11 @@ import "react-native-get-random-values";
 import { v4 as uuidv4 } from "uuid";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
+import { Product } from "@/types/product";
+
 const initialState: OrderState = {
   items: [],
-  selectedItemId: null,
+  selectedItem: null,
   totalCharge: 0,
 };
 
@@ -13,23 +15,44 @@ const orderSlice = createSlice({
   name: "order",
   initialState,
   reducers: {
-    addItem: (
-      state,
-      { payload: { customAmount, note, productVariantId } }: AddItemPayload
-    ) => {
-      if (productVariantId) {
+    addItem: (state, { payload }: AddItemPayload) => {
+      if ("product" in payload) {
+        const {
+          note,
+          product,
+          discount,
+          quantity,
+          selectedVariantId,
+          selectedModifierIds,
+        } = payload;
+
+        state.items.push({
+          id: uuidv4(),
+          note,
+          product,
+          discount,
+          quantity,
+          selectedVariantId,
+          selectedModifierIds,
+        } as StandardItem);
       } else {
-        if (customAmount) {
-          state.items.push({ id: uuidv4(), quantity: "1", note, customAmount });
-        }
+        const { price, note, discount } = payload;
+
+        state.items.push({
+          id: uuidv4(),
+          note,
+          price,
+          discount,
+          quantity: "1",
+        } as CustomItem);
       }
       state.totalCharge = calculateTotalCharge(state.items);
     },
     removeItem: (state) => {
-      if (state.selectedItemId) {
-        const index = state.items.findIndex(
-          (item) => item.id === state.selectedItemId
-        );
+      const index = state.items.findIndex(
+        (item) => item.id === state.selectedItem?.id
+      );
+      if (index !== -1) {
         state.items.splice(index, 1);
         state.totalCharge = calculateTotalCharge(state.items);
       } else {
@@ -37,65 +60,112 @@ const orderSlice = createSlice({
         state.totalCharge = 0;
       }
     },
-    updateItem: (
-      state,
-      { payload: { customAmount, note, quantity } }: UpdateItemPayload
-    ) => {
-      if (state.selectedItemId) {
-        const index = state.items.findIndex(
-          (item) => item.id === state.selectedItemId
-        );
-        if (customAmount !== undefined)
-          state.items[index].customAmount = customAmount;
-        if (note !== undefined) state.items[index].note = note;
-        if (quantity !== undefined) state.items[index].quantity = quantity;
+    updateItem: (state, { payload }: UpdateItemPayload) => {
+      const index = state.items.findIndex(
+        (item) => item.id === state.selectedItem?.id
+      );
+      if (state.items[index]) {
+        if ("product" in state.items[index]) {
+          if ("product" in payload) {
+            const {
+              note,
+              product,
+              quantity,
+              discount,
+              selectedVariantId,
+              selectedModifierIds,
+            } = payload;
 
+            state.items[index].note = note;
+            state.items[index].product = product;
+            state.items[index].quantity = quantity;
+            state.items[index].discount = discount;
+            state.items[index].selectedVariantId = selectedVariantId;
+            state.items[index].selectedModifierIds = selectedModifierIds;
+          }
+        } else {
+          if (!("product" in payload)) {
+            const { price, quantity, note, discount } = payload;
+
+            state.items[index].note = note;
+            state.items[index].price = price;
+            state.items[index].quantity = quantity;
+            state.items[index].discount = discount;
+          }
+        }
         state.totalCharge = calculateTotalCharge(state.items);
       }
     },
-    setSelectedItemId: (state, { payload }: PayloadAction<string | null>) => {
-      state.selectedItemId = payload;
+    setDiscountGlobally: (state, { payload }: PayloadAction<string>) => {
+      state.items.forEach((item) => {
+        item.discount = payload;
+      });
+      state.totalCharge = calculateTotalCharge(state.items);
+    },
+    setSelectedItem: (state, { payload }: PayloadAction<Item | null>) => {
+      state.selectedItem = payload;
     },
   },
 });
 
-export const { addItem, removeItem, setSelectedItemId, updateItem } =
-  orderSlice.actions;
+export const {
+  addItem,
+  removeItem,
+  setSelectedItem,
+  updateItem,
+  setDiscountGlobally,
+} = orderSlice.actions;
 
 export default orderSlice.reducer;
 
 const calculateTotalCharge = (items: Item[]) => {
-  const totalCharge = items.reduce(
-    (accumulator, currentItem) =>
+  const totalCharge = items.reduce((accumulator, currentItem) => {
+    const price =
+      "product" in currentItem
+        ? currentItem.product.availableVariants.find(
+            (variant) => `${variant.id}` === currentItem.selectedVariantId
+          )!.price
+        : currentItem.price;
+
+    return (
       accumulator +
-      Number(currentItem.customAmount) * Number(currentItem.quantity),
-    0
-  );
+      (currentItem.discount
+        ? Number(price) * Number(currentItem.quantity) -
+          Number(price) *
+            Number(currentItem.quantity) *
+            (Number(currentItem.discount) / 100)
+        : Number(price) * Number(currentItem.quantity))
+    );
+  }, 0);
   return totalCharge;
 };
 
 interface OrderState {
   items: Item[];
-  selectedItemId: string | null;
+  selectedItem: Item | null;
   totalCharge: number;
 }
 
-export interface Item {
+export type Item = CustomItem | StandardItem;
+
+export interface CustomItem {
   id: string;
-  note?: string;
+  note: string;
+  price: string;
+  discount: string;
   quantity: string;
-  customAmount?: string;
-  productVariantId?: string;
 }
 
-type AddItemPayload = PayloadAction<{
-  note?: string;
-  customAmount?: string;
-  productVariantId?: string;
-}>;
+export interface StandardItem extends Omit<CustomItem, "price"> {
+  product: Product;
+  selectedVariantId: string;
+  selectedModifierIds: string[];
+}
 
-type UpdateItemPayload = PayloadAction<{
-  note?: string;
-  quantity?: string;
-  customAmount?: string;
-}>;
+type AddItemPayload = PayloadAction<
+  Omit<CustomItem, "id" | "quantity"> | Omit<StandardItem, "id">
+>;
+
+type UpdateItemPayload = PayloadAction<
+  Omit<CustomItem, "id"> | Omit<StandardItem, "id">
+>;

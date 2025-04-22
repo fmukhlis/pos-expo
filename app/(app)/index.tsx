@@ -19,7 +19,7 @@ const LoadingState = () => {
     return <LoadingPage />;
   }
 
-  return <Redirect href={"/(checkout)"} />;
+  return <Redirect href={"/checkout"} />;
 };
 
 export default LoadingState;
