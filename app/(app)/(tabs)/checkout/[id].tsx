@@ -1,3 +1,5 @@
+import React from "react";
+
 import {
   View,
   Text,
@@ -5,19 +7,34 @@ import {
   FlatList,
   RefreshControl,
 } from "react-native";
-import React, { useEffect } from "react";
-import { router, Stack, useLocalSearchParams } from "expo-router";
-import { Icon } from "@/components/Icon";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useLazyGetProductCategoryQuery } from "@/components/services/productCategory";
-import { useAppSelector } from "@/components/reduxHooks";
-import LoadingComponent from "@/components/LoadingComponent";
-import { useGetProductsQuery } from "@/components/services/product";
+import { router, Stack, useLocalSearchParams } from "expo-router";
+
 import PrimaryInput from "@/components/PrimaryInput";
+import LoadingComponent from "@/components/LoadingComponent";
+import ManageStandardItemModal from "@/components/Order/Checkout/ManageStandardItemModal";
+
+import { Icon } from "@/components/Icon";
+import { Product } from "@/types/product";
+import { useAppSelector } from "@/components/reduxHooks";
+import { useGetProductsQuery } from "@/components/services/product";
+import { useLazyGetProductCategoryQuery } from "@/components/services/productCategory";
 
 const Category = () => {
   const { id }: { id: string } = useLocalSearchParams();
+
   const storeId = useAppSelector(({ store }) => store.selectedStoreId)!;
+
+  const [selectedProduct, setSelectedProduct] = React.useState<Product | null>(
+    null
+  );
+
+  const [modalVisible, setModalVisible] = React.useState(false);
+
+  const hideModal = () => {
+    setSelectedProduct(null);
+    setModalVisible(false);
+  };
 
   const [filter, setFilter] = React.useState("");
 
@@ -35,7 +52,7 @@ const Category = () => {
       products
         ? Number(id)
           ? products
-              .filter((product) => product.category.id === Number(id))
+              .filter((product) => product.category?.id === Number(id))
               .filter((product) =>
                 product.name.toLowerCase().includes(filter.toLocaleLowerCase())
               )
@@ -46,12 +63,18 @@ const Category = () => {
     [isFetching, filter]
   );
 
-  useEffect(() => {
+  React.useEffect(() => {
     const productCategoryId = Number(id);
     if (productCategoryId) {
       getProductCategory({ productCategoryId, storeId });
     }
   }, []);
+
+  React.useEffect(() => {
+    if (selectedProduct?.id) {
+      setModalVisible(true);
+    }
+  }, [selectedProduct?.id]);
 
   return (
     <View className="bg-white flex-1">
@@ -85,6 +108,11 @@ const Category = () => {
               headerShown: true,
             }}
           />
+          <ManageStandardItemModal
+            visible={modalVisible}
+            onRequestClose={hideModal}
+            standardItem={{ product: selectedProduct ?? undefined }}
+          />
           <FlatList
             data={filteredProducts}
             ListHeaderComponent={
@@ -101,7 +129,12 @@ const Category = () => {
               </View>
             }
             renderItem={({ item, index }) => (
-              <TouchableOpacity activeOpacity={0.8}>
+              <TouchableOpacity
+                activeOpacity={0.8}
+                onPress={() => {
+                  setSelectedProduct(item);
+                }}
+              >
                 <View className="flex-row bg-gray-50">
                   <View
                     className={`${
