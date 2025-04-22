@@ -3,7 +3,7 @@ import { ProductCategory } from "./product-category";
 export interface Product {
   id: number;
   name: string;
-  category: ProductCategory;
+  category: ProductCategory | null;
   availableModifiers: (ProductModifierCategory & {
     values: ProductModifier[];
   })[];
@@ -63,7 +63,7 @@ export interface ProductVariant {
   id: number;
   price: number;
   stock: number;
-  sku: string;
+  sku: string | null;
   status: "Active" | "Inactive";
   productOptions: ProductOption[];
 }
