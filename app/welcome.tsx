@@ -1,24 +1,17 @@
 import { Link } from "expo-router";
 import { View, Text, Image } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import CustomButton from "@/components/CustomButton";
+
 import { Colors } from "@/constants/Colors";
 import { useTheme } from "@/contexts/ThemeProvider";
 
 const Welcome = () => {
   const { colorScheme } = useTheme();
 
-  const {
-    bottom: paddingBottom,
-    left: paddingLeft,
-    right: paddingRight,
-    top: paddingTop,
-  } = useSafeAreaInsets();
-
   return (
-    <View
-      style={{ paddingBottom, paddingTop }}
+    <SafeAreaView
       className={`${
         colorScheme === "dark"
           ? "bg-dark-primaryBackground"
@@ -63,7 +56,7 @@ const Welcome = () => {
           </Text>
         </CustomButton>
       </Link>
-    </View>
+    </SafeAreaView>
   );
 };
 

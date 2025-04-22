@@ -1,10 +1,11 @@
 import { Link } from "expo-router";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { View, Text, Image, KeyboardAvoidingView } from "react-native";
 
 import useSignIn from "@/hooks/useSignIn";
 import PrimaryInput from "@/components/PrimaryInput";
 import TransparentScreen from "@/components/TransparentScreen";
+
 import { Colors } from "@/constants/Colors";
 import { PrimaryButtonLG } from "@/components/PrimaryButton";
 
@@ -18,18 +19,8 @@ const SignIn = () => {
     signInLoading,
   } = useSignIn();
 
-  const {
-    bottom: paddingBottom,
-    left: paddingLeft,
-    right: paddingRight,
-    top: paddingTop,
-  } = useSafeAreaInsets();
-
   return (
-    <View
-      style={{ paddingBottom, paddingLeft, paddingRight, paddingTop }}
-      className="relative flex-1 bg-light-primaryBackground dark:bg-dark-primaryBackground"
-    >
+    <SafeAreaView className="relative flex-1 bg-light-primaryBackground dark:bg-dark-primaryBackground">
       <View className={`justify-center items-center p-5 h-full`}>
         <Image
           tintColor={
@@ -97,7 +88,7 @@ const SignIn = () => {
         </View>
       </View>
       {signInLoading && <TransparentScreen />}
-    </View>
+    </SafeAreaView>
   );
 };
 

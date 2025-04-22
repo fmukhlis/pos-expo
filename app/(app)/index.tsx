@@ -1,7 +1,9 @@
 import React from "react";
+
 import { Redirect } from "expo-router";
 
 import LoadingPage from "@/components/LoadingPage";
+
 import { useSession } from "@/contexts/SessionContext";
 
 const LoadingState = () => {

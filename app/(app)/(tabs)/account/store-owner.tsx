@@ -7,13 +7,13 @@ import {
   TouchableOpacity,
   TouchableHighlight,
 } from "react-native";
-
 import { Redirect, router } from "expo-router";
 import { skipToken } from "@reduxjs/toolkit/query";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import StoreModal from "@/components/StoreManagement/StoreModal";
 import CustomActivityIndicator from "@/components/CustomActivityIndicator";
+
 import { Icon } from "@/components/Icon";
 import { useSession } from "@/contexts/SessionContext";
 import { DangerButtonLG } from "@/components/DangerButton";
@@ -32,8 +32,6 @@ export default function HomeScreen() {
 
   const storeId = useAppSelector(({ store }) => store.selectedStoreId);
   const dispatch = useAppDispatch();
-
-  const { bottom: paddingBottom } = useSafeAreaInsets();
 
   const {
     data: stores,
@@ -63,15 +61,7 @@ export default function HomeScreen() {
   }, [stores]);
 
   return (
-    <View
-      style={{
-        paddingBottom,
-        paddingLeft: 20,
-        paddingRight: 20,
-        paddingTop: 45,
-      }}
-      className="flex-1 bg-white"
-    >
+    <SafeAreaView className="flex-1 bg-white px-5 py-2">
       <StoreModal visible={modalVisible} onClose={hideModal} />
       <View className="border-red-300">
         <Text className="text-3xl font-black">Welcome Back</Text>
@@ -196,7 +186,8 @@ export default function HomeScreen() {
       </View>
       <View className="border-t border-gray-300">
         <TouchableHighlight
-          className={`p-3`}
+          disabled
+          className={`p-3 opacity-40`}
           onPress={() => {}}
           underlayColor={"#e5e7eb"}
         >
@@ -219,6 +210,6 @@ export default function HomeScreen() {
           <Text className="text-gray-400">Version 1.0</Text>
         </View>
       </View>
-    </View>
+    </SafeAreaView>
   );
 }
