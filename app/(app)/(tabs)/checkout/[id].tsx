@@ -66,6 +66,7 @@ const Category = () => {
   React.useEffect(() => {
     const productCategoryId = Number(id);
     if (productCategoryId) {
+      refetch();
       getProductCategory({ productCategoryId, storeId });
     }
   }, []);

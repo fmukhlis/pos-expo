@@ -44,12 +44,6 @@ const PaymentMethod = () => {
   };
 
   React.useEffect(() => {
-    dispatch(
-      setSelectedPaymentMethodId(paymentMethods ? paymentMethods[0].id : null)
-    );
-  }, [paymentMethods]);
-
-  React.useEffect(() => {
     getStore({ storeId }, true);
   }, []);
 
