@@ -24,6 +24,7 @@ import {
   setSelectedItem,
   setDiscountGlobally,
 } from "../orderSlice";
+import ChargeModal from "./ChargeModal";
 
 const ReviewSaleModal = ({
   onRequestClose,
@@ -78,7 +79,7 @@ const ReviewSaleModal = ({
         onRequestClose={onRequestClose}
         animationType="slide"
         visible={visible}
-        containerClassName="h-[95%] mt-auto bg-white p-5"
+        containerClassName="h-[95%] mt-auto bg-white p-4"
       >
         <ManageCustomItemModal
           customItem={
@@ -258,6 +259,7 @@ const ReviewSaleModal = ({
           dispatch(setDiscountGlobally(discount));
         }}
       />
+      <ChargeModal visible />
     </>
   );
 };
