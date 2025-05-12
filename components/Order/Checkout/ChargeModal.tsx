@@ -1,19 +1,26 @@
 import React from "react";
 
+import { zodResolver } from "@hookform/resolvers/zod";
 import { View, Text, TouchableOpacity } from "react-native";
+import { Controller, SubmitHandler, useForm } from "react-hook-form";
 
 import ReceiptModal from "./ReceiptModal";
 import BasicModal from "@/components/BasicModal";
 import RadioGroup from "@/components/RadioGroup";
 import CurrencyTextInput from "@/components/CurrencyTextInput";
 
+import { z } from "zod";
 import { Icon } from "@/components/Icon";
-import { useAppSelector } from "@/components/reduxHooks";
+import { openModal } from "../orderSlice";
 import { PrimaryButton } from "@/components/PrimaryButton";
+import { currencyFormat } from "@/utils/defaultFormat";
+import { useStoreOrderMutation } from "@/components/services/order";
 import { useGetPaymentMethodsQuery } from "@/components/services/paymentMethod";
+import { useAppDispatch, useAppSelector } from "@/components/reduxHooks";
 
 const ChargeModal = ({
   onRequestClose,
+  chargeAmount,
   visible,
   ...props
 }: ChargeModalProps) => {
@@ -21,10 +28,20 @@ const ChargeModal = ({
     ({ store: { selectedStoreId } }) => selectedStoreId
   )!;
 
-  const totalCharge = React.useRef("Rp 45.000");
+  const items = useAppSelector(({ order }) => order.items);
+  const openModals = useAppSelector(({ order }) => order.openModals);
+
+  const dispatch = useAppDispatch();
+
+  const [storeOrder, storeOrderResult] = useStoreOrderMutation();
 
   const { data: paymentMethods, isFetching } = useGetPaymentMethodsQuery({
     storeId,
+  });
+
+  const { control, handleSubmit, watch, reset } = useForm({
+    resolver: zodResolver(Schema),
+    mode: "all",
   });
 
   const paymentMethodsOption = React.useMemo(
@@ -38,15 +55,46 @@ const ChargeModal = ({
     [paymentMethods]
   );
 
-  const [form, setForm] = React.useState<{
-    paymentMethod: { label: string; value: string } | undefined;
-    amountPaid: string;
-  }>({
-    paymentMethod: paymentMethodsOption[0],
-    amountPaid: totalCharge.current,
-  });
+  const onSubmit: SubmitHandler<z.infer<typeof Schema>> = (data) => {
+    const orderedProducts = items.map((item) =>
+      "selectedVariantId" in item
+        ? {
+            ...(item.discount && { discount: parseInt(item.discount) }),
+            modifierIds: item.selectedModifierIds,
+            quantity: parseInt(item.quantity),
+            variantId: item.selectedVariantId,
+            ...(item.note && { note: item.note }),
+          }
+        : {
+            customAmount: parseInt(item.price),
+            ...(item.discount && { discount: parseInt(item.discount) }),
+            quantity: parseInt(item.quantity),
+            ...(item.note && { note: item.note }),
+          }
+    );
 
-  const [modalVisible, setModalVisible] = React.useState(false);
+    storeOrder({
+      cashAmount: parseInt(data.cashAmount),
+      orderedProducts,
+      orderType: "Take Away",
+      paymentMethodId: parseInt(data.paymentMethodId),
+      status: "Paid",
+      storeId,
+    })
+      .unwrap()
+      .then(() => {
+        dispatch(openModal("receipt"));
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
+
+  const cashAmount = watch("cashAmount");
+
+  React.useEffect(() => {
+    reset({ cashAmount: chargeAmount });
+  }, [chargeAmount]);
 
   return (
     <>
@@ -67,40 +115,60 @@ const ChargeModal = ({
           </TouchableOpacity>
         </View>
         <Text className="text-4xl font-bold mx-auto my-8">
-          {totalCharge.current}
+          {currencyFormat.format(Number(chargeAmount))}
         </Text>
         <View className="mb-5">
           <Text className="text-base mb-3 font-medium">Payment Method</Text>
-          <RadioGroup
-            options={paymentMethodsOption}
-            onValueChange={(paymentMethod) => {
-              setForm(({ amountPaid }) => ({ paymentMethod, amountPaid }));
+          <Controller
+            name="paymentMethodId"
+            control={control}
+            render={({
+              field: { onChange, value: currentValue, ref, ...rest },
+            }) => {
+              return (
+                <RadioGroup
+                  {...rest}
+                  value={paymentMethodsOption.find(
+                    ({ value }) => value === currentValue
+                  )}
+                  onValueChange={({ value }) => {
+                    onChange(value);
+                  }}
+                  options={paymentMethodsOption}
+                />
+              );
             }}
-            value={form.paymentMethod}
           />
         </View>
         <Text className="text-base mb-3 font-medium">Amount Paid</Text>
-        <CurrencyTextInput
-          className="py-2"
-          value={form.amountPaid}
-          onValueChange={({ raw: amountPaid }) => {
-            setForm(({ paymentMethod }) => ({ paymentMethod, amountPaid }));
+        <Controller
+          name="cashAmount"
+          control={control}
+          render={({ field: { onChange, value, ref, ...rest } }) => {
+            return (
+              <CurrencyTextInput
+                {...rest}
+                value={value}
+                className="py-2"
+                onValueChange={({ raw }) => {
+                  onChange(raw);
+                }}
+              />
+            );
           }}
         />
         <PrimaryButton
-          onPress={() => {
-            setModalVisible(true);
-          }}
+          isProcessing={storeOrderResult.isLoading}
+          onPress={handleSubmit(onSubmit)}
           className="mt-3 h-[45]"
         >
           Tender
         </PrimaryButton>
       </BasicModal>
       <ReceiptModal
-        visible={modalVisible}
-        onRequestClose={() => {
-          setModalVisible(false);
-        }}
+        amountPaid={cashAmount}
+        chargeAmount={chargeAmount}
+        visible={openModals.includes("receipt")}
       />
     </>
   );
@@ -109,4 +177,11 @@ const ChargeModal = ({
 export default ChargeModal;
 
 interface ChargeModalProps
-  extends React.ComponentPropsWithoutRef<typeof BasicModal> {}
+  extends React.ComponentPropsWithoutRef<typeof BasicModal> {
+  chargeAmount: string;
+}
+
+const Schema = z.object({
+  paymentMethodId: z.string().regex(/^\d+$/),
+  cashAmount: z.string().regex(/^\d+$/, { message: "Invalid cash amount" }),
+});
