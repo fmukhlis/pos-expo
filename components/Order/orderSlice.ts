@@ -1,14 +1,17 @@
 import "react-native-get-random-values";
 
 import { v4 as uuidv4 } from "uuid";
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createAction, createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 import { Product } from "@/types/product";
+
+export const resetOrder = createAction("order/resetOrder");
 
 const initialState: OrderState = {
   items: [],
   selectedItem: null,
   totalCharge: 0,
+  openModals: [],
 };
 
 const orderSlice = createSlice({
@@ -105,6 +108,17 @@ const orderSlice = createSlice({
     setSelectedItem: (state, { payload }: PayloadAction<Item | null>) => {
       state.selectedItem = payload;
     },
+    openModal: (state, { payload }: PayloadAction<string>) => {
+      state.openModals.push(payload);
+    },
+    closeModal: (state, { payload }: PayloadAction<string>) => {
+      state.openModals = state.openModals.filter(
+        (modalName) => modalName !== payload
+      );
+    },
+  },
+  extraReducers: (builder) => {
+    builder.addCase(resetOrder, () => initialState);
   },
 });
 
@@ -114,6 +128,8 @@ export const {
   setSelectedItem,
   updateItem,
   setDiscountGlobally,
+  closeModal,
+  openModal,
 } = orderSlice.actions;
 
 export default orderSlice.reducer;
@@ -144,6 +160,7 @@ interface OrderState {
   items: Item[];
   selectedItem: Item | null;
   totalCharge: number;
+  openModals: string[];
 }
 
 export type Item = CustomItem | StandardItem;

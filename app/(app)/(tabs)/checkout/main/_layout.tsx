@@ -5,21 +5,24 @@ import { View, Text } from "react-native";
 
 import ReviewSaleModal from "@/components/Order/Checkout/ReviewSaleModal";
 
-import { useAppSelector } from "@/components/reduxHooks";
+import { useAppDispatch, useAppSelector } from "@/components/reduxHooks";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { PrimaryTouchableLG } from "@/components/PrimaryTouchable";
+import { closeModal, openModal } from "@/components/Order/orderSlice";
 
 const CheckoutLayout = () => {
   const items = useAppSelector(({ order }) => order.items);
 
-  const [saleModalVisible, setSaleModalVisible] = React.useState(false);
+  const openModals = useAppSelector(({ order: { openModals } }) => openModals);
+
+  const dispatch = useAppDispatch();
 
   const hideSaleModal = () => {
-    setSaleModalVisible(false);
+    dispatch(closeModal("sale"));
   };
 
   const showSaleModal = () => {
-    setSaleModalVisible(true);
+    dispatch(openModal("sale"));
   };
 
   return (
@@ -116,7 +119,7 @@ const CheckoutLayout = () => {
       </Tabs>
       <View className="p-3 bg-white border-t-2 border-gray-300/80">
         <ReviewSaleModal
-          visible={saleModalVisible}
+          visible={openModals.includes("sale")}
           onRequestClose={hideSaleModal}
         />
         <PrimaryTouchableLG onPress={showSaleModal} className="h-[55]">

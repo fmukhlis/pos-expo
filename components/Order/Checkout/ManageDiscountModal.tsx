@@ -22,7 +22,7 @@ const ManageDiscountModal = ({
       visible={visible}
       onRequestClose={onRequestClose}
       animationType="slide"
-      containerClassName="h-full bg-white p-4"
+      containerClassName="h-full bg-white px-4 py-1"
     >
       <View className="flex-row justify-between items-center mb-5">
         <TouchableOpacity className="w-[30]" onPress={onRequestClose}>

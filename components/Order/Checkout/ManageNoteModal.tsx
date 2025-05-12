@@ -59,7 +59,7 @@ const ManageNoteModal = ({
       onRequestClose={onRequestClose}
       animationType="slide"
       visible={visible}
-      containerClassName="flex-1 bg-white p-5"
+      containerClassName="flex-1 bg-white px-4 py-1"
     >
       <View className="flex-row justify-between mb-5">
         <SecondaryTouchable className="w-[45] h-[45]" onPress={onRequestClose}>

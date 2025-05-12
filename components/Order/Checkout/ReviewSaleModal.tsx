@@ -9,6 +9,7 @@ import {
   ScrollView,
 } from "react-native";
 
+import ChargeModal from "./ChargeModal";
 import BasicModal from "@/components/BasicModal";
 import ManageDiscountModal from "./ManageDiscountModal";
 import ManageCustomItemModal from "./ManageCustomItemModal";
@@ -23,6 +24,8 @@ import {
   removeItem,
   setSelectedItem,
   setDiscountGlobally,
+  closeModal,
+  openModal,
 } from "../orderSlice";
 
 const ReviewSaleModal = ({
@@ -33,6 +36,7 @@ const ReviewSaleModal = ({
   const selectedItem = useAppSelector(({ order }) => order.selectedItem);
   const totalCharge = useAppSelector(({ order }) => order.totalCharge);
   const items = useAppSelector(({ order }) => order.items);
+  const openModals = useAppSelector(({ order }) => order.openModals);
 
   const dispatch = useAppDispatch();
 
@@ -78,7 +82,7 @@ const ReviewSaleModal = ({
         onRequestClose={onRequestClose}
         animationType="slide"
         visible={visible}
-        containerClassName="h-[95%] mt-auto bg-white p-5"
+        containerClassName="h-[95%] mt-auto bg-white p-4"
       >
         <ManageCustomItemModal
           customItem={
@@ -242,7 +246,12 @@ const ReviewSaleModal = ({
             <Icon name="chevron-forward" size={25} className="text-gray-500" />
           </View>
         </TouchableOpacity>
-        <PrimaryTouchable className="h-[50]">
+        <PrimaryTouchable
+          className="h-[50]"
+          onPress={() => {
+            dispatch(openModal("charge"));
+          }}
+        >
           <Text className="text-white font-bold text-base">
             Charge {currencyFormat.format(totalCharge)}
           </Text>
@@ -256,6 +265,13 @@ const ReviewSaleModal = ({
         onSave={(discount) => {
           setDiscountModalVisible(false);
           dispatch(setDiscountGlobally(discount));
+        }}
+      />
+      <ChargeModal
+        chargeAmount={`${totalCharge}`}
+        visible={openModals.includes("charge")}
+        onRequestClose={() => {
+          dispatch(closeModal("charge"));
         }}
       />
     </>

@@ -42,6 +42,7 @@ const CurrencyTextInput = ({
   return (
     <PrimaryInput
       {...props}
+      keyboardType="numeric"
       value={currentValue}
       maxLength={value.length ? currentValue.length : 0}
       onKeyPress={handleKeyPress}

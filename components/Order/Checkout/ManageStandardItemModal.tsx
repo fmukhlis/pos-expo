@@ -92,7 +92,9 @@ const ManageStandardItemModal = ({
     if (onRequestClose && e) {
       onRequestClose(e);
       setTimeout(() => {
-        router.back();
+        if (router.canGoBack()) {
+          router.back();
+        }
       }, 150);
     }
   };

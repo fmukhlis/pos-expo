@@ -20,6 +20,7 @@ import { DangerButtonLG } from "@/components/DangerButton";
 import { useGetStoresQuery } from "@/components/services/store";
 import { setSelectedStoreId } from "@/components/Store/storeSlice";
 import { useAppDispatch, useAppSelector } from "@/components/reduxHooks";
+import { apiSlice } from "@/components/apiSlice";
 
 export default function HomeScreen() {
   const { user, session, signOut, signOutLoading } = useSession();
@@ -43,6 +44,8 @@ export default function HomeScreen() {
     signOut(session ?? "").then((isLogoutSuccess) => {
       if (isLogoutSuccess) {
         router.replace("/");
+        dispatch({ type: "user/logout" });
+        dispatch(apiSlice.util.resetApiState());
       }
     });
   };
@@ -57,7 +60,9 @@ export default function HomeScreen() {
   };
 
   React.useEffect(() => {
-    dispatch(setSelectedStoreId(stores ? stores[0].id : null));
+    dispatch(
+      setSelectedStoreId(stores && stores.length > 0 ? stores[0].id : null)
+    );
   }, [stores]);
 
   return (
@@ -90,7 +95,7 @@ export default function HomeScreen() {
           </View>
         ) : (
           <ScrollView className="max-h-[135] space-y-1">
-            {stores ? (
+            {stores && stores.length > 0 ? (
               stores.map((store) => (
                 <View
                   key={store.id}
