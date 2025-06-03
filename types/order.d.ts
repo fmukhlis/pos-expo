@@ -8,7 +8,8 @@ export interface Item {
   customAmount: number | null;
   isCanceled: 0 | 1;
   cancelReason: string | null;
-  canceledAt: string | null;
+  createdAt: string;
+  updatedAt: string;
   quantity: number;
   discount: number | null;
 
@@ -28,6 +29,18 @@ export interface Order {
   orderedProducts: Item[];
   createdAt: string;
   user: User;
+}
+
+export interface TransactionHistory {
+  id: number;
+  refunds: { refundedAt: string; totalAmount: number }[];
+  orderedProducts: {
+    id: number;
+    productName: string;
+    quantity: string;
+  }[];
+  totalAmount: number;
+  createdAt: string;
 }
 
 export type ItemPayload = CustomItemPayload | StandardItemPayload;
