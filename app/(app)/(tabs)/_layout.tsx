@@ -2,8 +2,13 @@ import { Tabs } from "expo-router";
 import { Text } from "react-native";
 
 import { TabBarIcon } from "@/components/navigation/TabBarIcon";
+import { regenerateRefreshKey } from "@/components/Order/orderSlice";
+import { useAppDispatch, useAppSelector } from "@/components/reduxHooks";
 
 export default function TabLayout() {
+  const storeId = useAppSelector(({ store }) => store.selectedStoreId);
+  const dispatch = useAppDispatch();
+
   return (
     <Tabs
       screenOptions={{
@@ -32,6 +37,40 @@ export default function TabLayout() {
           tabBarIcon: ({ focused, size }) => (
             <TabBarIcon
               name={focused ? "apps" : "apps-outline"}
+              className={`${
+                focused
+                  ? "text-light-tabIconSelected"
+                  : " text-light-tabIconDefault"
+              }`}
+              size={size}
+            />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="transaction"
+        listeners={{
+          blur: () => {
+            if (storeId) {
+              dispatch(regenerateRefreshKey());
+            }
+          },
+        }}
+        options={{
+          tabBarLabel: ({ focused }) => (
+            <Text
+              className={`${
+                focused
+                  ? "font-bold text-light-tabIconSelected"
+                  : "text-light-tabIconDefault"
+              } text-xs`}
+            >
+              Transaction
+            </Text>
+          ),
+          tabBarIcon: ({ focused, size }) => (
+            <TabBarIcon
+              name="swap-horizontal"
               className={`${
                 focused
                   ? "text-light-tabIconSelected"

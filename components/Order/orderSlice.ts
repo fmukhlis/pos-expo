@@ -12,6 +12,7 @@ const initialState: OrderState = {
   selectedItem: null,
   totalCharge: 0,
   openModals: [],
+  refreshKey: 0,
 };
 
 const orderSlice = createSlice({
@@ -116,6 +117,9 @@ const orderSlice = createSlice({
         (modalName) => modalName !== payload
       );
     },
+    regenerateRefreshKey: (state) => {
+      state.refreshKey = Date.now();
+    },
   },
   extraReducers: (builder) => {
     builder.addCase(resetOrder, () => initialState);
@@ -130,6 +134,7 @@ export const {
   setDiscountGlobally,
   closeModal,
   openModal,
+  regenerateRefreshKey,
 } = orderSlice.actions;
 
 export default orderSlice.reducer;
@@ -161,6 +166,7 @@ interface OrderState {
   selectedItem: Item | null;
   totalCharge: number;
   openModals: string[];
+  refreshKey: number;
 }
 
 export type Item = CustomItem | StandardItem;
