@@ -143,7 +143,11 @@ const Transaction = () => {
           }}
           onEndReachedThreshold={0.01}
           ListFooterComponent={
-            <View className="h-[60]">{isFetching && <LoadingComponent />}</View>
+            <View className="h-[60] items-center justify-center">
+              <Text className="text-gray-400">
+                {isFetching && "Loading..."}
+              </Text>
+            </View>
           }
         />
       </View>
