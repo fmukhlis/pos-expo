@@ -4,52 +4,43 @@ import { User } from "./user";
 
 export interface Item {
   id: number;
-  note: string | null;
-  customAmount: number | null;
-  isCanceled: 0 | 1;
-  cancelReason: string | null;
-  createdAt: string;
-  updatedAt: string;
-  quantity: number;
-  discount: number | null;
-
-  product: Product | null;
-  variantId: number | null;
-  selectedModifierIds: number[] | null;
+  name: string;
+  note: string;
+  price: string;
+  options: string[];
+  quantity: string;
+  discount: string;
+  modifiers: string[];
+  totalPrice: string;
 }
 
 export interface Order {
   id: number;
-  cashAmount: number;
-  orderType: "Dine In" | "Take Away";
-  status: "Paid" | "Billed";
-  tableNumber: number | null;
-  customer: null;
+  createdAt: string;
+  cashAmount: string;
+  totalAmount: string;
+  processedBy: { name: string; email: string };
   paymentMethod: PaymentMethod;
   orderedProducts: Item[];
-  createdAt: string;
-  user: User;
 }
 
-export interface TransactionHistory {
-  id: number;
-  refunds: { refundedAt: string; totalAmount: number }[];
-  orderedProducts: {
-    id: number;
-    productName: string;
-    quantity: string;
+export interface DetailedOrder extends Order {
+  refunds: {
+    products: Item[];
+    refundedAt: string;
+    totalAmount: string;
+    processedBy: { name: string; email: string };
+    refundReason: string;
   }[];
-  totalAmount: number;
-  createdAt: string;
 }
 
 export type ItemPayload = CustomItemPayload | StandardItemPayload;
 
 export interface CustomItemPayload {
-  note?: string;
-  customAmount: number;
-  discount?: number;
-  quantity: number;
+  note: string;
+  discount: string;
+  quantity: string;
+  customAmount: string;
 }
 
 export interface StandardItemPayload
@@ -59,11 +50,7 @@ export interface StandardItemPayload
 }
 
 export interface OrderPayload {
-  cashAmount: number;
-  orderType: "Dine In" | "Take Away";
-  status: "Paid" | "Billed";
-  tableNumber?: number;
-  customerId?: number;
+  cashAmount: string;
   paymentMethodId: number;
   orderedProducts: ItemPayload[];
 }

@@ -1,5 +1,5 @@
 import { apiSlice } from "../apiSlice";
-import { TransactionHistory, Order, OrderPayload } from "@/types/order";
+import { DetailedOrder, Order, OrderPayload } from "@/types/order";
 
 export const orderAPI = apiSlice.injectEndpoints({
   overrideExisting: true,
@@ -40,11 +40,22 @@ export const orderAPI = apiSlice.injectEndpoints({
       transformResponse: (data: { data: Order }) => data.data,
       invalidatesTags: [{ type: "Order", id: "LIST" }],
     }),
+    getOrder: build.query<DetailedOrder, GetOrderArg>({
+      query: ({ orderId, storeId }) => ({
+        url: `/stores/${storeId}/orders/${orderId}`,
+        method: "GET",
+      }),
+      transformResponse: (data: { data: DetailedOrder }) => data.data,
+      providesTags: (result, error, { orderId: id }) => [{ type: "Order", id }],
+    }),
   }),
 });
 
-export const { useGetTransactionHistoryInfiniteQuery, useStoreOrderMutation } =
-  orderAPI;
+export const {
+  useGetTransactionHistoryInfiniteQuery,
+  useStoreOrderMutation,
+  useLazyGetOrderQuery,
+} = orderAPI;
 
 interface GetTransactionHistoryArg {
   storeId: number;
@@ -52,4 +63,21 @@ interface GetTransactionHistoryArg {
   date?: string;
 }
 
+interface GetOrderArg {
+  storeId: number;
+  orderId: number;
+}
+
 type StoreOrderArg = { storeId: number } & OrderPayload;
+
+interface TransactionHistory
+  extends Pick<Order, "id" | "totalAmount" | "createdAt"> {
+  refunds: Pick<
+    DetailedOrder["refunds"][number],
+    "refundedAt" | "totalAmount"
+  >[];
+  orderedProducts: Pick<
+    Order["orderedProducts"][number],
+    "id" | "name" | "quantity"
+  >[];
+}
