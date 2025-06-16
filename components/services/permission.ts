@@ -1,9 +1,5 @@
 import { apiSlice } from "../apiSlice";
-import {
-  DetailedPermission,
-  Permission,
-  PermissionPayload,
-} from "@/types/permission";
+import { Permission, PermissionPayload } from "@/types/permission";
 
 const permissionAPI = apiSlice.injectEndpoints({
   overrideExisting: true,
@@ -13,11 +9,11 @@ const permissionAPI = apiSlice.injectEndpoints({
       transformResponse: (data: { data: Permission[] }) => data.data,
       providesTags: [{ type: "Permission", id: "LIST" }],
     }),
-    getPermission: build.query<DetailedPermission, GetPermissionArg>({
+    getPermission: build.query<Permission, GetPermissionArg>({
       query: ({ permissionId, storeId }) => ({
         url: `/stores/${storeId}/permissions/${permissionId}`,
       }),
-      transformResponse: (data: { data: DetailedPermission }) => data.data,
+      transformResponse: (data: { data: Permission }) => data.data,
       providesTags: (result, error, { permissionId: id }) => [
         { type: "Permission", id },
       ],

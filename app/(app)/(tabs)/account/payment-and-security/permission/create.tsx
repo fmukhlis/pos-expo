@@ -96,11 +96,6 @@ const Create = () => {
         <Switch onValueChange={changeRefund} value={data.refund} />
       </View>
       <View className="flex-row py-8">
-        {/* <DangerButton
-                    className='px-4'
-                >
-                    Delete
-                </DangerButton> */}
         <PrimaryButton
           isProcessing={storePermissionResult.isLoading}
           onPress={save}
