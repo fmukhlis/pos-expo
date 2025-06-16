@@ -8,6 +8,14 @@ import ManageNoteModal from "@/components/Order/Checkout/ManageNoteModal";
 import { Icon } from "@/components/Icon";
 import { currencyFormat } from "@/utils/defaultFormat";
 import { SafeAreaView } from "react-native-safe-area-context";
+import ManageCustomItemModal from "@/components/Order/Checkout/ManageCustomItemModal";
+import ManageStandardItemModal from "@/components/Order/Checkout/ManageStandardItemModal";
+import { useAppDispatch, useAppSelector } from "@/components/reduxHooks";
+import {
+  closeModal,
+  setSelectedItem,
+  setSelectedProduct,
+} from "@/components/Order/orderSlice";
 
 const Keypad = () => {
   const {
@@ -22,8 +30,27 @@ const Keypad = () => {
     updateCustomAmount,
   } = useKeypad();
 
+  const openModals = useAppSelector(({ order }) => order.openModals);
+
+  const dispatch = useAppDispatch();
+
   return (
     <SafeAreaView className="flex-1 pt-8 bg-white">
+      <ManageCustomItemModal
+        visible={openModals.includes("ManageCustomItemModal")}
+        onRequestClose={() => {
+          dispatch(setSelectedItem(null));
+          dispatch(closeModal("ManageCustomItemModal"));
+        }}
+      />
+      <ManageStandardItemModal
+        visible={openModals.includes("ManageStandardItemModal")}
+        onRequestClose={() => {
+          dispatch(setSelectedItem(null));
+          dispatch(setSelectedProduct(null));
+          dispatch(closeModal("ManageStandardItemModal"));
+        }}
+      />
       <ManageNoteModal
         onSave={handleModalSave}
         visible={noteModalVisible}
