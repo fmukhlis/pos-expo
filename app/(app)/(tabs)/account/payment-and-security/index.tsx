@@ -1,8 +1,7 @@
 import React from "react";
 
-import { router, Stack } from "expo-router";
+import { router } from "expo-router";
 import { View, Text, TouchableHighlight } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 import { Icon } from "@/components/Icon";
 
