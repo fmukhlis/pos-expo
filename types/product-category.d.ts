@@ -1,7 +1,7 @@
 export interface ProductCategory {
   id: number;
   name: string;
-  productsCount: number;
+  productsCount: string;
 }
 
 export interface DetailedProductCategory extends ProductCategory {
