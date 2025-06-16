@@ -12,14 +12,14 @@ import {
 import PrimaryInput from "@/components/PrimaryInput";
 import InviteEmployeeModal from "@/components/Employee/InviteEmployeeModal";
 
-import { Icon } from "@/components/Icon";
-import { useAppSelector } from "@/components/reduxHooks";
 import {
   useDisinviteEmployeeMutation,
   useGetEmployeesQuery,
   useGetOutgoingInvitationsQuery,
   useTerminateEmployeeMutation,
 } from "@/components/services/employee";
+import { Icon } from "@/components/Icon";
+import { useAppSelector } from "@/components/reduxHooks";
 
 const Employee = () => {
   const storeId = useAppSelector(({ store }) => store.selectedStoreId)!;

@@ -1,18 +1,18 @@
 import React from "react";
+import Toast from "react-native-toast-message";
+
 import { View, Text, Modal, TouchableHighlight } from "react-native";
 
 import PrimaryInput from "../PrimaryInput";
-import useEmployeeAPI from "./useEmployeeAPI";
-import { Icon } from "../Icon";
-import { useAppSelector } from "../reduxHooks";
-import { PrimaryButton } from "../PrimaryButton";
-import { SecondaryButtonSM } from "../SecondaryButton";
-import { useEmployee } from "@/contexts/EmployeeContext";
+
 import {
   useInviteEmployeesMutation,
   useLazyGetUserByEmailQuery,
 } from "../services/employee";
-import Toast from "react-native-toast-message";
+import { Icon } from "../Icon";
+import { PrimaryButton } from "../PrimaryButton";
+import { useAppSelector } from "../reduxHooks";
+import { SecondaryButtonSM } from "../SecondaryButton";
 
 const InviteEmployeeModal = ({
   visible,

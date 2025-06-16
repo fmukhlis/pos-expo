@@ -5,8 +5,6 @@ export interface Employee {
   storeName: string;
 }
 
-export interface DetailedEmployee extends Employee {}
-
 interface EmployeeInvitation extends Omit<EmployeeProps, "status"> {
   status: "Pending" | "Accepted" | "Declined";
   invitedAt: string;
