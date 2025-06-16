@@ -8,14 +8,12 @@ import {
   SectionList,
   RefreshControl,
 } from "react-native";
+import { router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
 
-import LoadingComponent from "@/components/LoadingComponent";
-
-import { useAppSelector } from "@/components/reduxHooks";
 import { currencyFormat } from "@/utils/defaultFormat";
-import { TransactionHistory } from "@/types/order";
+import { useAppSelector } from "@/components/reduxHooks";
 import { useGetTransactionHistoryInfiniteQuery } from "@/components/services/order";
 
 const Transaction = () => {
@@ -28,45 +26,56 @@ const Transaction = () => {
       refreshKey,
     });
 
-  const [sections, setSections] = React.useState<
-    { title: string; data: TransactionHistory[] }[]
-  >([]);
+  const sections = React.useMemo(() => {
+    const transactionHistory = data?.pages.map((page) => page.data).flat(1);
 
-  React.useEffect(() => {
-    if (!isFetching) {
-      setSections(() => {
-        const transactionHistory = data?.pages.map((page) => page.data).flat(1);
+    const map = new Map<
+      string,
+      Exclude<typeof transactionHistory, undefined>
+    >();
 
-        const map = new Map<string, TransactionHistory[]>();
-
-        if (transactionHistory) {
-          for (const item of transactionHistory) {
-            const key = item.createdAt.substring(0, 10);
-            if (!map.has(key)) {
-              map.set(key, []);
-            }
-            map.get(key)?.push(item);
-          }
+    if (transactionHistory) {
+      for (const item of transactionHistory) {
+        const key = item.createdAt.substring(0, 10);
+        if (!map.has(key)) {
+          map.set(key, []);
         }
-
-        return Array.from(map, ([key, value]) => ({
-          title: key,
-          data: value,
-        }));
-      });
+        map.get(key)?.push(item);
+      }
     }
-  }, [isFetching]);
+
+    return Array.from(map, ([key, value]) => ({
+      title: key,
+      data: value,
+    }));
+  }, [data]);
 
   return (
     <SafeAreaView className="flex-1">
       <View className="flex-1 py-1 bg-white">
-        <Text className="px-5 text-2xl font-bold mb-1">Transactions</Text>
+        <Text className="px-5 text-2xl font-bold mb-3">Transactions</Text>
         <SectionList
           sections={sections}
+          ListEmptyComponent={
+            <View className="px-4">
+              <View className="p-4 border border-gray-400 rounded items-center">
+                <Text className="text-lg text-gray-500 font-medium mb-2">
+                  No transactions yet
+                </Text>
+                <Text className="text-sm text-center text-gray-500">
+                  Check back later to view your transaction history
+                </Text>
+              </View>
+            </View>
+          }
           renderItem={({ item }) => (
             <View className="mx-5">
               <View className="border-b border-gray-200">
-                <TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => {
+                    router.navigate(`/transaction/${item.id}`);
+                  }}
+                >
                   <View className="py-2 flex-row items-center">
                     <View className="px-2">
                       <MaterialCommunityIcons
@@ -77,7 +86,7 @@ const Transaction = () => {
                     </View>
                     <View className="w-[185]">
                       <Text className="font-bold text-base mb-0.5">
-                        {currencyFormat.format(item.totalAmount)}
+                        {currencyFormat.format(Number(item.totalAmount))}
                       </Text>
                       <Text
                         numberOfLines={1}
@@ -85,10 +94,7 @@ const Transaction = () => {
                         className="text-gray-500"
                       >
                         {item.orderedProducts
-                          .map(
-                            ({ quantity, productName }) =>
-                              `${productName} x${quantity}`
-                          )
+                          .map(({ quantity, name }) => `${name} x${quantity}`)
                           .join(", ")}
                       </Text>
                     </View>
@@ -111,7 +117,7 @@ const Transaction = () => {
                         </View>
                         <FontAwesome name="minus" size={8} color="#f87171" />
                         <Text className="font-bold text-red-400 text-xs ml-0.5">
-                          {currencyFormat.format(refund.totalAmount)}
+                          {currencyFormat.format(Number(refund.totalAmount))}
                         </Text>
                         <Text className="ml-auto text-xs">
                           {dayjs(refund.refundedAt).format(
