@@ -18,23 +18,19 @@ import PrimaryInput from "@/components/PrimaryInput";
 import CurrencyTextInput from "@/components/CurrencyTextInput";
 
 import { Icon } from "@/components/Icon";
-import { currencyFormat } from "@/utils/defaultFormat";
 import { DangerButton } from "@/components/DangerButton";
-import { useAppDispatch } from "@/components/reduxHooks";
+import { currencyFormat } from "@/utils/defaultFormat";
 import { PrimaryTouchable } from "@/components/PrimaryTouchable";
 import { SecondaryTouchable } from "@/components/SecondaryTouchable";
-import {
-  CustomItem,
-  removeItem,
-  setSelectedItem,
-  updateItem,
-} from "../orderSlice";
+import { removeItem, updateItem } from "../orderSlice";
+import { useAppDispatch, useAppSelector } from "@/components/reduxHooks";
 
 const ManageCustomItemModal = ({
   onRequestClose,
-  customItem,
   ...props
 }: ManageCustomItemModalProps) => {
+  const selectedItem = useAppSelector(({ order }) => order.selectedItem);
+
   const {
     handleSubmit,
     control,
@@ -77,15 +73,20 @@ const ManageCustomItemModal = ({
   };
 
   React.useEffect(() => {
-    if (customItem) {
+    if (selectedItem && !("variantId" in selectedItem)) {
       reset({
-        note: customItem.note,
-        price: customItem.price,
-        discount: customItem.discount,
-        quantity: customItem.quantity,
+        name: selectedItem?.name ?? defaultValues.name,
+        note: selectedItem?.note ?? defaultValues.note,
+        discount: selectedItem?.discount ?? defaultValues.discount,
+        quantity: selectedItem?.quantity ?? defaultValues.quantity,
+        customAmount: selectedItem?.customAmount ?? defaultValues.customAmount,
       });
     }
-  }, [customItem?.id]);
+  }, [selectedItem?.id]);
+
+  if (selectedItem && "variantId" in selectedItem) {
+    return <></>;
+  }
 
   return (
     <BasicModal
@@ -105,7 +106,7 @@ const ManageCustomItemModal = ({
             numberOfLines={1}
           >
             {`Custom amount ${currencyFormat.format(
-              Number(customItem ? customItem.price : "")
+              Number(selectedItem?.customAmount ?? 0)
             )}`}
           </Text>
           <PrimaryTouchable onPress={handleSubmit(onSubmit)}>
@@ -117,7 +118,7 @@ const ManageCustomItemModal = ({
             <View className="w-[220]">
               <Text className="font-semibold text-base mb-3">Price</Text>
               <Controller
-                name="price"
+                name="customAmount"
                 control={control}
                 render={({ field: { value, onBlur, onChange } }) => {
                   return (
@@ -135,9 +136,9 @@ const ManageCustomItemModal = ({
                   );
                 }}
               />
-              {errors.price && (
+              {errors.customAmount && (
                 <Text className="text-red-500 text-xs">
-                  {errors.price.message}
+                  {errors.customAmount.message}
                 </Text>
               )}
             </View>
@@ -263,7 +264,7 @@ const ManageCustomItemModal = ({
                     <PrimaryInput
                       keyboardType="numeric"
                       maxLength={2}
-                      placeholder="Custom amount..."
+                      placeholder="Custom discount..."
                       className="h-[38] text-sm"
                       onChangeText={(text) => {
                         onChange(text.replace(/\D/g, ""));
@@ -296,31 +297,31 @@ export default ManageCustomItemModal;
 
 const Schema = z
   .object({
+    name: z.string(),
     note: z
       .string()
       .max(200, { message: "Must contain at most 200 characters" }),
-    price: z
-      .string()
-      .regex(/^\d+$/, { message: "Invalid price" })
-      .max(8, { message: "The maximum price is Rp99.999.999" }),
     discount: z.string().regex(/^\d*$/, { message: "Invalid discount" }),
     quantity: z
       .string()
       .regex(/^(?!0$)\d+$/, { message: "Invalid quantity" })
       .max(4, { message: "The maximum quantity is 9999" }),
+    customAmount: z
+      .string()
+      .regex(/^\d+$/, { message: "Invalid price" })
+      .max(8, { message: "The maximum price is Rp99.999.999" }),
   })
   .required();
 
 const defaultValues = {
+  name: "Custom amount",
   note: "",
-  price: "",
   discount: "",
   quantity: "1",
+  customAmount: "",
 };
 
 const discountSuggestions = ["10", "15", "20", "25", "30", "40", "50"];
 
 interface ManageCustomItemModalProps
-  extends React.ComponentPropsWithoutRef<typeof BasicModal> {
-  customItem?: CustomItem | undefined;
-}
+  extends React.ComponentPropsWithoutRef<typeof BasicModal> {}

@@ -18,46 +18,41 @@ import PrimaryInput from "@/components/PrimaryInput";
 import CurrencyTextInput from "@/components/CurrencyTextInput";
 
 import { Icon } from "@/components/Icon";
-import { Product } from "@/types/product";
-import { useAppDispatch } from "@/components/reduxHooks";
+import { useAppDispatch, useAppSelector } from "@/components/reduxHooks";
 import { PrimaryTouchable } from "@/components/PrimaryTouchable";
-import {
-  addItem,
-  removeItem,
-  setSelectedItem,
-  StandardItem,
-  updateItem,
-} from "../orderSlice";
+import { addItem, removeItem, StandardItem, updateItem } from "../orderSlice";
 import { SecondaryTouchable } from "@/components/SecondaryTouchable";
 import { DangerButton } from "@/components/DangerButton";
 import { Alert } from "react-native";
 
 const ManageStandardItemModal = ({
-  onRequestClose,
-  standardItem,
-  visible,
   onSave,
+  onRequestClose,
   ...props
 }: ManageStandardItemModalProps) => {
+  const selectedItem = useAppSelector(({ order }) => order.selectedItem);
+
   const {
     reset,
     watch,
     control,
     handleSubmit,
     formState: { errors },
+    setValue,
   } = useForm({
     resolver: zodResolver(Schema),
     mode: "all",
-    defaultValues: { ...defaultValues },
+    defaultValues,
   });
-  const [product] = watch(["product"]);
 
-  const [priceText, setPriceText] = React.useState("");
+  const price = watch("price");
+
+  const selectedProduct = useAppSelector(({ order }) => order.selectedProduct);
 
   const dispatch = useAppDispatch();
 
-  const activeVariants = standardItem?.product
-    ? standardItem.product.availableVariants
+  const activeVariants = selectedProduct
+    ? selectedProduct.availableVariants
         .filter(({ status }) => status === "Active")
         .map(({ productOptions, id, price }) => {
           const optionNames = productOptions.map(({ name }) => name).join(", ");
@@ -69,8 +64,8 @@ const ManageStandardItemModal = ({
         })
     : [];
 
-  const activeModifierCategories = standardItem?.product
-    ? standardItem.product.availableModifiers
+  const activeModifierCategories = selectedProduct
+    ? selectedProduct.availableModifiers
         .filter(({ status }) => status === "Active")
         .map(({ id, name, values }) => {
           return {
@@ -84,7 +79,7 @@ const ManageStandardItemModal = ({
     : [];
 
   const onSubmit: SubmitHandler<z.infer<typeof Schema>> = (data, e) => {
-    if (standardItem?.id) {
+    if (selectedItem?.id) {
       dispatch(updateItem(data));
     } else {
       dispatch(addItem(data));
@@ -121,35 +116,40 @@ const ManageStandardItemModal = ({
   };
 
   React.useEffect(() => {
-    if (standardItem && standardItem.product) {
-      const { id, product, selectedModifierIds, selectedVariantId, ...rest } =
-        standardItem;
-      const values = {
-        ...defaultValues,
-        ...(standardItem.id && { ...rest, selectedVariantId }),
-        product,
-        selectedModifierIds:
-          selectedModifierIds && selectedModifierIds.length > 0
-            ? selectedModifierIds
-            : product.availableModifiers.length > 0
-            ? product.availableModifiers.map(() => "")
-            : [],
-      };
-      reset(values);
-      setPriceText(
-        `${
-          product.availableVariants.find(
-            ({ id }) => `${id}` === selectedVariantId
-          )?.price
-        }`
-      );
+    if (selectedItem && "variantId" in selectedItem) {
+      reset({
+        name: selectedItem?.name ?? defaultValues.name,
+        note: selectedItem?.note ?? defaultValues.note,
+        price: selectedItem?.price ?? defaultValues.price,
+        discount: selectedItem?.discount ?? defaultValues.discount,
+        quantity: selectedItem?.quantity ?? defaultValues.quantity,
+        variantId: selectedItem?.variantId ?? defaultValues.variantId,
+        modifierIds: selectedItem?.modifierIds ?? defaultValues.modifierIds,
+        optionNames: selectedItem?.optionNames ?? defaultValues.optionNames,
+      });
+    } else if (selectedProduct) {
+      reset({
+        name: selectedProduct?.name ?? defaultValues.name,
+        note: defaultValues.note,
+        price: defaultValues.price,
+        discount: defaultValues.discount,
+        quantity: defaultValues.quantity,
+        variantId: defaultValues.variantId,
+        modifierIds: defaultValues.modifierIds,
+        optionNames: defaultValues.optionNames,
+      });
     }
-  }, [standardItem?.id, standardItem?.product?.id]);
+  }, [selectedItem?.id, selectedProduct?.id]);
+
+  if (selectedItem && !("variantId" in selectedItem)) {
+    if (!selectedProduct) {
+      return <></>;
+    }
+  }
 
   return (
     <BasicModal
       {...props}
-      visible={visible}
       animationType="slide"
       onRequestClose={onRequestClose}
       containerClassName="bg-white flex-1 p-1"
@@ -164,7 +164,7 @@ const ManageStandardItemModal = ({
             ellipsizeMode="tail"
             numberOfLines={1}
           >
-            {product?.name}
+            {selectedProduct?.name}
           </Text>
           <PrimaryTouchable onPress={handleSubmit(onSubmit)}>
             <Icon name="save-outline" size={27} className="text-white p-1.5" />
@@ -176,7 +176,7 @@ const ManageStandardItemModal = ({
             <Text className="text-gray-400 font-normal">(Select one)</Text>
           </Text>
           <Controller
-            name="selectedVariantId"
+            name="variantId"
             control={control}
             render={({ field: { value: currentValue, onChange } }) => {
               return (
@@ -185,18 +185,19 @@ const ManageStandardItemModal = ({
                   value={activeVariants.find(
                     ({ value }) => value === currentValue
                   )}
-                  onValueChange={({ value, price }) => {
+                  onValueChange={({ value, price, label }) => {
                     onChange(value);
-                    setPriceText(price);
+                    setValue("price", price);
+                    setValue("optionNames", label);
                   }}
                   options={activeVariants}
                 />
               );
             }}
           />
-          {product && product.availableModifiers.length > 0 && (
+          {selectedProduct && selectedProduct.availableModifiers.length > 0 && (
             <Controller
-              name="selectedModifierIds"
+              name="modifierIds"
               control={control}
               render={({ field: { value: currentValue, onChange } }) => {
                 return (
@@ -255,7 +256,7 @@ const ManageStandardItemModal = ({
               <CurrencyTextInput
                 className="h-[40] text-sm"
                 placeholder="Price"
-                value={priceText}
+                value={price}
                 editable={false}
               />
             </View>
@@ -373,7 +374,7 @@ const ManageStandardItemModal = ({
                     <PrimaryInput
                       keyboardType="numeric"
                       maxLength={2}
-                      placeholder="Custom amount..."
+                      placeholder="Custom discount..."
                       className="h-[38] text-sm"
                       onChangeText={(text) => {
                         onChange(text.replace(/\D/g, ""));
@@ -386,7 +387,7 @@ const ManageStandardItemModal = ({
               );
             }}
           />
-          {standardItem?.id && (
+          {selectedItem?.id && (
             <View className="py-5 my-5 border-t border-gray-300">
               <DangerButton className="py-2" onPress={handleRemoveItem}>
                 Remove Item
@@ -406,79 +407,31 @@ const Schema = z
     note: z
       .string()
       .max(200, { message: "Must contain at most 200 characters" }),
+    name: z.string(),
+    price: z
+      .string()
+      .regex(/^\d+$/, { message: "Invalid price" })
+      .max(8, { message: "The maximum price is Rp99.999.999" }),
     quantity: z
       .string()
       .min(1)
       .max(4, { message: "The maximum quantity is 9999" }),
-    product: z
-      .object({
-        id: z.number(),
-        name: z.string(),
-        category: z
-          .object({
-            id: z.number(),
-            name: z.string(),
-            productsCount: z.number(),
-          })
-          .nullable(),
-        availableModifiers: z
-          .object({
-            id: z.number(),
-            name: z.string(),
-            status: z.enum(["Active", "Inactive"]),
-            values: z
-              .object({
-                id: z.number(),
-                name: z.string(),
-                status: z.enum(["Active", "Inactive"]),
-              })
-              .array(),
-          })
-          .array(),
-        availableOptions: z
-          .object({
-            id: z.number(),
-            name: z.string(),
-            status: z.enum(["Active", "Inactive"]),
-            values: z
-              .object({
-                id: z.number(),
-                name: z.string(),
-                status: z.enum(["Active", "Inactive"]),
-              })
-              .array(),
-          })
-          .array(),
-        availableVariants: z
-          .object({
-            id: z.number(),
-            price: z.number(),
-            stock: z.number(),
-            sku: z.string().nullable(),
-            status: z.enum(["Active", "Inactive"]),
-            productOptions: z
-              .object({
-                id: z.number(),
-                name: z.string(),
-                status: z.enum(["Active", "Inactive"]),
-              })
-              .array(),
-          })
-          .array(),
-      })
-      .required(),
     discount: z.string().regex(/^\d*$/),
-    selectedVariantId: z.string().regex(/^\d+$/),
-    selectedModifierIds: z.string().regex(/^\d+$/).array(),
+    variantId: z.string().regex(/^\d+$/),
+    modifierIds: z.string().regex(/^\d+$/).array(),
+    optionNames: z.string(),
   })
   .required();
 
 const defaultValues = {
+  name: "",
   note: "",
+  price: "",
   discount: "",
   quantity: "1",
-  selectedVariantId: "",
-  selectedModifierIds: [] as string[],
+  variantId: "",
+  modifierIds: [] as string[],
+  optionNames: "",
 };
 
 const discountSuggestions = ["10", "15", "20", "25", "30", "40", "50"];
@@ -486,5 +439,4 @@ const discountSuggestions = ["10", "15", "20", "25", "30", "40", "50"];
 interface ManageStandardItemModalProps
   extends React.ComponentPropsWithoutRef<typeof BasicModal> {
   onSave?: () => void;
-  standardItem?: Partial<StandardItem> | undefined;
 }

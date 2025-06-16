@@ -27,7 +27,6 @@ const ChargeModal = ({
   const storeId = useAppSelector(
     ({ store: { selectedStoreId } }) => selectedStoreId
   )!;
-
   const items = useAppSelector(({ order }) => order.items);
   const openModals = useAppSelector(({ order }) => order.openModals);
 
@@ -47,8 +46,8 @@ const ChargeModal = ({
   const paymentMethodsOption = React.useMemo(
     () =>
       paymentMethods
-        ? paymentMethods.map(({ name, id }) => ({
-            label: name,
+        ? paymentMethods.map(({ name, destination, id }) => ({
+            label: `${name} (${destination})`,
             value: `${id}`,
           }))
         : [],
@@ -57,28 +56,26 @@ const ChargeModal = ({
 
   const onSubmit: SubmitHandler<z.infer<typeof Schema>> = (data) => {
     const orderedProducts = items.map((item) =>
-      "selectedVariantId" in item
+      "variantId" in item
         ? {
-            ...(item.discount && { discount: parseInt(item.discount) }),
-            modifierIds: item.selectedModifierIds,
-            quantity: parseInt(item.quantity),
-            variantId: item.selectedVariantId,
-            ...(item.note && { note: item.note }),
+            note: item.note,
+            discount: item.discount,
+            quantity: item.quantity,
+            variantId: item.variantId,
+            modifierIds: item.modifierIds,
           }
         : {
-            customAmount: parseInt(item.price),
-            ...(item.discount && { discount: parseInt(item.discount) }),
-            quantity: parseInt(item.quantity),
-            ...(item.note && { note: item.note }),
+            note: item.note,
+            discount: item.discount,
+            quantity: item.quantity,
+            customAmount: item.customAmount,
           }
     );
 
     storeOrder({
-      cashAmount: parseInt(data.cashAmount),
+      cashAmount: data.cashAmount,
       orderedProducts,
-      orderType: "Take Away",
       paymentMethodId: parseInt(data.paymentMethodId),
-      status: "Paid",
       storeId,
     })
       .unwrap()
