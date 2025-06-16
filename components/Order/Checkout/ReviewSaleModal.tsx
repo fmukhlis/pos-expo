@@ -12,8 +12,6 @@ import {
 import ChargeModal from "./ChargeModal";
 import BasicModal from "@/components/BasicModal";
 import ManageDiscountModal from "./ManageDiscountModal";
-import ManageCustomItemModal from "./ManageCustomItemModal";
-import ManageStandardItemModal from "./ManageStandardItemModal";
 
 import { Icon } from "@/components/Icon";
 import { MaterialIcons } from "@expo/vector-icons";
@@ -59,18 +57,12 @@ const ReviewSaleModal = ({
     );
   };
 
-  const [customItemModalVisible, setCustomItemModalVisible] =
-    React.useState(false);
-  const [standardItemModalVisible, setStandardItemModalVisible] =
-    React.useState(false);
-  const [discountModalVisible, setDiscountModalVisible] = React.useState(false);
-
   React.useEffect(() => {
     if (selectedItem?.id) {
-      if ("product" in selectedItem) {
-        setStandardItemModalVisible(true);
+      if ("variantId" in selectedItem) {
+        dispatch(openModal("ManageStandardItemModal"));
       } else {
-        setCustomItemModalVisible(true);
+        dispatch(openModal("ManageCustomItemModal"));
       }
     }
   }, [selectedItem?.id]);
@@ -84,28 +76,6 @@ const ReviewSaleModal = ({
         visible={visible}
         containerClassName="h-[95%] mt-auto bg-white p-4"
       >
-        <ManageCustomItemModal
-          customItem={
-            selectedItem && !("product" in selectedItem)
-              ? selectedItem
-              : undefined
-          }
-          visible={customItemModalVisible}
-          onRequestClose={() => {
-            dispatch(setSelectedItem(null));
-            setCustomItemModalVisible(false);
-          }}
-        />
-        <ManageStandardItemModal
-          standardItem={
-            selectedItem && "product" in selectedItem ? selectedItem : undefined
-          }
-          visible={standardItemModalVisible}
-          onRequestClose={() => {
-            dispatch(setSelectedItem(null));
-            setStandardItemModalVisible(false);
-          }}
-        />
         <View className="flex-row justify-between items-center mb-5">
           <TouchableOpacity className="w-[30]" onPress={onRequestClose}>
             <Icon name="close" size={25} className="m-auto" />
@@ -126,22 +96,7 @@ const ReviewSaleModal = ({
         </TouchableOpacity>
         <ScrollView className="mb-3">
           {items.map((item) => {
-            const name =
-              "product" in item ? item.product.name : "Custom amount";
-            const price =
-              "product" in item
-                ? item.product.availableVariants.find(
-                    (variant) => `${variant.id}` === item.selectedVariantId
-                  )!.price
-                : item.price;
-            const variantNames =
-              "product" in item
-                ? item.product.availableVariants
-                    .find(({ id }) => `${id}` === item.selectedVariantId)
-                    ?.productOptions.map(({ name }) => name)
-                    .join(", ")
-                : undefined;
-
+            const price = "variantId" in item ? item.price : item.customAmount;
             return (
               <TouchableHighlight
                 key={item.id}
@@ -161,7 +116,7 @@ const ReviewSaleModal = ({
                             numberOfLines={1}
                             ellipsizeMode="tail"
                           >
-                            {name}
+                            {item.name}
                           </Text>
                           <Text className="text-sm text-gray-500 ml-1">{`x ${item.quantity}`}</Text>
                         </>
@@ -171,17 +126,17 @@ const ReviewSaleModal = ({
                           numberOfLines={1}
                           ellipsizeMode="tail"
                         >
-                          {name}
+                          {item.name}
                         </Text>
                       )}
                     </View>
-                    {variantNames && (
+                    {"variantId" in item && (
                       <Text
                         className="text-sm text-gray-500"
                         numberOfLines={1}
                         ellipsizeMode="tail"
                       >
-                        {variantNames}
+                        {item.optionNames}
                       </Text>
                     )}
                     {!!item.note && (
@@ -219,9 +174,10 @@ const ReviewSaleModal = ({
                           numberOfLines={1}
                         >
                           {currencyFormat.format(
-                            Number(price) *
+                            (Number(price) *
                               Number(item.quantity) *
-                              (item.discount ? Number(item.discount) / 100 : 1)
+                              (100 - Number(item.discount))) /
+                              100
                           )}
                         </Text>
                       </View>
@@ -235,7 +191,7 @@ const ReviewSaleModal = ({
         <TouchableOpacity
           className="mb-3"
           onPress={() => {
-            setDiscountModalVisible(true);
+            dispatch(openModal("ManageDiscountModal"));
           }}
         >
           <View className="flex-row items-center justify-between py-3.5 px-5 bg-gray-100">
@@ -258,12 +214,12 @@ const ReviewSaleModal = ({
         </PrimaryTouchable>
       </BasicModal>
       <ManageDiscountModal
-        visible={discountModalVisible}
+        visible={openModals.includes("ManageDiscountModal")}
         onRequestClose={() => {
-          setDiscountModalVisible(false);
+          dispatch(closeModal("ManageDiscountModal"));
         }}
         onSave={(discount) => {
-          setDiscountModalVisible(false);
+          dispatch(closeModal("ManageDiscountModal"));
           dispatch(setDiscountGlobally(discount));
         }}
       />
