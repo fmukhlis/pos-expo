@@ -1,9 +1,9 @@
 import { Tabs } from "expo-router";
 import { Text } from "react-native";
 
-import { TabBarIcon } from "@/components/navigation/TabBarIcon";
 import { regenerateRefreshKey } from "@/components/Order/orderSlice";
 import { useAppDispatch, useAppSelector } from "@/components/reduxHooks";
+import { Icon } from "@/components/Icon";
 
 export default function TabLayout() {
   const storeId = useAppSelector(({ store }) => store.selectedStoreId);
@@ -35,7 +35,7 @@ export default function TabLayout() {
             </Text>
           ),
           tabBarIcon: ({ focused, size }) => (
-            <TabBarIcon
+            <Icon
               name={focused ? "apps" : "apps-outline"}
               className={`${
                 focused
@@ -69,7 +69,7 @@ export default function TabLayout() {
             </Text>
           ),
           tabBarIcon: ({ focused, size }) => (
-            <TabBarIcon
+            <Icon
               name="swap-horizontal"
               className={`${
                 focused
@@ -96,7 +96,7 @@ export default function TabLayout() {
             </Text>
           ),
           tabBarIcon: ({ focused, size }) => (
-            <TabBarIcon
+            <Icon
               name={focused ? "notifications-sharp" : "notifications-outline"}
               className={`${
                 focused
@@ -123,7 +123,7 @@ export default function TabLayout() {
             </Text>
           ),
           tabBarIcon: ({ focused, size }) => (
-            <TabBarIcon
+            <Icon
               name={focused ? "person-sharp" : "person-outline"}
               className={`${
                 focused

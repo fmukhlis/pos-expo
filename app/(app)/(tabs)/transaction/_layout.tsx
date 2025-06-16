@@ -10,13 +10,7 @@ const TransactionLayout = () => {
     return <Redirect href={"/account"} />;
   }
 
-  return (
-    <Stack
-      screenOptions={{
-        headerShown: false,
-      }}
-    />
-  );
+  return <Stack screenOptions={{ headerShown: false }} />;
 };
 
 export default TransactionLayout;
