@@ -12,29 +12,19 @@ import { router, Stack, useLocalSearchParams } from "expo-router";
 
 import PrimaryInput from "@/components/PrimaryInput";
 import LoadingComponent from "@/components/LoadingComponent";
-import ManageStandardItemModal from "@/components/Order/Checkout/ManageStandardItemModal";
 
 import { Icon } from "@/components/Icon";
-import { Product } from "@/types/product";
-import { useAppSelector } from "@/components/reduxHooks";
 import { useGetProductsQuery } from "@/components/services/product";
+import { useAppDispatch, useAppSelector } from "@/components/reduxHooks";
 import { useLazyGetProductCategoryQuery } from "@/components/services/productCategory";
+import { openModal, setSelectedProduct } from "@/components/Order/orderSlice";
 
 const Category = () => {
   const { id }: { id: string } = useLocalSearchParams();
 
   const storeId = useAppSelector(({ store }) => store.selectedStoreId)!;
 
-  const [selectedProduct, setSelectedProduct] = React.useState<Product | null>(
-    null
-  );
-
-  const [modalVisible, setModalVisible] = React.useState(false);
-
-  const hideModal = () => {
-    setSelectedProduct(null);
-    setModalVisible(false);
-  };
+  const dispatch = useAppDispatch();
 
   const [filter, setFilter] = React.useState("");
 
@@ -71,12 +61,6 @@ const Category = () => {
     }
   }, []);
 
-  React.useEffect(() => {
-    if (selectedProduct?.id) {
-      setModalVisible(true);
-    }
-  }, [selectedProduct?.id]);
-
   return (
     <View className="bg-white flex-1">
       {getProductCategoryResult.isFetching ? (
@@ -109,11 +93,6 @@ const Category = () => {
               headerShown: true,
             }}
           />
-          <ManageStandardItemModal
-            visible={modalVisible}
-            onRequestClose={hideModal}
-            standardItem={{ product: selectedProduct ?? undefined }}
-          />
           <FlatList
             data={filteredProducts}
             ListHeaderComponent={
@@ -133,7 +112,8 @@ const Category = () => {
               <TouchableOpacity
                 activeOpacity={0.8}
                 onPress={() => {
-                  setSelectedProduct(item);
+                  dispatch(setSelectedProduct(item));
+                  dispatch(openModal("ManageStandardItemModal"));
                 }}
               >
                 <View className="flex-row bg-gray-50">
@@ -170,7 +150,7 @@ const Category = () => {
                     >
                       {item.availableVariants.reduce(
                         (accumulator, currentValue) =>
-                          accumulator + currentValue.stock,
+                          accumulator + Number(currentValue.stock),
                         0
                       )}
                     </Text>
