@@ -25,7 +25,7 @@ export default function useKeypad() {
 
   const addCustomItem = () => {
     if (Number(price) > 0) {
-      dispatch(addItem({ price, note, discount: "" }));
+      dispatch(addItem({ customAmount: price, discount: "", note }));
       clearCurrentInput();
     }
   };
