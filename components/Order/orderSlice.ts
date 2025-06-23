@@ -4,17 +4,26 @@ import { v4 as uuidv4 } from "uuid";
 import { createAction, createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 import { Product } from "@/types/product";
-import { CustomItemPayload, StandardItemPayload } from "@/types/order";
+import {
+  CustomItemPayload,
+  IssueRefundPayload,
+  StandardItemPayload,
+} from "@/types/order";
 
 export const resetOrder = createAction("order/resetOrder");
 
 const initialState: OrderState = {
   items: [],
-  selectedItem: null,
-  selectedProduct: null,
-  totalCharge: 0,
   openModals: [],
   refreshKey: 0,
+  totalCharge: 0,
+  selectedItem: null,
+  refundPayload: {
+    reason: "",
+    authorizationCode: "",
+    orderProductVariantIds: [],
+  },
+  selectedProduct: null,
 };
 
 const orderSlice = createSlice({
@@ -134,6 +143,12 @@ const orderSlice = createSlice({
     regenerateRefreshKey: (state) => {
       state.refreshKey = Date.now();
     },
+    setRefundPayload: (
+      state,
+      { payload }: PayloadAction<IssueRefundPayload>
+    ) => {
+      state.refundPayload = payload;
+    },
   },
   extraReducers: (builder) => {
     builder.addCase(resetOrder, () => initialState);
@@ -147,6 +162,7 @@ export const {
   removeItem,
   updateItem,
   setSelectedItem,
+  setRefundPayload,
   setSelectedProduct,
   setDiscountGlobally,
   regenerateRefreshKey,
@@ -174,11 +190,12 @@ const calculateTotalCharge = (items: Item[]) => {
 
 interface OrderState {
   items: Item[];
-  selectedItem: Item | null;
-  selectedProduct: Product | null;
-  totalCharge: number;
   openModals: string[];
   refreshKey: number;
+  totalCharge: number;
+  selectedItem: Item | null;
+  refundPayload: IssueRefundPayload;
+  selectedProduct: Product | null;
 }
 
 export type Item = CustomItem | StandardItem;
