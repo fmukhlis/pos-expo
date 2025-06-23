@@ -2,16 +2,21 @@ import React from "react";
 
 import { View, Text, TouchableOpacity } from "react-native";
 
-const RadioGroup = <T extends { label: string; value: string }>({
+import { Primitive } from "@/types/global";
+
+const RadioGroup = <
+  O extends { label: string; value: V },
+  V extends Primitive = string
+>({
   options,
   onValueChange,
   value,
   ...props
-}: RadioGroupProps<T>) => {
+}: RadioGroupProps<O, V>) => {
   return (
     <View {...props}>
       {options.map((option) => (
-        <View className="border-t border-gray-200" key={option.value}>
+        <View className="border-t border-gray-200" key={`${option.value}`}>
           <TouchableOpacity
             className="flex-row items-center py-2"
             onPress={() => {
@@ -21,7 +26,7 @@ const RadioGroup = <T extends { label: string; value: string }>({
             }}
           >
             <View className="border rounded-full border-gray-300 w-[25] h-[25]">
-              {value === option && (
+              {value === option.value && (
                 <View className="rounded-full bg-blue-500 w-[18] h-[18] m-auto border border-blue-400" />
               )}
             </View>
@@ -35,9 +40,14 @@ const RadioGroup = <T extends { label: string; value: string }>({
 
 export default RadioGroup;
 
-interface RadioGroupProps<T extends { label: string; value: string }>
-  extends React.ComponentPropsWithoutRef<typeof View> {
-  options: T[];
-  value?: T | undefined;
-  onValueChange?: (value: T) => void | undefined;
+interface RadioGroupProps<
+  O extends { label: string; value: V },
+  V extends Primitive
+> extends React.ComponentPropsWithoutRef<typeof View> {
+  /**
+   * Options for the radio group. Each "O[value]" must be unique.
+   */
+  options: O[];
+  value?: V | undefined;
+  onValueChange?: (option: O) => void | undefined;
 }
