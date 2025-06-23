@@ -1,5 +1,10 @@
 import { apiSlice } from "../apiSlice";
-import { DetailedOrder, Order, OrderPayload } from "@/types/order";
+import {
+  Order,
+  OrderPayload,
+  DetailedOrder,
+  IssueRefundPayload,
+} from "@/types/order";
 
 export const orderAPI = apiSlice.injectEndpoints({
   overrideExisting: true,
@@ -48,19 +53,36 @@ export const orderAPI = apiSlice.injectEndpoints({
       transformResponse: (data: { data: DetailedOrder }) => data.data,
       providesTags: (result, error, { orderId: id }) => [{ type: "Order", id }],
     }),
+    refundItems: build.mutation<void, RefundItemsArg>({
+      query: ({ storeId, orderId, ...body }) => ({
+        url: `/stores/${storeId}/orders/${orderId}/refund`,
+        method: "PATCH",
+        body,
+      }),
+      invalidatesTags: (result, error, { orderId: id }) => {
+        if (!error?.status) {
+          return [
+            { type: "Order", id: "LIST" },
+            { type: "Order", id },
+          ];
+        }
+        return [];
+      },
+    }),
   }),
 });
 
 export const {
-  useGetTransactionHistoryInfiniteQuery,
-  useStoreOrderMutation,
   useLazyGetOrderQuery,
+  useStoreOrderMutation,
+  useRefundItemsMutation,
+  useGetTransactionHistoryInfiniteQuery,
 } = orderAPI;
 
 interface GetTransactionHistoryArg {
+  date?: string;
   storeId: number;
   refreshKey?: number;
-  date?: string;
 }
 
 interface GetOrderArg {
@@ -69,6 +91,8 @@ interface GetOrderArg {
 }
 
 type StoreOrderArg = { storeId: number } & OrderPayload;
+
+type RefundItemsArg = IssueRefundPayload & GetOrderArg;
 
 interface TransactionHistory
   extends Pick<Order, "id" | "totalAmount" | "createdAt"> {

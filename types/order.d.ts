@@ -32,6 +32,7 @@ export interface DetailedOrder extends Order {
     processedBy: { name: string; email: string };
     refundReason: string;
   }[];
+  refundableProducts: Item[];
 }
 
 export type ItemPayload = CustomItemPayload | StandardItemPayload;
@@ -53,4 +54,10 @@ export interface OrderPayload {
   cashAmount: string;
   paymentMethodId: number;
   orderedProducts: ItemPayload[];
+}
+
+export interface IssueRefundPayload {
+  reason: string;
+  authorizationCode: string;
+  orderProductVariantIds: string[];
 }
