@@ -12,15 +12,21 @@ import {
   TouchableOpacity,
 } from "react-native";
 
+import PinModal from "@/components/Order/Transaction/PinModal";
 import LoadingComponent from "@/components/LoadingComponent";
+import IssueRefundModal from "@/components/Order/Transaction/IssueRefundModal";
 
 import { Icon } from "@/components/Icon";
+import { openModal } from "@/components/Order/orderSlice";
 import { currencyFormat } from "@/utils/defaultFormat";
-import { useAppSelector } from "@/components/reduxHooks";
 import { useLazyGetOrderQuery } from "@/components/services/order";
+import { useAppDispatch, useAppSelector } from "@/components/reduxHooks";
 
 const OrderDetail = () => {
   const storeId = useAppSelector(({ store }) => store.selectedStoreId)!;
+  const openModals = useAppSelector(({ order }) => order.openModals);
+
+  const dispatch = useAppDispatch();
 
   const { id: orderId }: { id: string } = useLocalSearchParams();
 
@@ -65,15 +71,30 @@ const OrderDetail = () => {
           headerShown: true,
         }}
       />
+      <IssueRefundModal
+        detailedOrder={getOrderResult.data}
+        visible={openModals.includes("IssueRefundModal")}
+      />
+      <PinModal
+        orderId={Number(orderId)}
+        visible={openModals.includes("PinModal")}
+      />
       <FlatList
         data={getOrderResult.data?.orderedProducts}
         keyExtractor={(item) => `${item.id}`}
         ListHeaderComponent={
           <View className="px-7">
             <TouchableHighlight
-              onPress={() => {}}
+              disabled={getOrderResult.data?.refundableProducts.length === 0}
+              onPress={() => {
+                dispatch(openModal("IssueRefundModal"));
+              }}
               underlayColor={"#e5e7eb"}
-              className="border border-blue-500 w-full h-[50] mx-auto mt-6 rounded-sm bg-gray-100"
+              className={`border border-blue-500 w-full h-[50] mx-auto mt-6 rounded-sm bg-gray-100 ${
+                getOrderResult.data?.refundableProducts.length === 0
+                  ? "opacity-40"
+                  : ""
+              }`}
             >
               <Text className="text-base font-bold m-auto text-blue-500">
                 Issue Refund
@@ -144,7 +165,7 @@ const OrderDetail = () => {
 
             <View className="flex-row items-center">
               <Text className="font-bold text-base">Order ID </Text>
-              <Text className="text-gray-500">#{getOrderResult.data?.id}</Text>
+              <Text className="text-gray-500">#{orderId}</Text>
             </View>
             <Text className="font-bold text-base">Processed By</Text>
             <Text className="text-gray-500 mb-3">
@@ -226,7 +247,8 @@ const OrderDetail = () => {
                     numberOfLines={1}
                   >
                     {currencyFormat.format(
-                      (Number(item.discount) * Number(item.price)) / 100
+                      ((Number(item.discount) * Number(item.price)) / 100) *
+                        Number(item.quantity)
                     )}
                   </Text>
                 </View>
@@ -243,7 +265,7 @@ const OrderDetail = () => {
         )}
         ListFooterComponent={
           <View className="mt-1">
-            <View className="flex-row items-center border-y border-gray-300 mb-5 mx-7">
+            <View className="flex-row items-center border-y border-gray-300 mb-9 mx-7">
               <View className="mr-2 bg-gray-200 h-[50] w-[50]">
                 <Icon name="cash" className="m-auto text-gray-500" />
               </View>
@@ -255,11 +277,11 @@ const OrderDetail = () => {
               </Text>
             </View>
             {getOrderResult.data && getOrderResult.data.refunds.length > 0 && (
-              <View className="bg-gray-50 border-t-2 border-dashed">
+              <View className="bg-gray-50">
                 {getOrderResult.data?.refunds.map((item) => (
                   <View
                     key={item.refundedAt}
-                    className="pb-7 border-b border-gray-400 border-dashed px-7"
+                    className="pb-7 border-t border-gray-500 border-dashed px-7"
                   >
                     <Text className="font-bold text-base mt-7">Refund</Text>
                     <Text className="text-gray-500 mb-3">
