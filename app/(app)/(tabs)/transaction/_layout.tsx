@@ -1,11 +1,9 @@
 import React from "react";
 
-import { Stack } from "expo-router";
-import { Redirect } from "expo-router";
-
+import { Redirect, Stack } from "expo-router";
 import { useAppSelector } from "@/components/reduxHooks";
 
-const NotificationLayout = () => {
+const TransactionLayout = () => {
   const storeId = useAppSelector(({ store }) => store.selectedStoreId);
 
   if (!storeId) {
@@ -15,4 +13,4 @@ const NotificationLayout = () => {
   return <Stack screenOptions={{ headerShown: false }} />;
 };
 
-export default NotificationLayout;
+export default TransactionLayout;

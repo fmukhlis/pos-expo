@@ -61,61 +61,48 @@ const Edit = () => {
   };
 
   const save = () => {
-    const permissionId = parseInt(id, 10);
-    if (!isNaN(permissionId)) {
-      updatePermission({ permissionId, storeId, ...data })
-        .unwrap()
-        .then(() => {
-          router.back();
-        })
-        .catch((error) => {
-          Toast.show({
-            type: "error",
-            text1: `Error ${error.status}`,
-            text2: error.data.message,
-          });
+    updatePermission({ permissionId: Number(id), storeId, ...data })
+      .unwrap()
+      .then(() => {
+        router.back();
+      })
+      .catch((error) => {
+        Toast.show({
+          type: "error",
+          text1: `Error ${error.status}`,
+          text2: error.data.message,
         });
-    }
+      });
   };
 
   const performDelete = () => {
-    const permissionId = parseInt(id, 10);
-    if (!isNaN(permissionId)) {
-      destroyPermission({ permissionId, storeId })
-        .unwrap()
-        .then(() => {
-          router.back();
-        })
-        .catch((error) => {
-          Toast.show({
-            type: "error",
-            text1: `Error ${error.status}`,
-            text2: error.data.message,
-          });
+    destroyPermission({ permissionId: Number(id), storeId })
+      .unwrap()
+      .then(() => {
+        router.back();
+      })
+      .catch((error) => {
+        Toast.show({
+          type: "error",
+          text1: `Error ${error.status}`,
+          text2: error.data.message,
         });
-    }
+      });
   };
 
   React.useEffect(() => {
-    const permissionId = parseInt(id, 10);
-    if (!isNaN(permissionId)) {
-      getPermission({ permissionId, storeId })
-        .unwrap()
-        .then(({ id, authorizationCode, modifyBill, refund }) => {
-          setData({
-            authorizationCode,
-            modifyBill: modifyBill ? true : false,
-            refund: refund ? true : false,
-          });
-        })
-        .catch((error) => {
-          Toast.show({
-            type: "error",
-            text1: `Error ${error.status}`,
-            text2: error.data.message,
-          });
+    getPermission({ permissionId: Number(id), storeId })
+      .unwrap()
+      .then(({ id, ...rest }) => {
+        setData(rest);
+      })
+      .catch((error) => {
+        Toast.show({
+          type: "error",
+          text1: `Error ${error.status}`,
+          text2: error.data.message,
         });
-    }
+      });
   }, []);
 
   if (getPermissionResult.isFetching) {

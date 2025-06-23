@@ -1,5 +1,5 @@
-import { Employee, EmployeeInvitation } from "@/types/employee";
 import { apiSlice } from "../apiSlice";
+import { Employee, EmployeeInvitation } from "@/types/employee";
 
 const employeeAPI = apiSlice.injectEndpoints({
   overrideExisting: true,
@@ -9,7 +9,6 @@ const employeeAPI = apiSlice.injectEndpoints({
       transformResponse: (data: { data: Employee[] }) => data.data,
       providesTags: [{ type: "Employee", id: "LIST" }],
     }),
-    // getEmployee: build.query<Employee, GetEmployeeArg>({}),
     terminateEmployee: build.mutation<any, TerminateEmployeeArg>({
       query: ({ employeeId, storeId }) => ({
         url: `/stores/${storeId}/employees/${employeeId}/terminate`,

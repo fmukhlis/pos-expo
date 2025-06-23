@@ -7,19 +7,19 @@ import {
   TouchableOpacity,
   TouchableHighlight,
 } from "react-native";
-import { Redirect, router } from "expo-router";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { Redirect, router } from "expo-router";
 
 import CustomActivityIndicator from "@/components/CustomActivityIndicator";
 
 import { Icon } from "@/components/Icon";
+import { apiSlice } from "@/components/apiSlice";
 import { useSession } from "@/contexts/SessionContext";
 import { DangerButtonLG } from "@/components/DangerButton";
 import { useGetStoresQuery } from "@/components/services/store";
 import { setSelectedStoreId } from "@/components/Store/storeSlice";
 import { useAppDispatch, useAppSelector } from "@/components/reduxHooks";
-import { apiSlice } from "@/components/apiSlice";
 
 export default function HomeScreen() {
   const { user, session, signOut, signOutLoading } = useSession();

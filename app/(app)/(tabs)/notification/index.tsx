@@ -3,6 +3,7 @@ import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 
 import { skipToken } from "@reduxjs/toolkit/query";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { View, Text, FlatList, RefreshControl } from "react-native";
 
 import {
@@ -14,7 +15,6 @@ import { Icon } from "@/components/Icon";
 import { useSession } from "@/contexts/SessionContext";
 import { PrimaryButtonSM } from "@/components/PrimaryButton";
 import { SecondaryButtonSM } from "@/components/SecondaryButton";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 const Notification = () => {
   const { user } = useSession();
@@ -55,7 +55,7 @@ const Notification = () => {
   return (
     <SafeAreaView className="flex-1">
       <View className="flex-1 py-1 bg-white">
-        <Text className="px-5 text-2xl font-bold mb-4">Notifications</Text>
+        <Text className="px-5 text-2xl font-bold mb-3">Notifications</Text>
         <FlatList
           data={invitations}
           renderItem={({ item }) => {

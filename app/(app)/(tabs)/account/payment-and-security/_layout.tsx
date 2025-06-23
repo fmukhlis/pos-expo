@@ -9,8 +9,7 @@ const PaymentAndSecurityLayout = () => {
   return (
     <Stack
       screenOptions={{
-        title: "payment-and-security",
-        headerTitle: (props) => (
+        headerTitle: () => (
           <View className="flex-1 pt-2 pb-4 flex-row items-center space-x-3">
             <Icon name="key-outline" />
             <Text className="text-xl font-semibold">Payment & Security</Text>

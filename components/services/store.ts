@@ -1,5 +1,5 @@
-import { DetailedStore, Store, StorePayload } from "@/types/store";
 import { apiSlice } from "../apiSlice";
+import { DetailedStore, Store, StorePayload } from "@/types/store";
 
 const storeAPI = apiSlice.injectEndpoints({
   overrideExisting: true,
@@ -8,7 +8,6 @@ const storeAPI = apiSlice.injectEndpoints({
       query: ({ userId }) => ({ url: `/profiles/${userId}/stores` }),
       transformResponse: (response: { data: Store[] }) => response.data,
       providesTags: [{ type: "Store", id: "LIST" }],
-      keepUnusedDataFor: 600,
     }),
     getStore: build.query<DetailedStore, GetStoreArg>({
       query: ({ storeId }) => ({ url: `/stores/${storeId}` }),

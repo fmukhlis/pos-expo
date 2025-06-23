@@ -1,13 +1,40 @@
 import { apiSlice } from "../apiSlice";
-import { Order, OrderPayload } from "@/types/order";
+import {
+  Order,
+  OrderPayload,
+  DetailedOrder,
+  IssueRefundPayload,
+} from "@/types/order";
 
-const orderAPI = apiSlice.injectEndpoints({
+export const orderAPI = apiSlice.injectEndpoints({
   overrideExisting: true,
   endpoints: (build) => ({
-    getOrders: build.query<Order[], GetOrdersArg>({
-      query: ({ storeId }) => `/stores/${storeId}/orders`,
-      transformResponse: (data: { data: Order[] }) => data.data,
-      providesTags: [{ type: "Permission", id: "LIST" }],
+    getTransactionHistory: build.infiniteQuery<
+      {
+        data: TransactionHistory[];
+        meta: { next_cursor: string; prev_cursor: string };
+      },
+      GetTransactionHistoryArg,
+      string
+    >({
+      infiniteQueryOptions: {
+        initialPageParam: "",
+        getNextPageParam: (lastPage) => {
+          if (!lastPage.meta.next_cursor) {
+            return undefined;
+          }
+          return lastPage.meta.next_cursor;
+        },
+        getPreviousPageParam: (firstPage) => {
+          if (!firstPage.meta.prev_cursor) {
+            return undefined;
+          }
+          return firstPage.meta.prev_cursor;
+        },
+      },
+      query: ({ pageParam: cursor, queryArg: { storeId } }) =>
+        `/stores/${storeId}/transaction-history?cursor=${cursor}`,
+      providesTags: [{ type: "Order", id: "LIST" }],
     }),
     storeOrder: build.mutation<Order, StoreOrderArg>({
       query: ({ storeId, ...body }) => ({
@@ -16,15 +43,65 @@ const orderAPI = apiSlice.injectEndpoints({
         body,
       }),
       transformResponse: (data: { data: Order }) => data.data,
-      invalidatesTags: [{ type: "Permission", id: "LIST" }],
+      invalidatesTags: [{ type: "Order", id: "LIST" }],
+    }),
+    getOrder: build.query<DetailedOrder, GetOrderArg>({
+      query: ({ orderId, storeId }) => ({
+        url: `/stores/${storeId}/orders/${orderId}`,
+        method: "GET",
+      }),
+      transformResponse: (data: { data: DetailedOrder }) => data.data,
+      providesTags: (result, error, { orderId: id }) => [{ type: "Order", id }],
+    }),
+    refundItems: build.mutation<void, RefundItemsArg>({
+      query: ({ storeId, orderId, ...body }) => ({
+        url: `/stores/${storeId}/orders/${orderId}/refund`,
+        method: "PATCH",
+        body,
+      }),
+      invalidatesTags: (result, error, { orderId: id }) => {
+        if (!error?.status) {
+          return [
+            { type: "Order", id: "LIST" },
+            { type: "Order", id },
+          ];
+        }
+        return [];
+      },
     }),
   }),
 });
 
-export const { useGetOrdersQuery, useStoreOrderMutation } = orderAPI;
+export const {
+  useLazyGetOrderQuery,
+  useStoreOrderMutation,
+  useRefundItemsMutation,
+  useGetTransactionHistoryInfiniteQuery,
+} = orderAPI;
 
-interface GetOrdersArg {
+interface GetTransactionHistoryArg {
+  date?: string;
   storeId: number;
+  refreshKey?: number;
 }
 
-type StoreOrderArg = GetOrdersArg & OrderPayload;
+interface GetOrderArg {
+  storeId: number;
+  orderId: number;
+}
+
+type StoreOrderArg = { storeId: number } & OrderPayload;
+
+type RefundItemsArg = IssueRefundPayload & GetOrderArg;
+
+interface TransactionHistory
+  extends Pick<Order, "id" | "totalAmount" | "createdAt"> {
+  refunds: Pick<
+    DetailedOrder["refunds"][number],
+    "refundedAt" | "totalAmount"
+  >[];
+  orderedProducts: Pick<
+    Order["orderedProducts"][number],
+    "id" | "name" | "quantity"
+  >[];
+}

@@ -103,7 +103,7 @@ const Products = () => {
                 <Text className="ml-auto text-gray-500 text-[13px]">
                   {activeVariant.reduce(
                     (accumulator, currentValue) =>
-                      accumulator + currentValue.stock,
+                      accumulator + Number(currentValue.stock),
                     0
                   )}
                 </Text>

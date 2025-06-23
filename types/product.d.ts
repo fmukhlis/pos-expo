@@ -61,9 +61,9 @@ export interface ProductOptionCategory {
 
 export interface ProductVariant {
   id: number;
-  price: number;
-  stock: number;
-  sku: string | null;
+  price: string;
+  stock: string;
+  sku: string;
   status: "Active" | "Inactive";
   productOptions: ProductOption[];
 }

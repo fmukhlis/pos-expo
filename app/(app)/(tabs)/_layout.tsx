@@ -1,9 +1,14 @@
 import { Tabs } from "expo-router";
 import { Text } from "react-native";
 
-import { TabBarIcon } from "@/components/navigation/TabBarIcon";
+import { regenerateRefreshKey } from "@/components/Order/orderSlice";
+import { useAppDispatch, useAppSelector } from "@/components/reduxHooks";
+import { Icon } from "@/components/Icon";
 
 export default function TabLayout() {
+  const storeId = useAppSelector(({ store }) => store.selectedStoreId);
+  const dispatch = useAppDispatch();
+
   return (
     <Tabs
       screenOptions={{
@@ -30,8 +35,42 @@ export default function TabLayout() {
             </Text>
           ),
           tabBarIcon: ({ focused, size }) => (
-            <TabBarIcon
+            <Icon
               name={focused ? "apps" : "apps-outline"}
+              className={`${
+                focused
+                  ? "text-light-tabIconSelected"
+                  : " text-light-tabIconDefault"
+              }`}
+              size={size}
+            />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="transaction"
+        listeners={{
+          blur: () => {
+            if (storeId) {
+              dispatch(regenerateRefreshKey());
+            }
+          },
+        }}
+        options={{
+          tabBarLabel: ({ focused }) => (
+            <Text
+              className={`${
+                focused
+                  ? "font-bold text-light-tabIconSelected"
+                  : "text-light-tabIconDefault"
+              } text-xs`}
+            >
+              Transaction
+            </Text>
+          ),
+          tabBarIcon: ({ focused, size }) => (
+            <Icon
+              name="swap-horizontal"
               className={`${
                 focused
                   ? "text-light-tabIconSelected"
@@ -57,7 +96,7 @@ export default function TabLayout() {
             </Text>
           ),
           tabBarIcon: ({ focused, size }) => (
-            <TabBarIcon
+            <Icon
               name={focused ? "notifications-sharp" : "notifications-outline"}
               className={`${
                 focused
@@ -84,7 +123,7 @@ export default function TabLayout() {
             </Text>
           ),
           tabBarIcon: ({ focused, size }) => (
-            <TabBarIcon
+            <Icon
               name={focused ? "person-sharp" : "person-outline"}
               className={`${
                 focused
