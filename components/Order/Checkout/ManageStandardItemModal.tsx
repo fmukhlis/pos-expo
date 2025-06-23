@@ -1,6 +1,7 @@
 import React from "react";
 
 import { z } from "zod";
+import { Alert } from "react-native";
 import { router } from "expo-router";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
@@ -18,12 +19,11 @@ import PrimaryInput from "@/components/PrimaryInput";
 import CurrencyTextInput from "@/components/CurrencyTextInput";
 
 import { Icon } from "@/components/Icon";
-import { useAppDispatch, useAppSelector } from "@/components/reduxHooks";
-import { PrimaryTouchable } from "@/components/PrimaryTouchable";
-import { addItem, removeItem, StandardItem, updateItem } from "../orderSlice";
-import { SecondaryTouchable } from "@/components/SecondaryTouchable";
 import { DangerButton } from "@/components/DangerButton";
-import { Alert } from "react-native";
+import { PrimaryTouchable } from "@/components/PrimaryTouchable";
+import { SecondaryTouchable } from "@/components/SecondaryTouchable";
+import { useAppDispatch, useAppSelector } from "@/components/reduxHooks";
+import { addItem, removeItem, updateItem } from "../orderSlice";
 
 const ManageStandardItemModal = ({
   onSave,
@@ -182,9 +182,7 @@ const ManageStandardItemModal = ({
               return (
                 <RadioGroup
                   className="mb-5 border-b border-gray-200"
-                  value={activeVariants.find(
-                    ({ value }) => value === currentValue
-                  )}
+                  value={currentValue}
                   onValueChange={({ value, price, label }) => {
                     onChange(value);
                     setValue("price", price);
@@ -225,17 +223,10 @@ const ManageStandardItemModal = ({
                               </Text>
                               <RadioGroup
                                 className="border-b border-gray-200 mt-3"
-                                value={options.find(
-                                  ({ value }) =>
-                                    `${value}` === currentValue[index]
-                                )}
-                                onValueChange={(option) => {
+                                value={currentValue[index]}
+                                onValueChange={({ value }) => {
                                   onChange(
-                                    currentValue.toSpliced(
-                                      index,
-                                      1,
-                                      option.value
-                                    )
+                                    currentValue.toSpliced(index, 1, value)
                                   );
                                 }}
                                 options={options}

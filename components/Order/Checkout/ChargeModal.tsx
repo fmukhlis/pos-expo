@@ -125,9 +125,7 @@ const ChargeModal = ({
               return (
                 <RadioGroup
                   {...rest}
-                  value={paymentMethodsOption.find(
-                    ({ value }) => value === currentValue
-                  )}
+                  value={currentValue}
                   onValueChange={({ value }) => {
                     onChange(value);
                   }}
