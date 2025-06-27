@@ -1,5 +1,8 @@
 import React from "react";
 
+import { skipToken } from "@reduxjs/toolkit/query";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Redirect, router } from "expo-router";
 import {
   View,
   Text,
@@ -7,9 +10,6 @@ import {
   TouchableOpacity,
   TouchableHighlight,
 } from "react-native";
-import { skipToken } from "@reduxjs/toolkit/query";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { Redirect, router } from "expo-router";
 
 import StoreModal from "@/components/StoreManagement/StoreModal";
 import CustomActivityIndicator from "@/components/CustomActivityIndicator";
@@ -25,13 +25,8 @@ import { useAppDispatch, useAppSelector } from "@/components/reduxHooks";
 export default function HomeScreen() {
   const { user, session, signOut, signOutLoading } = useSession();
 
-  if (user?.role === "Free") {
-    return <Redirect href={"/account"} />;
-  }
-
-  const [modalVisible, setModalVisible] = React.useState(false);
-
   const storeId = useAppSelector(({ store }) => store.selectedStoreId);
+
   const dispatch = useAppDispatch();
 
   const {
@@ -39,6 +34,8 @@ export default function HomeScreen() {
     isFetching,
     refetch,
   } = useGetStoresQuery(user?.id ? { userId: user.id } : skipToken);
+
+  const [modalVisible, setModalVisible] = React.useState(false);
 
   const handleLogOut = () => {
     signOut(session ?? "").then((isLogoutSuccess) => {
@@ -64,6 +61,10 @@ export default function HomeScreen() {
       setSelectedStoreId(stores && stores.length > 0 ? stores[0].id : null)
     );
   }, [stores]);
+
+  if (user?.role === "Free") {
+    return <Redirect href={"/account"} />;
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-white px-5 py-2">
@@ -186,6 +187,21 @@ export default function HomeScreen() {
           <View className="flex-row space-x-2 items-center">
             <Icon name="documents-outline" />
             <Text className="font-bold text-lg">Store Management</Text>
+          </View>
+        </TouchableHighlight>
+      </View>
+      <View className="mt-4 border-t border-gray-300">
+        <TouchableHighlight
+          disabled={!storeId}
+          className={`p-3 ${!storeId ? "opacity-40" : ""}`}
+          onPress={() => {
+            router.navigate("/account/printer-settings");
+          }}
+          underlayColor={"#e5e7eb"}
+        >
+          <View className="flex-row space-x-2 items-center">
+            <Icon name="key-outline" />
+            <Text className="font-bold text-lg">Printer Settings</Text>
           </View>
         </TouchableHighlight>
       </View>
