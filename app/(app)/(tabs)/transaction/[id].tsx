@@ -5,38 +5,72 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { router, Stack, useLocalSearchParams } from "expo-router";
 import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 import {
-  View,
   Text,
-  TouchableHighlight,
+  View,
+  Alert,
   FlatList,
   TouchableOpacity,
+  TouchableHighlight,
 } from "react-native";
 
 import PinModal from "@/components/Order/Transaction/PinModal";
 import LoadingComponent from "@/components/LoadingComponent";
 import IssueRefundModal from "@/components/Order/Transaction/IssueRefundModal";
+import printCustomerReceipt from "@/utils/printCustomerReceipt";
 
 import { Icon } from "@/components/Icon";
-import { openModal } from "@/components/Order/orderSlice";
+import { openModal, selectOrder } from "@/components/Order/orderSlice";
 import { currencyFormat } from "@/utils/defaultFormat";
 import { useLazyGetOrderQuery } from "@/components/services/order";
+import { useLazyGetStoreQuery } from "@/components/services/store";
 import { useAppDispatch, useAppSelector } from "@/components/reduxHooks";
 
 const OrderDetail = () => {
+  const { id: orderId }: { id: string } = useLocalSearchParams();
+
   const storeId = useAppSelector(({ store }) => store.selectedStoreId)!;
+  const selectedBluetoothPrinter = useAppSelector(
+    ({ store }) => store.selectedBluetoothPrinter
+  );
   const openModals = useAppSelector(({ order }) => order.openModals);
+  const selectedOrder = useAppSelector(({ order }) => order.selectedOrder);
 
   const dispatch = useAppDispatch();
 
-  const { id: orderId }: { id: string } = useLocalSearchParams();
-
   const [getOrder, getOrderResult] = useLazyGetOrderQuery();
+  const [getStore, getStoreResult] = useLazyGetStoreQuery();
+
+  const handlePrint = () => {
+    const { data: store } = getStoreResult;
+    const { data: order } = getOrderResult;
+
+    if (selectedBluetoothPrinter) {
+      if (store && order) {
+        printCustomerReceipt(store, order, selectedBluetoothPrinter);
+      }
+    } else {
+      Alert.alert(
+        "No Printer Selected",
+        "No printer device has been selected yet. Please set it up in the settings menu.",
+        [{ text: "Ok" }]
+      );
+    }
+  };
 
   React.useEffect(() => {
-    getOrder({ orderId: Number(orderId), storeId });
+    getStore({ storeId });
+    getOrder({ orderId: Number(orderId), storeId })
+      .unwrap()
+      .then((detailedOrder) => {
+        dispatch(selectOrder(detailedOrder));
+      });
   }, []);
 
-  if (getOrderResult.isFetching) {
+  if (
+    getOrderResult.isFetching ||
+    getStoreResult.isFetching ||
+    !selectedOrder
+  ) {
     return (
       <>
         <Stack.Screen options={{ headerShown: false }} />
@@ -60,10 +94,7 @@ const OrderDetail = () => {
                 <Icon name="arrow-back" size={25} className="m-auto" />
               </TouchableOpacity>
               <Text className="text-center font-bold text-lg w-[220]">
-                {currencyFormat.format(
-                  Number(getOrderResult.data?.totalAmount ?? 0)
-                )}{" "}
-                Sale
+                {currencyFormat.format(Number(selectedOrder.totalAmount))} Sale
               </Text>
               <View className="w-[50]" />
             </SafeAreaView>
@@ -72,7 +103,7 @@ const OrderDetail = () => {
         }}
       />
       <IssueRefundModal
-        detailedOrder={getOrderResult.data}
+        detailedOrder={selectedOrder}
         visible={openModals.includes("IssueRefundModal")}
       />
       <PinModal
@@ -80,18 +111,18 @@ const OrderDetail = () => {
         visible={openModals.includes("PinModal")}
       />
       <FlatList
-        data={getOrderResult.data?.orderedProducts}
+        data={selectedOrder.orderedProducts}
         keyExtractor={(item) => `${item.id}`}
         ListHeaderComponent={
           <View className="px-7">
             <TouchableHighlight
-              disabled={getOrderResult.data?.refundableProducts.length === 0}
+              disabled={selectedOrder.refundableProducts.length === 0}
               onPress={() => {
                 dispatch(openModal("IssueRefundModal"));
               }}
               underlayColor={"#e5e7eb"}
               className={`border border-blue-500 w-full h-[50] mx-auto mt-6 rounded-sm bg-gray-100 ${
-                getOrderResult.data?.refundableProducts.length === 0
+                selectedOrder.refundableProducts.length === 0
                   ? "opacity-40"
                   : ""
               }`}
@@ -101,20 +132,18 @@ const OrderDetail = () => {
               </Text>
             </TouchableHighlight>
             <TouchableHighlight
-              onPress={() => {}}
+              onPress={handlePrint}
               underlayColor={"#e5e7eb"}
               className="border border-blue-500 w-full h-[50] mx-auto mt-3 rounded-sm bg-gray-100"
             >
               <Text className="text-base font-bold m-auto text-blue-500">
-                New Receipt
+                New Receipt{" "}
               </Text>
             </TouchableHighlight>
 
             <Text className="font-bold mt-5 text-base">Payment</Text>
             <Text className="text-gray-500 mb-3">
-              {dayjs(getOrderResult.data?.createdAt).format(
-                "hh:mm A / DD-MM-YYYY"
-              )}
+              {dayjs(selectedOrder.createdAt).format("hh:mm A / DD-MM-YYYY")}
             </Text>
             <View className="mb-5">
               <View className="flex-row items-center border border-gray-300 border-b-0">
@@ -122,10 +151,10 @@ const OrderDetail = () => {
                   <MaterialIcons name="payment" color={"#6b7280"} size={30} />
                 </View>
                 <Text className="text-base w-[95]">
-                  {getOrderResult.data?.paymentMethod.name}
+                  {selectedOrder.paymentMethod.name}
                 </Text>
                 <Text className="text-base ml-auto w-[130] text-right mr-3 font-bold">
-                  {getOrderResult.data?.paymentMethod.destination}
+                  {selectedOrder.paymentMethod.destination}
                 </Text>
               </View>
               <View className="flex-row items-center border border-gray-300 border-b-0">
@@ -138,9 +167,7 @@ const OrderDetail = () => {
                 </View>
                 <Text className="text-base">Amt. tendered</Text>
                 <Text className="text-base ml-auto w-[105] text-right mr-3 font-bold">
-                  {currencyFormat.format(
-                    Number(getOrderResult.data?.cashAmount ?? 0)
-                  )}
+                  {currencyFormat.format(Number(selectedOrder.cashAmount))}
                 </Text>
               </View>
               <View className="flex-row items-center border border-gray-300">
@@ -154,10 +181,8 @@ const OrderDetail = () => {
                 <Text className="text-base">Change</Text>
                 <Text className="text-base ml-auto w-[105] text-right mr-3 font-bold">
                   {currencyFormat.format(
-                    getOrderResult.data
-                      ? Number(getOrderResult.data.cashAmount) -
-                          Number(getOrderResult.data.totalAmount)
-                      : 0
+                    Number(selectedOrder.cashAmount) -
+                      Number(selectedOrder.totalAmount)
                   )}
                 </Text>
               </View>
@@ -169,7 +194,7 @@ const OrderDetail = () => {
             </View>
             <Text className="font-bold text-base">Processed By</Text>
             <Text className="text-gray-500 mb-3">
-              {`${getOrderResult.data?.processedBy.name} (${getOrderResult.data?.processedBy.email})`}
+              {`${selectedOrder.processedBy.name} (${selectedOrder.processedBy.email})`}
             </Text>
           </View>
         }
@@ -271,14 +296,12 @@ const OrderDetail = () => {
               </View>
               <Text className="text-base font-bold">Total</Text>
               <Text className="text-base ml-auto w-[100] text-right font-bold">
-                {currencyFormat.format(
-                  Number(getOrderResult.data?.totalAmount ?? 0)
-                )}
+                {currencyFormat.format(Number(selectedOrder.totalAmount))}
               </Text>
             </View>
-            {getOrderResult.data && getOrderResult.data.refunds.length > 0 && (
+            {selectedOrder.refunds.length > 0 && (
               <View className="bg-gray-50">
-                {getOrderResult.data?.refunds.map((item) => (
+                {selectedOrder.refunds.map((item) => (
                   <View
                     key={item.refundedAt}
                     className="pb-7 border-t border-gray-500 border-dashed px-7"
@@ -400,7 +423,7 @@ const OrderDetail = () => {
                     </View>
                     <Text className="font-bold text-base">Processed By</Text>
                     <Text className="text-gray-500">
-                      {`${getOrderResult.data?.processedBy.name} (${getOrderResult.data?.processedBy.email})`}
+                      {`${selectedOrder.processedBy.name} (${selectedOrder.processedBy.email})`}
                     </Text>
                   </View>
                 ))}
