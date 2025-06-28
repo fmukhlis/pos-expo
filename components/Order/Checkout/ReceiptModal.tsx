@@ -1,5 +1,6 @@
 import React from "react";
 
+import { Alert } from "react-native";
 import {
   View,
   Text,
@@ -8,22 +9,33 @@ import {
 } from "react-native";
 
 import BasicModal from "@/components/BasicModal";
+import printCustomerReceipt from "@/utils/printCustomerReceipt";
 
 import { resetOrder } from "../orderSlice";
 import { currencyFormat } from "@/utils/defaultFormat";
-import { useAppDispatch } from "@/components/reduxHooks";
 import { PrimaryButtonLG } from "@/components/PrimaryButton";
+import { useLazyGetStoreQuery } from "@/components/services/store";
+import { useAppDispatch, useAppSelector } from "@/components/reduxHooks";
 
 const ReceiptModal = ({
   visible,
-  amountPaid,
-  chargeAmount,
   onRequestClose,
   ...props
 }: ReceiptModalProps) => {
+  const storeId = useAppSelector(({ store }) => store.selectedStoreId)!;
+  const isAutoPrint = useAppSelector(({ store }) => store.isAutoPrintReceipt);
+  const detailedOrder = useAppSelector(({ order }) => order.selectedOrder);
+  const selectedBluetoothPrinter = useAppSelector(
+    ({ store }) => store.selectedBluetoothPrinter
+  );
+
   const dispatch = useAppDispatch();
 
-  const change = Number(amountPaid) - Number(chargeAmount);
+  const [getStore, getStoreResult] = useLazyGetStoreQuery();
+
+  const change = detailedOrder
+    ? Number(detailedOrder.cashAmount) - Number(detailedOrder.totalAmount)
+    : 0;
 
   const newSale = (e: GestureResponderEvent) => {
     if (onRequestClose) {
@@ -31,6 +43,38 @@ const ReceiptModal = ({
     }
     dispatch(resetOrder());
   };
+
+  const handlePrint = () => {
+    if (selectedBluetoothPrinter) {
+      if (getStoreResult.data && detailedOrder) {
+        printCustomerReceipt(
+          getStoreResult.data,
+          detailedOrder,
+          selectedBluetoothPrinter
+        );
+      }
+    } else {
+      Alert.alert(
+        "No Printer Selected",
+        "No printer device has been selected yet. Please set it up in the settings menu.",
+        [{ text: "Ok" }]
+      );
+    }
+  };
+
+  React.useEffect(() => {
+    getStore({ storeId });
+  }, []);
+
+  React.useEffect(() => {
+    if (isAutoPrint) {
+      handlePrint();
+    }
+  }, [detailedOrder?.id]);
+
+  if (!detailedOrder) {
+    return <></>;
+  }
 
   return (
     <BasicModal
@@ -58,18 +102,19 @@ const ReceiptModal = ({
           </Text>
         )}
         <Text className="text-xl">
-          Out of {currencyFormat.format(Number(chargeAmount))}
+          Out of {currencyFormat.format(Number(detailedOrder.totalAmount))}
         </Text>
       </View>
       <View className="items-center my-auto">
         <Text className="text-xl w-[200] text-center mb-5">
           How would you like your receipt?
         </Text>
-        <PrimaryButtonLG className="w-[250] py-2 mb-3">Print</PrimaryButtonLG>
+        <PrimaryButtonLG className="w-[250] py-2 mb-3" onPress={handlePrint}>
+          Print
+        </PrimaryButtonLG>
         <PrimaryButtonLG disabled className="w-[250] py-2 mb-3">
           Email
         </PrimaryButtonLG>
-        <PrimaryButtonLG className="w-[250] py-2">No receipt</PrimaryButtonLG>
       </View>
     </BasicModal>
   );
@@ -78,7 +123,4 @@ const ReceiptModal = ({
 export default ReceiptModal;
 
 interface ReceiptModalProps
-  extends React.ComponentPropsWithoutRef<typeof BasicModal> {
-  chargeAmount: string;
-  amountPaid: string;
-}
+  extends React.ComponentPropsWithoutRef<typeof BasicModal> {}
