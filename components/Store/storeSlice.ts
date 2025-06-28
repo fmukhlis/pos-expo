@@ -11,9 +11,6 @@ const storeSlice = createSlice({
   name: "store",
   initialState,
   reducers: {
-    setSelectedStoreId: (state, action: PayloadAction<number | null>) => {
-      state.selectedStoreId = action.payload;
-    },
     selectBluetoothPrinter: (
       state,
       action: PayloadAction<IBLEPrinter | null>
@@ -27,11 +24,8 @@ const storeSlice = createSlice({
   extraReducers: (build) => {},
 });
 
-export const {
-  setSelectedStoreId,
-  setAutoPrintReceipt,
-  selectBluetoothPrinter,
-} = storeSlice.actions;
+export const { setAutoPrintReceipt, selectBluetoothPrinter } =
+  storeSlice.actions;
 
 export default storeSlice.reducer;
 

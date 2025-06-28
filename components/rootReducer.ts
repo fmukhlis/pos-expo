@@ -1,4 +1,4 @@
-import { combineReducers } from "@reduxjs/toolkit";
+import { combineReducers, PayloadAction } from "@reduxjs/toolkit";
 
 import orderReducer from "./Order/orderSlice";
 import productReducer from "./Product/productSlice";
@@ -19,10 +19,25 @@ const appReducer = combineReducers({
 
 const rootReducer = (
   state: ReturnType<typeof appReducer> | undefined,
-  action: any
+  action: PayloadAction<unknown>
 ) => {
   if (action.type === "user/logout") {
     state = undefined;
+  } else if (
+    action.type === "store/setSelectedStoreId" &&
+    "id" in action &&
+    typeof action.id === "number"
+  ) {
+    const preservedSlices = {
+      [apiSlice.reducerPath]: state?.[apiSlice.reducerPath],
+      store: {
+        ...state?.store,
+        selectedStoreId: action.id,
+      },
+    };
+    state = {
+      ...preservedSlices,
+    } as ReturnType<typeof appReducer>;
   }
   return appReducer(state, action);
 };
