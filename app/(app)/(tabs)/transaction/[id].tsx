@@ -102,10 +102,7 @@ const OrderDetail = () => {
           headerShown: true,
         }}
       />
-      <IssueRefundModal
-        detailedOrder={selectedOrder}
-        visible={openModals.includes("IssueRefundModal")}
-      />
+      <IssueRefundModal visible={openModals.includes("IssueRefundModal")} />
       <PinModal
         orderId={Number(orderId)}
         visible={openModals.includes("PinModal")}
