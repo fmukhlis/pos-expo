@@ -5,19 +5,20 @@ import { View, Text, Image, KeyboardAvoidingView } from "react-native";
 import useSignUp from "@/hooks/useSignUp";
 import PrimaryInput from "@/components/PrimaryInput";
 import TransparentScreen from "@/components/TransparentScreen";
+
 import { Colors } from "@/constants/Colors";
 import { PrimaryButtonLG } from "@/components/PrimaryButton";
 
 const SignUp = () => {
   const {
-    colorScheme,
     form,
+    colorScheme,
+    handleSubmit,
+    signUpLoading,
     handleEmailChange,
     handleFullNameChange,
     handlePasswordChange,
     handlePasswordConfirmationChange,
-    handleSubmit,
-    signUpLoading,
   } = useSignUp();
 
   return (

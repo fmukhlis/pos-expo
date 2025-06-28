@@ -1,6 +1,8 @@
+import React from "react";
+
 import { Link } from "expo-router";
-import { View, Text, Image } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { Text, Image, PermissionsAndroid, Platform } from "react-native";
 
 import CustomButton from "@/components/CustomButton";
 
@@ -9,6 +11,10 @@ import { useTheme } from "@/contexts/ThemeProvider";
 
 const Welcome = () => {
   const { colorScheme } = useTheme();
+
+  React.useEffect(() => {
+    requestBluetoothPermissions();
+  }, []);
 
   return (
     <SafeAreaView
@@ -46,7 +52,6 @@ const Welcome = () => {
         Manage transactions, track inventory, and generate detailed reports with
         ease
       </Text>
-
       <Link href={"/sign-in"} asChild>
         <CustomButton className={`w-full mt-7 h-12`}>
           <Text
@@ -61,3 +66,25 @@ const Welcome = () => {
 };
 
 export default Welcome;
+
+export async function requestBluetoothPermissions() {
+  if (Platform.OS === "android" && Platform.Version >= 31) {
+    try {
+      const granted = await PermissionsAndroid.requestMultiple([
+        PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
+        PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
+        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+      ]);
+
+      const allGranted = Object.values(granted).every(
+        (result) => result === PermissionsAndroid.RESULTS.GRANTED
+      );
+
+      if (!allGranted) {
+        console.warn("Bluetooth permissions not granted");
+      }
+    } catch (err) {
+      console.error("Failed to request permissions", err);
+    }
+  }
+}

@@ -5,6 +5,7 @@ import { createAction, createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 import { Product } from "@/types/product";
 import {
+  DetailedOrder,
   CustomItemPayload,
   IssueRefundPayload,
   StandardItemPayload,
@@ -18,6 +19,7 @@ const initialState: OrderState = {
   refreshKey: 0,
   totalCharge: 0,
   selectedItem: null,
+  selectedOrder: null,
   refundPayload: {
     reason: "",
     authorizationCode: "",
@@ -149,6 +151,9 @@ const orderSlice = createSlice({
     ) => {
       state.refundPayload = payload;
     },
+    selectOrder: (state, { payload }: PayloadAction<DetailedOrder | null>) => {
+      state.selectedOrder = payload;
+    },
   },
   extraReducers: (builder) => {
     builder.addCase(resetOrder, () => initialState);
@@ -161,6 +166,7 @@ export const {
   closeModal,
   removeItem,
   updateItem,
+  selectOrder,
   setSelectedItem,
   setRefundPayload,
   setSelectedProduct,
@@ -194,6 +200,7 @@ interface OrderState {
   refreshKey: number;
   totalCharge: number;
   selectedItem: Item | null;
+  selectedOrder: DetailedOrder | null;
   refundPayload: IssueRefundPayload;
   selectedProduct: Product | null;
 }

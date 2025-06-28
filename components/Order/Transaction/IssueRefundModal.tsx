@@ -13,19 +13,21 @@ import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import { View, Text, ScrollView, TouchableOpacity } from "react-native";
 
 import { Icon } from "@/components/Icon";
-import { DetailedOrder } from "@/types/order";
 import { currencyFormat } from "@/utils/defaultFormat";
-import { useAppDispatch } from "@/components/reduxHooks";
+import { useAppDispatch, useAppSelector } from "@/components/reduxHooks";
 import { PrimaryTouchable } from "@/components/PrimaryTouchable";
 import { SecondaryTouchable } from "@/components/SecondaryTouchable";
 import { closeModal, openModal, setRefundPayload } from "../orderSlice";
 
 const IssueRefundModal = ({
   visible,
-  detailedOrder,
   onRequestClose,
   ...props
 }: IssueRefundModalProps) => {
+  const selectedOrder = useAppSelector(({ order }) => {
+    order.selectedOrder;
+  });
+
   const { reset, control, handleSubmit, watch, setValue } = useForm({
     resolver: zodResolver(Schema),
     mode: "all",
@@ -66,7 +68,7 @@ const IssueRefundModal = ({
     reset();
   }, [visible]);
 
-  if (!detailedOrder) {
+  if (!selectedOrder) {
     return <></>;
   }
 
@@ -119,15 +121,15 @@ const IssueRefundModal = ({
                     onPress={() => {
                       if (
                         currentValue.length !==
-                        detailedOrder.refundableProducts.length
+                        selectedOrder.refundableProducts.length
                       ) {
                         onChange(
-                          detailedOrder.refundableProducts.map(
+                          selectedOrder.refundableProducts.map(
                             ({ id }) => `${id}`
                           )
                         );
                         setPrice(
-                          `${detailedOrder.refundableProducts.reduce(
+                          `${selectedOrder.refundableProducts.reduce(
                             (acc, carry) => {
                               return acc + Number(carry.totalPrice);
                             },
@@ -143,17 +145,17 @@ const IssueRefundModal = ({
                     <Checkbox
                       value={
                         currentValue.length ===
-                        detailedOrder.refundableProducts.length
+                        selectedOrder.refundableProducts.length
                       }
                       onValueChange={(value) => {
                         if (value) {
                           onChange(
-                            detailedOrder.refundableProducts.map(
+                            selectedOrder.refundableProducts.map(
                               ({ id }) => `${id}`
                             )
                           );
                           setPrice(
-                            `${detailedOrder.refundableProducts.reduce(
+                            `${selectedOrder.refundableProducts.reduce(
                               (acc, carry) => {
                                 return acc + Number(carry.totalPrice);
                               },
@@ -169,7 +171,7 @@ const IssueRefundModal = ({
                     />
                   </TouchableOpacity>
                 </View>
-                {detailedOrder.refundableProducts.map(
+                {selectedOrder.refundableProducts.map(
                   ({ id, options, name, totalPrice }) => {
                     const handlePress = () => {
                       if (currentValue.includes(`${id}`)) {
@@ -299,9 +301,7 @@ const IssueRefundModal = ({
 export default IssueRefundModal;
 
 interface IssueRefundModalProps
-  extends React.ComponentPropsWithoutRef<typeof BasicModal> {
-  detailedOrder: DetailedOrder | undefined;
-}
+  extends React.ComponentPropsWithoutRef<typeof BasicModal> {}
 
 const optionsString = [
   "Returned goods",

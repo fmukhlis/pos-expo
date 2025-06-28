@@ -1,22 +1,25 @@
 import React from "react";
 
+import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { View, Text, TouchableOpacity } from "react-native";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 
-import ReceiptModal from "./ReceiptModal";
 import BasicModal from "@/components/BasicModal";
 import RadioGroup from "@/components/RadioGroup";
+import ReceiptModal from "./ReceiptModal";
 import CurrencyTextInput from "@/components/CurrencyTextInput";
 
-import { z } from "zod";
 import { Icon } from "@/components/Icon";
-import { openModal } from "../orderSlice";
 import { PrimaryButton } from "@/components/PrimaryButton";
 import { currencyFormat } from "@/utils/defaultFormat";
-import { useStoreOrderMutation } from "@/components/services/order";
+import { openModal, selectOrder } from "../orderSlice";
 import { useGetPaymentMethodsQuery } from "@/components/services/paymentMethod";
 import { useAppDispatch, useAppSelector } from "@/components/reduxHooks";
+import {
+  useLazyGetOrderQuery,
+  useStoreOrderMutation,
+} from "@/components/services/order";
 
 const ChargeModal = ({
   onRequestClose,
@@ -24,21 +27,20 @@ const ChargeModal = ({
   visible,
   ...props
 }: ChargeModalProps) => {
-  const storeId = useAppSelector(
-    ({ store: { selectedStoreId } }) => selectedStoreId
-  )!;
   const items = useAppSelector(({ order }) => order.items);
+  const storeId = useAppSelector(({ store }) => store.selectedStoreId)!;
   const openModals = useAppSelector(({ order }) => order.openModals);
 
   const dispatch = useAppDispatch();
 
   const [storeOrder, storeOrderResult] = useStoreOrderMutation();
+  const [getOrder, getOrderResult] = useLazyGetOrderQuery();
 
   const { data: paymentMethods, isFetching } = useGetPaymentMethodsQuery({
     storeId,
   });
 
-  const { control, handleSubmit, watch, reset } = useForm({
+  const { control, handleSubmit, reset } = useForm({
     resolver: zodResolver(Schema),
     mode: "all",
   });
@@ -79,15 +81,20 @@ const ChargeModal = ({
       storeId,
     })
       .unwrap()
-      .then(() => {
-        dispatch(openModal("receipt"));
+      .then(({ id }) => {
+        getOrder({ orderId: id, storeId })
+          .unwrap()
+          .then((detailedOrder) => {
+            dispatch(selectOrder(detailedOrder));
+          })
+          .finally(() => {
+            dispatch(openModal("receipt"));
+          });
       })
       .catch((err) => {
         console.log(err);
       });
   };
-
-  const cashAmount = watch("cashAmount");
 
   React.useEffect(() => {
     reset({ cashAmount: chargeAmount });
@@ -153,18 +160,14 @@ const ChargeModal = ({
           }}
         />
         <PrimaryButton
-          isProcessing={storeOrderResult.isLoading}
+          isProcessing={storeOrderResult.isLoading || getOrderResult.isFetching}
           onPress={handleSubmit(onSubmit)}
           className="mt-3 h-[45]"
         >
           Tender
         </PrimaryButton>
       </BasicModal>
-      <ReceiptModal
-        amountPaid={cashAmount}
-        chargeAmount={chargeAmount}
-        visible={openModals.includes("receipt")}
-      />
+      <ReceiptModal visible={openModals.includes("receipt")} />
     </>
   );
 };
