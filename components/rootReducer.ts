@@ -23,11 +23,7 @@ const rootReducer = (
 ) => {
   if (action.type === "user/logout") {
     state = undefined;
-  } else if (
-    action.type === "store/setSelectedStoreId" &&
-    "id" in action &&
-    typeof action.id === "number"
-  ) {
+  } else if (action.type === "store/setSelectedStoreId" && "id" in action) {
     const preservedSlices = {
       [apiSlice.reducerPath]: state?.[apiSlice.reducerPath],
       store: {
