@@ -230,7 +230,7 @@ const OrderDetail = () => {
                     Variant: {item.options.join(", ")}
                   </Text>
                 )}
-                {item.options.length > 0 && (
+                {item.modifiers.length > 0 && (
                   <Text
                     className="text-sm text-gray-500"
                     numberOfLines={1}
