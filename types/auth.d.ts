@@ -83,6 +83,7 @@ export interface SessionContextProps {
   sendVerificationEmail: (token: string) => Promise<boolean>;
   sendVerificationEmailLoading: boolean;
 
+  sessionLoading: boolean;
   session: string | null;
 
   signIn: (requestBody: {

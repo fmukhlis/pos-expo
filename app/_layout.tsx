@@ -24,13 +24,6 @@ export default function RootLayout() {
 
   const colorScheme = useColorScheme() ?? "light";
 
-  const {
-    bottom: paddingBottom,
-    left: paddingLeft,
-    right: paddingRight,
-    top: paddingTop,
-  } = useSafeAreaInsets();
-
   useEffect(() => {
     if (loaded) {
       SplashScreen.hideAsync();
