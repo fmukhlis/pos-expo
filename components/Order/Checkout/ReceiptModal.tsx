@@ -24,6 +24,9 @@ const ReceiptModal = ({
 }: ReceiptModalProps) => {
   const storeId = useAppSelector(({ store }) => store.selectedStoreId)!;
   const isAutoPrint = useAppSelector(({ store }) => store.isAutoPrintReceipt);
+  const base64ReceiptLogo = useAppSelector(
+    ({ store }) => store.base64ReceiptLogo
+  )!;
   const detailedOrder = useAppSelector(({ order }) => order.selectedOrder);
   const selectedBluetoothPrinter = useAppSelector(
     ({ store }) => store.selectedBluetoothPrinter
@@ -37,6 +40,8 @@ const ReceiptModal = ({
     ? Number(detailedOrder.cashAmount) - Number(detailedOrder.totalAmount)
     : 0;
 
+  const [isPrinting, setIsPrinting] = React.useState(false);
+
   const newSale = (e: GestureResponderEvent) => {
     if (onRequestClose) {
       onRequestClose(e);
@@ -47,11 +52,15 @@ const ReceiptModal = ({
   const handlePrint = () => {
     if (selectedBluetoothPrinter) {
       if (getStoreResult.data && detailedOrder) {
-        printCustomerReceipt(
-          getStoreResult.data,
-          detailedOrder,
-          selectedBluetoothPrinter
-        );
+        setIsPrinting(true);
+        printCustomerReceipt({
+          store: getStoreResult.data,
+          order: detailedOrder,
+          printer: selectedBluetoothPrinter,
+          base64Logo: base64ReceiptLogo,
+        }).then(() => {
+          setIsPrinting(false);
+        });
       }
     } else {
       Alert.alert(
@@ -67,10 +76,10 @@ const ReceiptModal = ({
   }, []);
 
   React.useEffect(() => {
-    if (isAutoPrint) {
+    if (!isPrinting && visible && detailedOrder?.id && isAutoPrint) {
       handlePrint();
     }
-  }, [detailedOrder?.id]);
+  }, [visible]);
 
   if (!detailedOrder) {
     return <></>;
@@ -109,7 +118,11 @@ const ReceiptModal = ({
         <Text className="text-xl w-[200] text-center mb-5">
           How would you like your receipt?
         </Text>
-        <PrimaryButtonLG className="w-[250] py-2 mb-3" onPress={handlePrint}>
+        <PrimaryButtonLG
+          isProcessing={isPrinting}
+          className="w-[250] py-2 mb-3"
+          onPress={handlePrint}
+        >
           Print
         </PrimaryButtonLG>
         <PrimaryButtonLG disabled className="w-[250] py-2 mb-3">
