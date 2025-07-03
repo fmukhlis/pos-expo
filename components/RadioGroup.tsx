@@ -49,5 +49,5 @@ interface RadioGroupProps<
    */
   options: O[];
   value?: V | undefined;
-  onValueChange?: (option: O) => void | undefined;
+  onValueChange?: ((option: O) => Promise<void> | void) | undefined;
 }
