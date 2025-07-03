@@ -126,7 +126,7 @@ export default function HomeScreen() {
             underlayColor={"#e5e7eb"}
           >
             <View className="flex-row space-x-2 items-center">
-              <Icon name="key-outline" />
+              <Icon name="print-outline" />
               <Text className="font-bold text-lg">Printer Settings</Text>
             </View>
           </TouchableHighlight>

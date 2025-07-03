@@ -20,6 +20,7 @@ import { useSession } from "@/contexts/SessionContext";
 import { DangerButtonLG } from "@/components/DangerButton";
 import { useGetStoresQuery } from "@/components/services/store";
 import { useAppDispatch, useAppSelector } from "@/components/reduxHooks";
+import { Feather } from "@expo/vector-icons";
 
 export default function HomeScreen() {
   const { user, session, signOut, signOutLoading } = useSession();
@@ -33,7 +34,7 @@ export default function HomeScreen() {
     isFetching,
     refetch,
   } = useGetStoresQuery(user?.id ? { userId: user.id } : skipToken);
-  console.log("Loki");
+
   const [modalVisible, setModalVisible] = React.useState(false);
 
   const handleLogOut = () => {
@@ -81,6 +82,18 @@ export default function HomeScreen() {
             <Text className="text-gray-500 text-base font-semibold mr-auto">
               Store
             </Text>
+            {storeId && (
+              <TouchableOpacity
+                className="mr-3 pr-3 border-r border-gray-300"
+                onPress={() => {
+                  showModal(storeId);
+                }}
+              >
+                <View className="bg-gray-600 p-1 rounded-full">
+                  <Feather name="edit-2" size={11} color="white" />
+                </View>
+              </TouchableOpacity>
+            )}
             <TouchableOpacity
               className="mr-1.5"
               onPress={() => {
@@ -156,21 +169,6 @@ export default function HomeScreen() {
             disabled={!storeId}
             className={`p-3 ${!storeId ? "opacity-40" : ""}`}
             onPress={() => {
-              showModal(storeId);
-            }}
-            underlayColor={"#e5e7eb"}
-          >
-            <View className="flex-row space-x-2 items-center">
-              <Icon name="create-outline" />
-              <Text className="font-bold text-lg">Edit Store Info</Text>
-            </View>
-          </TouchableHighlight>
-        </View>
-        <View className="border-t border-gray-300">
-          <TouchableHighlight
-            disabled={!storeId}
-            className={`p-3 ${!storeId ? "opacity-40" : ""}`}
-            onPress={() => {
               router.navigate("/account/payment-and-security");
             }}
             underlayColor={"#e5e7eb"}
@@ -206,8 +204,21 @@ export default function HomeScreen() {
             underlayColor={"#e5e7eb"}
           >
             <View className="flex-row space-x-2 items-center">
-              <Icon name="key-outline" />
+              <Icon name="print-outline" />
               <Text className="font-bold text-lg">Printer Settings</Text>
+            </View>
+          </TouchableHighlight>
+        </View>
+        <View className="border-t border-gray-300">
+          <TouchableHighlight
+            disabled
+            className={`p-3 opacity-40`}
+            onPress={() => {}}
+            underlayColor={"#e5e7eb"}
+          >
+            <View className="flex-row space-x-2 items-center">
+              <Icon name="stats-chart-outline" />
+              <Text className="font-bold text-lg">Reports</Text>
             </View>
           </TouchableHighlight>
         </View>

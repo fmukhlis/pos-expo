@@ -7,16 +7,22 @@ import {
   IBLEPrinter,
 } from "react-native-thermal-receipt-printer-image-qr";
 
-import { logoExample } from "@/assets/images/base64images/logo-example";
 import { DetailedOrder } from "@/types/order";
 import { DetailedStore } from "@/types/store";
 import { currencyFormat } from "./defaultFormat";
+import { logoExample } from "@/assets/images/base64images/logo-example";
 
-const printCustomerReceipt = async (
-  store: DetailedStore,
-  order: DetailedOrder,
-  printer: IBLEPrinter
-) => {
+const printCustomerReceipt = async ({
+  store,
+  order,
+  printer,
+  base64Logo,
+}: {
+  store: DetailedStore;
+  order: DetailedOrder;
+  printer: IBLEPrinter;
+  base64Logo: string;
+}) => {
   if (!printer) {
     return;
   }
@@ -26,8 +32,19 @@ const printCustomerReceipt = async (
   let subtotal = 0;
   let totalDiscount = 0;
 
-  BLEPrinter.printImageBase64(logoExample, { imageWidth: 250 });
-  await sleep(100);
+  if (base64Logo) {
+    BLEPrinter.printImageBase64(base64Logo, {
+      imageWidth: 250,
+      imageHeight: 150,
+    });
+    await sleep(100);
+  } else {
+    BLEPrinter.printImageBase64(logoExample, {
+      imageWidth: 250,
+      imageHeight: 150,
+    });
+    await sleep(100);
+  }
 
   BLEPrinter.printText(
     `<C>${store.name}</C>\n<C>${store.address}</C>\n<C>${store.phone}</C>\n\n--------------------------------`
@@ -51,7 +68,7 @@ const printCustomerReceipt = async (
   await sleep(100);
 
   BLEPrinter.printColumnsText(
-    ["Processed By", "", `${order.processedBy.name}`],
+    ["Processed By", "", `${order.processedBy.name.slice(0, 10)}`],
     [15, 1, 14],
     [ColumnAlignment.LEFT, ColumnAlignment.CENTER, ColumnAlignment.RIGHT],
     ["", "", ""]
@@ -197,6 +214,8 @@ const printCustomerReceipt = async (
     }
   );
   await sleep(100);
+
+  return true;
 };
 
 export default printCustomerReceipt;

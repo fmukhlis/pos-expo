@@ -11,6 +11,7 @@ import {
   FlatList,
   TouchableOpacity,
   TouchableHighlight,
+  ActivityIndicator,
 } from "react-native";
 
 import PinModal from "@/components/Order/Transaction/PinModal";
@@ -29,6 +30,9 @@ const OrderDetail = () => {
   const { id: orderId }: { id: string } = useLocalSearchParams();
 
   const storeId = useAppSelector(({ store }) => store.selectedStoreId)!;
+  const base64ReceiptLogo = useAppSelector(
+    ({ store }) => store.base64ReceiptLogo
+  )!;
   const selectedBluetoothPrinter = useAppSelector(
     ({ store }) => store.selectedBluetoothPrinter
   );
@@ -37,8 +41,10 @@ const OrderDetail = () => {
 
   const dispatch = useAppDispatch();
 
-  const [getOrder, getOrderResult] = useLazyGetOrderQuery();
   const [getStore, getStoreResult] = useLazyGetStoreQuery();
+  const [getOrder, getOrderResult] = useLazyGetOrderQuery();
+
+  const [isPrinting, setIsPrinting] = React.useState(false);
 
   const handlePrint = () => {
     const { data: store } = getStoreResult;
@@ -46,7 +52,15 @@ const OrderDetail = () => {
 
     if (selectedBluetoothPrinter) {
       if (store && order) {
-        printCustomerReceipt(store, order, selectedBluetoothPrinter);
+        setIsPrinting(true);
+        printCustomerReceipt({
+          store,
+          order,
+          printer: selectedBluetoothPrinter,
+          base64Logo: base64ReceiptLogo,
+        }).then(() => {
+          setIsPrinting(false);
+        });
       }
     } else {
       Alert.alert(
@@ -78,6 +92,7 @@ const OrderDetail = () => {
       </>
     );
   }
+  console.log(openModals);
 
   return (
     <View className="bg-white flex-1">
@@ -129,13 +144,22 @@ const OrderDetail = () => {
               </Text>
             </TouchableHighlight>
             <TouchableHighlight
+              disabled={isPrinting}
               onPress={handlePrint}
               underlayColor={"#e5e7eb"}
-              className="border border-blue-500 w-full h-[50] mx-auto mt-3 rounded-sm bg-gray-100"
+              className={`border border-blue-500 w-full h-[50] mx-auto mt-3 rounded-sm bg-gray-100 ${
+                isPrinting ? "opacity-40" : ""
+              }`}
             >
-              <Text className="text-base font-bold m-auto text-blue-500">
-                New Receipt{" "}
-              </Text>
+              {isPrinting ? (
+                <View className="m-auto">
+                  <ActivityIndicator size={"large"} color={"#3b82f6"} />
+                </View>
+              ) : (
+                <Text className="text-base font-bold m-auto text-blue-500">
+                  New Receipt{" "}
+                </Text>
+              )}
             </TouchableHighlight>
 
             <Text className="font-bold mt-5 text-base">Payment</Text>

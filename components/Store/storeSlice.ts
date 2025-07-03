@@ -3,6 +3,7 @@ import { IBLEPrinter } from "react-native-thermal-receipt-printer-image-qr";
 
 const initialState: StoreState = {
   selectedStoreId: null,
+  base64ReceiptLogo: "",
   isAutoPrintReceipt: false,
   selectedBluetoothPrinter: null,
 };
@@ -20,17 +21,24 @@ const storeSlice = createSlice({
     setAutoPrintReceipt: (state, action: PayloadAction<boolean>) => {
       state.isAutoPrintReceipt = action.payload;
     },
+    setBase64ReceiptLogo: (state, action: PayloadAction<string>) => {
+      state.base64ReceiptLogo = action.payload;
+    },
   },
   extraReducers: (build) => {},
 });
 
-export const { setAutoPrintReceipt, selectBluetoothPrinter } =
-  storeSlice.actions;
+export const {
+  setAutoPrintReceipt,
+  selectBluetoothPrinter,
+  setBase64ReceiptLogo,
+} = storeSlice.actions;
 
 export default storeSlice.reducer;
 
 interface StoreState {
   selectedStoreId: number | null;
+  base64ReceiptLogo: string;
   isAutoPrintReceipt: boolean;
   selectedBluetoothPrinter: IBLEPrinter | null;
 }

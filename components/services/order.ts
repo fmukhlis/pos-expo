@@ -61,6 +61,7 @@ export const orderAPI = apiSlice.injectEndpoints({
       }),
       invalidatesTags: (result, error, { orderId: id }) => {
         if (!error?.status) {
+          console.log("Tags invalidated");
           return [
             { type: "Order", id: "LIST" },
             { type: "Order", id },

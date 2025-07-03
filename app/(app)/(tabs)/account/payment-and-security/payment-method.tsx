@@ -7,7 +7,6 @@ import {
   RefreshControl,
   TouchableOpacity,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 import LoadingComponent from "@/components/LoadingComponent";
 import PaymentMethodModal from "@/components/PaymentMethod/PaymentMethodModal";

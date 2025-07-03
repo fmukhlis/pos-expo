@@ -46,5 +46,5 @@ interface CustomRadioGroupProps<
   value?: V | undefined;
   options: O[];
   renderItem: (label: string, isSelected: boolean) => React.JSX.Element;
-  onValueChange?: (option: O) => void | undefined;
+  onValueChange?: ((option: O) => Promise<void> | void) | undefined;
 }

@@ -55,7 +55,10 @@ const ManageStandardItemModal = ({
     ? selectedProduct.availableVariants
         .filter(({ status }) => status === "Active")
         .map(({ productOptions, id, price }) => {
-          const optionNames = productOptions.map(({ name }) => name).join(", ");
+          const optionNames =
+            productOptions.length > 0
+              ? productOptions.map(({ name }) => name).join(", ")
+              : "Original";
           return {
             label: optionNames,
             value: `${id}`,
@@ -164,35 +167,39 @@ const ManageStandardItemModal = ({
             ellipsizeMode="tail"
             numberOfLines={1}
           >
-            {selectedProduct?.name}
+            {selectedItem ? selectedItem.name : selectedProduct?.name}
           </Text>
           <PrimaryTouchable onPress={handleSubmit(onSubmit)}>
             <Icon name="save-outline" size={27} className="text-white p-1.5" />
           </PrimaryTouchable>
         </View>
         <View className="px-3">
-          <Text className="font-semibold text-base mb-3">
-            Variant{"  "}
-            <Text className="text-gray-400 font-normal">(Select one)</Text>
-          </Text>
-          <Controller
-            name="variantId"
-            control={control}
-            render={({ field: { value: currentValue, onChange } }) => {
-              return (
-                <RadioGroup
-                  className="mb-5 border-b border-gray-200"
-                  value={currentValue}
-                  onValueChange={({ value, price, label }) => {
-                    onChange(value);
-                    setValue("price", price);
-                    setValue("optionNames", label);
-                  }}
-                  options={activeVariants}
-                />
-              );
-            }}
-          />
+          {!!selectedProduct && (
+            <>
+              <Text className="font-semibold text-base mb-3">
+                Variant{"  "}
+                <Text className="text-gray-400 font-normal">(Select one)</Text>
+              </Text>
+              <Controller
+                name="variantId"
+                control={control}
+                render={({ field: { value: currentValue, onChange } }) => {
+                  return (
+                    <RadioGroup
+                      className="mb-5 border-b border-gray-200"
+                      value={currentValue}
+                      onValueChange={({ value, price, label }) => {
+                        onChange(value);
+                        setValue("price", price);
+                        setValue("optionNames", label);
+                      }}
+                      options={activeVariants}
+                    />
+                  );
+                }}
+              />
+            </>
+          )}
           {selectedProduct && selectedProduct.availableModifiers.length > 0 && (
             <Controller
               name="modifierIds"

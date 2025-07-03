@@ -140,7 +140,12 @@ const Category = () => {
                         {item.name}
                       </Text>
                       <Text className="text-sm text-gray-500">
-                        {item.availableVariants.length} variant(s)
+                        {
+                          item.availableVariants.filter(
+                            ({ status }) => status === "Active"
+                          ).length
+                        }{" "}
+                        variant(s)
                       </Text>
                     </View>
                     <Text
@@ -148,11 +153,13 @@ const Category = () => {
                       numberOfLines={1}
                       ellipsizeMode="tail"
                     >
-                      {item.availableVariants.reduce(
-                        (accumulator, currentValue) =>
-                          accumulator + Number(currentValue.stock),
-                        0
-                      )}
+                      {item.availableVariants
+                        .filter(({ status }) => status === "Active")
+                        .reduce(
+                          (accumulator, currentValue) =>
+                            accumulator + Number(currentValue.stock),
+                          0
+                        )}
                     </Text>
                   </View>
                 </View>
