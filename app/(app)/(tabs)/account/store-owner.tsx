@@ -211,8 +211,8 @@ export default function HomeScreen() {
         </View>
         <View className="border-t border-gray-300">
           <TouchableHighlight
-            disabled={!storeId}
-            className={`p-3 ${!storeId ? "opacity-40" : ""}`}
+            disabled
+            className={`p-3 opacity-40`}
             onPress={() => {}}
             underlayColor={"#e5e7eb"}
           >
