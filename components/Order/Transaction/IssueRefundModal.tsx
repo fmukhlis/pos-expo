@@ -24,9 +24,7 @@ const IssueRefundModal = ({
   onRequestClose,
   ...props
 }: IssueRefundModalProps) => {
-  const selectedOrder = useAppSelector(({ order }) => {
-    order.selectedOrder;
-  });
+  const selectedOrder = useAppSelector(({ order }) => order.selectedOrder);
 
   const { reset, control, handleSubmit, watch, setValue } = useForm({
     resolver: zodResolver(Schema),
