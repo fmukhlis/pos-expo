@@ -1,7 +1,11 @@
 import React from "react";
 import * as SecureStore from "expo-secure-store";
+import { PermissionsAndroid, Platform } from "react-native";
 
-import { BLEPrinter } from "react-native-thermal-receipt-printer-image-qr";
+import {
+  BLEPrinter,
+  NetPrinter,
+} from "react-native-thermal-receipt-printer-image-qr";
 import { Redirect, Stack } from "expo-router";
 
 import VerifyEmail from "@/components/VerifyEmail";
@@ -10,9 +14,10 @@ import LoadingPage from "@/components/LoadingPage";
 import { useSession } from "@/contexts/SessionContext";
 import { useAppDispatch } from "@/components/reduxHooks";
 import {
-  selectBluetoothPrinter,
+  selectNetPrinter,
   setAutoPrintReceipt,
   setBase64ReceiptLogo,
+  selectBluetoothPrinter,
 } from "@/components/Store/storeSlice";
 
 function AuthLayout() {
@@ -35,6 +40,12 @@ function AuthLayout() {
         await SecureStore.getItemAsync(
           "selectedBluetoothPrinterInnerMacAddress"
         );
+      const selectedNetPrinterHost = await SecureStore.getItemAsync(
+        "selectedNetPrinterHost"
+      );
+      const selectedNetPrinterPort = await SecureStore.getItemAsync(
+        "selectedNetPrinterPort"
+      );
       if (base64ReceiptLogo !== null) {
         dispatch(setBase64ReceiptLogo(base64ReceiptLogo));
       }
@@ -43,7 +54,7 @@ function AuthLayout() {
       }
       if (
         selectedBluetoothPrinterName !== null &&
-        selectedBluetoothPrinterInnerMacAddress
+        selectedBluetoothPrinterInnerMacAddress !== null
       ) {
         dispatch(
           selectBluetoothPrinter({
@@ -51,24 +62,73 @@ function AuthLayout() {
             inner_mac_address: selectedBluetoothPrinterInnerMacAddress,
           })
         );
-        BLEPrinter.init()
-          .then(() => {
-            BLEPrinter.connectPrinter(selectedBluetoothPrinterInnerMacAddress)
-              .then(
-                () => {},
-                (err) => {
+
+        const bluetoothScanPermission = await PermissionsAndroid.check(
+          PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN
+        );
+        const bluetoothConnectPermission = await PermissionsAndroid.check(
+          PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT
+        );
+        const accessFineLocationPermission = await PermissionsAndroid.check(
+          PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
+        );
+
+        if (
+          Platform.OS === "android" && Platform.Version >= 31
+            ? bluetoothScanPermission &&
+              bluetoothConnectPermission &&
+              accessFineLocationPermission
+            : accessFineLocationPermission
+        ) {
+          BLEPrinter.init()
+            .then(() => {
+              BLEPrinter.connectPrinter(selectedBluetoothPrinterInnerMacAddress)
+                .then(
+                  () => {},
+                  (err) => {
+                    console.error(
+                      `Error when trying to connect to the printer\n(${err})`
+                    );
+                  }
+                )
+                .catch((err) => {
                   console.error(
                     `Error when trying to connect to the printer\n(${err})`
                   );
-                }
-              )
-              .catch((err) => {
-                console.error(
-                  `Error when trying to connect to the printer\n(${err})`
-                );
-              });
-          })
-          .catch((err) => {});
+                });
+            })
+            .catch((err) => {
+              console.error(`Error when initializing BLEPrinter\n(${err})`);
+            });
+        } else {
+          console.error("Bluetooth or Location permission is not granted.");
+        }
+      }
+      if (selectedNetPrinterHost !== null && selectedNetPrinterPort !== null) {
+        NetPrinter.connectPrinter(
+          selectedNetPrinterHost,
+          Number(selectedNetPrinterPort)
+        )
+          .then(
+            async () => {
+              dispatch(
+                selectNetPrinter({
+                  host: selectedNetPrinterHost,
+                  port: Number(selectedNetPrinterPort),
+                })
+              );
+            },
+            (err) => {
+              console.error(
+                `Error when trying to connect to the NET printer\n(${err})`
+              );
+            }
+          )
+          .catch((err) => {
+            console.error(
+              `Error when trying to connect to the NET printer\n(${err})`
+            );
+          });
       }
     };
     init();
