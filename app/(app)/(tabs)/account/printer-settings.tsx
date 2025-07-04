@@ -9,6 +9,7 @@ import {
   Switch,
   ScrollView,
   PermissionsAndroid,
+  Platform,
 } from "react-native";
 
 import CustomRadioGroup from "@/components/CustomRadioGroup";
@@ -94,9 +95,11 @@ const PrinterSettings = () => {
       );
 
       if (
-        bluetoothScanPermission &&
-        bluetoothConnectPermission &&
-        accessFineLocationPermission
+        Platform.OS === "android" && Platform.Version >= 31
+          ? bluetoothScanPermission &&
+            bluetoothConnectPermission &&
+            accessFineLocationPermission
+          : accessFineLocationPermission
       ) {
         BLEPrinter.init()
           .then(() => {
