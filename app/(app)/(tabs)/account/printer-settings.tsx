@@ -60,7 +60,8 @@ const PrinterSettings = () => {
     port: `${selectedNetPrinter?.port ?? ""}`,
   });
 
-  const [error, setError] = React.useState("");
+  const [bleError, setBLEError] = React.useState("");
+  const [netError, setNetError] = React.useState("");
 
   const handleBluetoothPrinterChange = async ({
     label,
@@ -90,13 +91,15 @@ const PrinterSettings = () => {
             );
           },
           (err) => {
-            setError(
+            setBLEError(
               `Error when trying to connect to the BLE printer\n(${err})`
             );
           }
         )
         .catch((err) => {
-          setError(`Error when trying to connect to the BLE printer\n(${err})`);
+          setBLEError(
+            `Error when trying to connect to the BLE printer\n(${err})`
+          );
         })
         .finally(() => {
           setIsBLEConnecting(false);
@@ -126,13 +129,15 @@ const PrinterSettings = () => {
             );
           },
           (err) => {
-            setError(
+            setNetError(
               `Error when trying to connect to the NET printer\n(${err})`
             );
           }
         )
         .catch((err) => {
-          setError(`Error when trying to connect to the NET printer\n(${err})`);
+          setNetError(
+            `Error when trying to connect to the NET printer\n(${err})`
+          );
         })
         .finally(() => {
           setIsNETConnecting(false);
@@ -150,7 +155,7 @@ const PrinterSettings = () => {
         );
       })
       .catch((err) => {
-        setError(`Error when closing bluetooth connection\n(${err})`);
+        setBLEError(`Error when closing bluetooth connection\n(${err})`);
       });
   };
 
@@ -162,7 +167,7 @@ const PrinterSettings = () => {
         await SecureStore.deleteItemAsync("selectedNetPrinterPort");
       })
       .catch((err) => {
-        setError(`Error when closing network connection\n(${err})`);
+        setNetError(`Error when closing network connection\n(${err})`);
       });
   };
 
@@ -204,13 +209,13 @@ const PrinterSettings = () => {
                     .then(
                       () => {},
                       (err) => {
-                        setError(
+                        setBLEError(
                           `Error when trying to connect to the printer\n(${err})`
                         );
                       }
                     )
                     .catch((err) => {
-                      setError(
+                      setBLEError(
                         `Error when trying to connect to the printer\n(${err})`
                       );
                     })
@@ -220,17 +225,17 @@ const PrinterSettings = () => {
                 }
               })
               .catch((err) => {
-                setError(`Error when trying to get device list\n(${err})`);
+                setBLEError(`Error when trying to get device list\n(${err})`);
               })
               .finally(() => {
                 setIsLoading(false);
               });
           })
           .catch((err) => {
-            setError(`Error when initializing BLEPrinter\n(${err})`);
+            setBLEError(`Error when initializing BLEPrinter\n(${err})`);
           });
       } else {
-        setError(`Bluetooth or Location permission is not granted.`);
+        setBLEError(`Bluetooth or Location permission is not granted.`);
       }
 
       if (selectedNetPrinter?.host && selectedNetPrinter?.port) {
@@ -254,13 +259,13 @@ const PrinterSettings = () => {
               );
             },
             (err) => {
-              setError(
+              setNetError(
                 `Error when trying to connect to the NET printer\n(${err})`
               );
             }
           )
           .catch((err) => {
-            setError(
+            setNetError(
               `Error when trying to connect to the NET printer\n(${err})`
             );
           })
@@ -302,9 +307,9 @@ const PrinterSettings = () => {
               prevent the app from crashing.
             </Text>
           </View>
-          {error ? (
+          {bleError ? (
             <View className="mx-5 px-4 py-2 bg-red-100 border border-red-500 rounded">
-              <Text className="text-red-500">{error}</Text>
+              <Text className="text-red-500">{bleError}</Text>
             </View>
           ) : isLoading ? (
             <View className="h-[50]">
@@ -389,7 +394,11 @@ const PrinterSettings = () => {
                 />
               </TouchableOpacity>
             </View>
-            {isNETConnecting ? (
+            {netError ? (
+              <View className="mt-2 px-4 py-2 bg-red-100 border border-red-500 rounded">
+                <Text className="text-red-500">{netError}</Text>
+              </View>
+            ) : isNETConnecting ? (
               <View className="justify-center items-center h-[35] mt-2">
                 <LoadingComponent size={"small"} />
               </View>
