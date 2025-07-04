@@ -14,6 +14,7 @@ import LoadingPage from "@/components/LoadingPage";
 import { useSession } from "@/contexts/SessionContext";
 import { useAppDispatch } from "@/components/reduxHooks";
 import {
+  setPaperWidth,
   selectNetPrinter,
   setAutoPrintReceipt,
   setBase64ReceiptLogo,
@@ -46,23 +47,23 @@ function AuthLayout() {
       const selectedNetPrinterPort = await SecureStore.getItemAsync(
         "selectedNetPrinterPort"
       );
+      const paperWidth = (await SecureStore.getItemAsync("paperWidth")) as
+        | "58mm"
+        | "80mm";
+
       if (base64ReceiptLogo !== null) {
         dispatch(setBase64ReceiptLogo(base64ReceiptLogo));
       }
       if (isAutoPrintReceipt !== null) {
         dispatch(setAutoPrintReceipt(isAutoPrintReceipt === "true"));
       }
+      if (paperWidth) {
+        dispatch(setPaperWidth(paperWidth));
+      }
       if (
         selectedBluetoothPrinterName !== null &&
         selectedBluetoothPrinterInnerMacAddress !== null
       ) {
-        dispatch(
-          selectBluetoothPrinter({
-            device_name: selectedBluetoothPrinterName,
-            inner_mac_address: selectedBluetoothPrinterInnerMacAddress,
-          })
-        );
-
         const bluetoothScanPermission = await PermissionsAndroid.check(
           PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN
         );
@@ -84,7 +85,15 @@ function AuthLayout() {
             .then(() => {
               BLEPrinter.connectPrinter(selectedBluetoothPrinterInnerMacAddress)
                 .then(
-                  () => {},
+                  () => {
+                    dispatch(
+                      selectBluetoothPrinter({
+                        device_name: selectedBluetoothPrinterName,
+                        inner_mac_address:
+                          selectedBluetoothPrinterInnerMacAddress,
+                      })
+                    );
+                  },
                   (err) => {
                     console.error(
                       `Error when trying to connect to the printer\n(${err})`
@@ -105,29 +114,35 @@ function AuthLayout() {
         }
       }
       if (selectedNetPrinterHost !== null && selectedNetPrinterPort !== null) {
-        NetPrinter.connectPrinter(
-          selectedNetPrinterHost,
-          Number(selectedNetPrinterPort)
-        )
-          .then(
-            async () => {
-              dispatch(
-                selectNetPrinter({
-                  host: selectedNetPrinterHost,
-                  port: Number(selectedNetPrinterPort),
-                })
-              );
-            },
-            (err) => {
-              console.error(
-                `Error when trying to connect to the NET printer\n(${err})`
-              );
-            }
-          )
+        NetPrinter.init()
+          .then(() => {
+            NetPrinter.connectPrinter(
+              selectedNetPrinterHost,
+              Number(selectedNetPrinterPort)
+            )
+              .then(
+                async () => {
+                  dispatch(
+                    selectNetPrinter({
+                      host: selectedNetPrinterHost,
+                      port: Number(selectedNetPrinterPort),
+                    })
+                  );
+                },
+                (err) => {
+                  console.error(
+                    `Error when trying to connect to the NET printer\n(${err})`
+                  );
+                }
+              )
+              .catch((err) => {
+                console.error(
+                  `Error when trying to connect to the NET printer\n(${err})`
+                );
+              });
+          })
           .catch((err) => {
-            console.error(
-              `Error when trying to connect to the NET printer\n(${err})`
-            );
+            console.error(`Error when initializing NET printer\n(${err})`);
           });
       }
     };
