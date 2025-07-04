@@ -23,6 +23,7 @@ const ReceiptModal = ({
   ...props
 }: ReceiptModalProps) => {
   const storeId = useAppSelector(({ store }) => store.selectedStoreId)!;
+  const paperWidth = useAppSelector(({ store }) => store.paperWidth)!;
   const isAutoPrint = useAppSelector(({ store }) => store.isAutoPrintReceipt);
   const base64ReceiptLogo = useAppSelector(
     ({ store }) => store.base64ReceiptLogo
@@ -30,6 +31,9 @@ const ReceiptModal = ({
   const detailedOrder = useAppSelector(({ order }) => order.selectedOrder);
   const selectedBluetoothPrinter = useAppSelector(
     ({ store }) => store.selectedBluetoothPrinter
+  );
+  const selectedNetPrinter = useAppSelector(
+    ({ store }) => store.selectedNetPrinter
   );
 
   const dispatch = useAppDispatch();
@@ -40,7 +44,10 @@ const ReceiptModal = ({
     ? Number(detailedOrder.cashAmount) - Number(detailedOrder.totalAmount)
     : 0;
 
-  const [isPrinting, setIsPrinting] = React.useState(false);
+  const [isPrinting, setIsPrinting] = React.useState({
+    BLE: false,
+    NET: false,
+  });
 
   const newSale = (e: GestureResponderEvent) => {
     if (onRequestClose) {
@@ -50,17 +57,33 @@ const ReceiptModal = ({
   };
 
   const handlePrint = () => {
-    if (selectedBluetoothPrinter) {
+    if (selectedBluetoothPrinter || selectedNetPrinter) {
       if (getStoreResult.data && detailedOrder) {
-        setIsPrinting(true);
-        printCustomerReceipt({
-          store: getStoreResult.data,
-          order: detailedOrder,
-          printer: selectedBluetoothPrinter,
-          base64Logo: base64ReceiptLogo,
-        }).then(() => {
-          setIsPrinting(false);
-        });
+        if (selectedBluetoothPrinter) {
+          setIsPrinting((prev) => ({ ...prev, BLE: true }));
+          printCustomerReceipt({
+            store: getStoreResult.data,
+            order: detailedOrder,
+            printer: selectedBluetoothPrinter,
+            base64Logo: base64ReceiptLogo,
+            paperWidth,
+          }).then(() => {
+            setIsPrinting((prev) => ({ ...prev, BLE: false }));
+          });
+        }
+
+        if (selectedNetPrinter) {
+          setIsPrinting((prev) => ({ ...prev, NET: true }));
+          printCustomerReceipt({
+            store: getStoreResult.data,
+            order: detailedOrder,
+            printer: selectedNetPrinter,
+            base64Logo: base64ReceiptLogo,
+            paperWidth,
+          }).then(() => {
+            setIsPrinting((prev) => ({ ...prev, NET: false }));
+          });
+        }
       }
     } else {
       Alert.alert(
@@ -76,7 +99,12 @@ const ReceiptModal = ({
   }, []);
 
   React.useEffect(() => {
-    if (!isPrinting && visible && detailedOrder?.id && isAutoPrint) {
+    if (
+      !(isPrinting.BLE || isPrinting.NET) &&
+      visible &&
+      detailedOrder?.id &&
+      isAutoPrint
+    ) {
       handlePrint();
     }
   }, [visible]);
@@ -119,7 +147,7 @@ const ReceiptModal = ({
           How would you like your receipt?
         </Text>
         <PrimaryButtonLG
-          isProcessing={isPrinting}
+          isProcessing={isPrinting.BLE || isPrinting.NET}
           className="w-[250] py-2 mb-3"
           onPress={handlePrint}
         >
