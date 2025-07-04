@@ -23,6 +23,7 @@ const ReceiptModal = ({
   ...props
 }: ReceiptModalProps) => {
   const storeId = useAppSelector(({ store }) => store.selectedStoreId)!;
+  const paperWidth = useAppSelector(({ store }) => store.paperWidth)!;
   const isAutoPrint = useAppSelector(({ store }) => store.isAutoPrintReceipt);
   const base64ReceiptLogo = useAppSelector(
     ({ store }) => store.base64ReceiptLogo
@@ -58,6 +59,7 @@ const ReceiptModal = ({
           order: detailedOrder,
           printer: selectedBluetoothPrinter,
           base64Logo: base64ReceiptLogo,
+          paperWidth,
         }).then(() => {
           setIsPrinting(false);
         });

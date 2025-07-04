@@ -30,6 +30,7 @@ const OrderDetail = () => {
   const { id: orderId }: { id: string } = useLocalSearchParams();
 
   const storeId = useAppSelector(({ store }) => store.selectedStoreId)!;
+  const paperWidth = useAppSelector(({ store }) => store.paperWidth)!;
   const base64ReceiptLogo = useAppSelector(
     ({ store }) => store.base64ReceiptLogo
   )!;
@@ -58,6 +59,7 @@ const OrderDetail = () => {
           order,
           printer: selectedBluetoothPrinter,
           base64Logo: base64ReceiptLogo,
+          paperWidth,
         }).then(() => {
           setIsPrinting(false);
         });
@@ -444,7 +446,7 @@ const OrderDetail = () => {
                     </View>
                     <Text className="font-bold text-base">Processed By</Text>
                     <Text className="text-gray-500">
-                      {`${selectedOrder.processedBy.name} (${selectedOrder.processedBy.email})`}
+                      {`${item.processedBy.name} (${item.processedBy.email})`}
                     </Text>
                   </View>
                 ))}
