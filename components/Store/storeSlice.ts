@@ -5,6 +5,7 @@ import {
 } from "react-native-thermal-receipt-printer-image-qr";
 
 const initialState: StoreState = {
+  paperWidth: "58mm",
   selectedStoreId: null,
   base64ReceiptLogo: "",
   isAutoPrintReceipt: false,
@@ -22,6 +23,9 @@ const storeSlice = createSlice({
     ) => {
       state.selectedBluetoothPrinter = action.payload;
     },
+    setPaperWidth: (state, action: PayloadAction<"58mm" | "80mm">) => {
+      state.paperWidth = action.payload;
+    },
     selectNetPrinter: (state, action: PayloadAction<INetPrinter | null>) => {
       state.selectedNetPrinter = action.payload;
     },
@@ -36,6 +40,7 @@ const storeSlice = createSlice({
 });
 
 export const {
+  setPaperWidth,
   selectNetPrinter,
   setAutoPrintReceipt,
   setBase64ReceiptLogo,
@@ -45,6 +50,7 @@ export const {
 export default storeSlice.reducer;
 
 interface StoreState {
+  paperWidth: "58mm" | "80mm";
   selectedStoreId: number | null;
   base64ReceiptLogo: string;
   isAutoPrintReceipt: boolean;
