@@ -52,7 +52,8 @@ const PrinterSettings = () => {
   >([]);
 
   const [isLoading, setIsLoading] = React.useState(false);
-  const [isConnecting, setIsConnecting] = React.useState(false);
+  const [isBLEConnecting, setIsBLEConnecting] = React.useState(false);
+  const [isNETConnecting, setIsNETConnecting] = React.useState(false);
 
   const [netPrinter, setNetPrinter] = React.useState({
     host: selectedNetPrinter?.host ?? "",
@@ -68,34 +69,101 @@ const PrinterSettings = () => {
     label: string;
     value: string;
   }) => {
-    setIsConnecting(true);
-    dispatch(
-      selectBluetoothPrinter({
-        device_name: label,
-        inner_mac_address: value,
-      })
-    );
     if (label && value) {
-      await SecureStore.setItemAsync("selectedBluetoothPrinterName", label);
-      await SecureStore.setItemAsync(
-        "selectedBluetoothPrinterInnerMacAddress",
-        value
-      );
-
+      setIsBLEConnecting(true);
       BLEPrinter.connectPrinter(value)
         .then(
-          () => {},
+          async () => {
+            dispatch(
+              selectBluetoothPrinter({
+                device_name: label,
+                inner_mac_address: value,
+              })
+            );
+            await SecureStore.setItemAsync(
+              "selectedBluetoothPrinterName",
+              label
+            );
+            await SecureStore.setItemAsync(
+              "selectedBluetoothPrinterInnerMacAddress",
+              value
+            );
+          },
           (err) => {
-            setError(`Error when trying to connect to the printer\n(${err})`);
+            setError(
+              `Error when trying to connect to the BLE printer\n(${err})`
+            );
           }
         )
         .catch((err) => {
-          setError(`Error when trying to connect to the printer\n(${err})`);
+          setError(`Error when trying to connect to the BLE printer\n(${err})`);
         })
         .finally(() => {
-          setIsConnecting(false);
+          setIsBLEConnecting(false);
         });
     }
+  };
+
+  const handleNetPrinterChange = () => {
+    if (netPrinter.host && netPrinter.port) {
+      setIsNETConnecting(true);
+      NetPrinter.connectPrinter(netPrinter.host, Number(netPrinter.port))
+        .then(
+          async () => {
+            dispatch(
+              selectNetPrinter({
+                host: netPrinter.host,
+                port: Number(netPrinter.port),
+              })
+            );
+            await SecureStore.setItemAsync(
+              "selectedNetPrinterHOST",
+              netPrinter.host
+            );
+            await SecureStore.setItemAsync(
+              "selectedNetPrinterPort",
+              netPrinter.port
+            );
+          },
+          (err) => {
+            setError(
+              `Error when trying to connect to the NET printer\n(${err})`
+            );
+          }
+        )
+        .catch((err) => {
+          setError(`Error when trying to connect to the NET printer\n(${err})`);
+        })
+        .finally(() => {
+          setIsNETConnecting(false);
+        });
+    }
+  };
+
+  const handleDisableBluetoothPrinter = () => {
+    BLEPrinter.closeConn()
+      .then(async () => {
+        dispatch(selectBluetoothPrinter(null));
+        await SecureStore.deleteItemAsync("selectedBluetoothPrinterName");
+        await SecureStore.deleteItemAsync(
+          "selectedBluetoothPrinterInnerMacAddress"
+        );
+      })
+      .catch((err) => {
+        setError(`Error when closing bluetooth connection\n(${err})`);
+      });
+  };
+
+  const handleDisableNetPrinter = () => {
+    NetPrinter.closeConn()
+      .then(async () => {
+        dispatch(selectNetPrinter(null));
+        await SecureStore.deleteItemAsync("selectedNetPrinterHost");
+        await SecureStore.deleteItemAsync("selectedNetPrinterPort");
+      })
+      .catch((err) => {
+        setError(`Error when closing network connection\n(${err})`);
+      });
   };
 
   React.useEffect(() => {
@@ -129,6 +197,7 @@ const PrinterSettings = () => {
                   }))
                 );
                 if (selectedBluetoothPrinter?.inner_mac_address) {
+                  setIsBLEConnecting(true);
                   BLEPrinter.connectPrinter(
                     selectedBluetoothPrinter.inner_mac_address
                   )
@@ -146,7 +215,7 @@ const PrinterSettings = () => {
                       );
                     })
                     .finally(() => {
-                      setIsConnecting(false);
+                      setIsBLEConnecting(false);
                     });
                 }
               })
@@ -162,6 +231,42 @@ const PrinterSettings = () => {
           });
       } else {
         setError(`Bluetooth or Location permission is not granted.`);
+      }
+
+      if (selectedNetPrinter?.host && selectedNetPrinter?.port) {
+        setIsNETConnecting(true);
+        NetPrinter.connectPrinter(netPrinter.host, Number(netPrinter.port))
+          .then(
+            async () => {
+              dispatch(
+                selectNetPrinter({
+                  host: netPrinter.host,
+                  port: Number(netPrinter.port),
+                })
+              );
+              await SecureStore.setItemAsync(
+                "selectedNetPrinterHOST",
+                netPrinter.host
+              );
+              await SecureStore.setItemAsync(
+                "selectedNetPrinterPort",
+                netPrinter.port
+              );
+            },
+            (err) => {
+              setError(
+                `Error when trying to connect to the NET printer\n(${err})`
+              );
+            }
+          )
+          .catch((err) => {
+            setError(
+              `Error when trying to connect to the NET printer\n(${err})`
+            );
+          })
+          .finally(() => {
+            setIsNETConnecting(false);
+          });
       }
     };
     init();
@@ -213,17 +318,7 @@ const PrinterSettings = () => {
                 </Text>
                 <TouchableOpacity
                   disabled={!selectedBluetoothPrinter}
-                  onPress={() => {
-                    BLEPrinter.closeConn()
-                      .then(() => {
-                        dispatch(selectBluetoothPrinter(null));
-                      })
-                      .catch((err) => {
-                        setError(
-                          `Error when closing bluetooth connection\n(${err})`
-                        );
-                      });
-                  }}
+                  onPress={handleDisableBluetoothPrinter}
                   className="ml-auto border p-1.5 border-gray-300 bg-gray-100 rounded"
                 >
                   <MaterialIcons
@@ -246,7 +341,7 @@ const PrinterSettings = () => {
                       </View>
                       <Text className="ml-2 text-base">{label}</Text>
                       {isSelected &&
-                        (isConnecting ? (
+                        (isBLEConnecting ? (
                           <LoadingComponent
                             size={"small"}
                             className="ml-auto flex-none"
@@ -284,17 +379,7 @@ const PrinterSettings = () => {
                 Disable Network Printer ?
               </Text>
               <TouchableOpacity
-                onPress={() => {
-                  NetPrinter.closeConn()
-                    .then(() => {
-                      dispatch(selectNetPrinter(null));
-                    })
-                    .catch((err) => {
-                      setError(
-                        `Error when closing network connection\n(${err})`
-                      );
-                    });
-                }}
+                onPress={handleDisableNetPrinter}
                 className="ml-auto border p-1.5 border-gray-300 bg-gray-100 rounded"
               >
                 <MaterialIcons
@@ -304,7 +389,11 @@ const PrinterSettings = () => {
                 />
               </TouchableOpacity>
             </View>
-            {selectedNetPrinter ? (
+            {isNETConnecting ? (
+              <View className="justify-center items-center h-[35] mt-2">
+                <LoadingComponent size={"small"} />
+              </View>
+            ) : selectedNetPrinter ? (
               <View className="border border-gray-300 px-3 py-1.5 rounded mt-2">
                 <View className="flex-row justify-between items-center">
                   <Text className="font-medium text-base">Net Printer 1</Text>
@@ -342,14 +431,7 @@ const PrinterSettings = () => {
                   containerClassName="mt-2"
                 />
                 <PrimaryButtonSM
-                  onPress={() => {
-                    dispatch(
-                      selectNetPrinter({
-                        host: netPrinter.host,
-                        port: Number(netPrinter.port),
-                      })
-                    );
-                  }}
+                  onPress={handleNetPrinterChange}
                   className="mt-3 h-[45]"
                 >
                   Connect Net Printer
