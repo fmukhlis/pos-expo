@@ -30,7 +30,10 @@ const printCustomerReceipt = async ({
   // 58mm = 36 chars
   // 80mm = 46 chars
   // To ensure consistent layout, limit column length to 35 or 45 characters (e.g., by using slice() method).
-  const width = paperWidth === "58mm" ? 35 : 45;
+  const width = paperWidth === "58mm" ? 32 : 48;
+  const col1 = width / 2;
+  const col2 = 1;
+  const col3 = (width - 6) / 2;
 
   if (!printer) {
     return;
@@ -57,14 +60,15 @@ const printCustomerReceipt = async ({
     }
 
     NetPrinter.printText(
-      `<C>${store.name.slice(0, width)}</C>\n<C>${store.address.slice(
-        0,
-        width
-      )}</C>\n<C>${store.phone.slice(0, width)}</C>\n\n${
+      `<C>${COMMANDS.TEXT_FORMAT.TXT_BOLD_ON}${store.name}${
+        COMMANDS.TEXT_FORMAT.TXT_BOLD_OFF
+      }</C>${COMMANDS.LINE_SPACING.LS_SET}\x30\n<C>${store.address}</C>${
+        COMMANDS.LINE_SPACING.LS_SET
+      }\x30\n<C>${store.phone}</C>${COMMANDS.LINE_SPACING.LS_SET}\x35\n${
         paperWidth === "58mm"
           ? "--------------------------------"
           : COMMANDS.HORIZONTAL_LINE.HR3_80MM
-      }`
+      }${COMMANDS.LINE_SPACING.LS_DEFAULT}`
     );
     await sleep(100);
 
@@ -74,7 +78,7 @@ const printCustomerReceipt = async ({
         "",
         `${createdAt.format("HH:mm")}`,
       ],
-      [(width - 1) / 2, 1, (width - 1) / 2],
+      [col1, col2, col3],
       [ColumnAlignment.LEFT, ColumnAlignment.CENTER, ColumnAlignment.RIGHT],
       ["", "", ""]
     );
@@ -82,15 +86,15 @@ const printCustomerReceipt = async ({
 
     NetPrinter.printColumnsText(
       ["ORDER ID", "", `${order.id}`],
-      [(width - 1) / 2, 1, (width - 1) / 2],
+      [col1, col2, col3],
       [ColumnAlignment.LEFT, ColumnAlignment.CENTER, ColumnAlignment.RIGHT],
       ["", "", ""]
     );
     await sleep(100);
 
     NetPrinter.printColumnsText(
-      ["Processed By", "", `${order.processedBy.name.slice(0, 17)}`],
-      [(width - 1) / 2, 1, (width - 1) / 2],
+      ["Processed By", "", `${order.processedBy.name.slice(0, col3 - 1)}`],
+      [col1, col2, col3],
       [ColumnAlignment.LEFT, ColumnAlignment.CENTER, ColumnAlignment.RIGHT],
       ["", "", ""]
     );
@@ -123,7 +127,7 @@ const printCustomerReceipt = async ({
           "",
           `${currencyFormat.format(itemTotal).replace(/[^\d.]/g, "")}`,
         ],
-        [(width - 1) / 2, 1, (width - 1) / 2],
+        [col1, col2, col3],
         [ColumnAlignment.LEFT, ColumnAlignment.CENTER, ColumnAlignment.RIGHT],
         ["", "", ""]
       );
@@ -136,7 +140,7 @@ const printCustomerReceipt = async ({
             "",
             `-${currencyFormat.format(itemDiscount).replace(/[^\d.]/g, "")}`,
           ],
-          [(width - 1) / 2, 1, (width - 1) / 2],
+          [col1, col2, col3],
           [ColumnAlignment.LEFT, ColumnAlignment.CENTER, ColumnAlignment.RIGHT],
           ["", "", ""]
         );
@@ -157,7 +161,7 @@ const printCustomerReceipt = async ({
         "",
         `${currencyFormat.format(subtotal).replace(/\u00A0/g, "")}`,
       ],
-      [(width - 1) / 2, 1, (width - 1) / 2],
+      [col1, col2, col3],
       [ColumnAlignment.LEFT, ColumnAlignment.CENTER, ColumnAlignment.RIGHT],
       ["", "", ""]
     );
@@ -169,7 +173,7 @@ const printCustomerReceipt = async ({
         "",
         `-${currencyFormat.format(totalDiscount).replace(/\u00A0/g, "")}`,
       ],
-      [(width - 1) / 2, 1, (width - 1) / 2],
+      [col1, col2, col3],
       [ColumnAlignment.LEFT, ColumnAlignment.CENTER, ColumnAlignment.RIGHT],
       ["", "", ""]
     );
@@ -177,7 +181,7 @@ const printCustomerReceipt = async ({
 
     NetPrinter.printColumnsText(
       [`Tax`, "", ``],
-      [(width - 1) / 2, 1, (width - 1) / 2],
+      [col1, col2, col3],
       [ColumnAlignment.LEFT, ColumnAlignment.CENTER, ColumnAlignment.RIGHT],
       ["", "", ""]
     );
@@ -198,7 +202,7 @@ const printCustomerReceipt = async ({
           .format(Number(order.totalAmount))
           .replace(/\u00A0/g, "")}`,
       ],
-      [(width - 1) / 2, 1, (width - 1) / 2],
+      [col1, col2, col3],
       [ColumnAlignment.LEFT, ColumnAlignment.CENTER, ColumnAlignment.RIGHT],
       [`${COMMANDS.TEXT_FORMAT.TXT_BOLD_ON}`, "", ""]
     );
@@ -219,7 +223,7 @@ const printCustomerReceipt = async ({
           .format(Number(order.cashAmount))
           .replace(/\u00A0/g, "")}`,
       ],
-      [(width - 1) / 2, 1, (width - 1) / 2],
+      [col1, col2, col3],
       [ColumnAlignment.LEFT, ColumnAlignment.CENTER, ColumnAlignment.RIGHT],
       ["", "", ""]
     );
@@ -233,7 +237,7 @@ const printCustomerReceipt = async ({
           .format(Number(order.cashAmount) - Number(order.totalAmount))
           .replace(/\u00A0/g, "")}`,
       ],
-      [(width - 1) / 2, 1, (width - 1) / 2],
+      [col1, col2, col3],
       [ColumnAlignment.LEFT, ColumnAlignment.CENTER, ColumnAlignment.RIGHT],
       ["", "", ""]
     );
@@ -251,7 +255,7 @@ const printCustomerReceipt = async ({
         COMMANDS.TEXT_FORMAT.TXT_ALIGN_CT
       }Thank you for your purchase!\n\n\n\n${
         COMMANDS.TEXT_FORMAT.TXT_ALIGN_CT
-      }Printed on: ${createdAt.format("DD MMM YYYY - hh:mm")}`,
+      }Printed on: ${dayjs().format("DD MMM YYYY - HH:mm")}`,
       {
         beep: false,
       }
@@ -273,14 +277,15 @@ const printCustomerReceipt = async ({
     }
 
     BLEPrinter.printText(
-      `<C>${store.name.slice(0, width)}</C>\n<C>${store.address.slice(
-        0,
-        width
-      )}</C>\n<C>${store.phone.slice(0, width)}</C>\n\n${
+      `<C>${COMMANDS.TEXT_FORMAT.TXT_BOLD_ON}${store.name}${
+        COMMANDS.TEXT_FORMAT.TXT_BOLD_OFF
+      }</C>${COMMANDS.LINE_SPACING.LS_SET}\x30\n<C>${store.address}</C>${
+        COMMANDS.LINE_SPACING.LS_SET
+      }\x30\n<C>${store.phone}</C>${COMMANDS.LINE_SPACING.LS_SET}\x35\n${
         paperWidth === "58mm"
           ? "--------------------------------"
           : COMMANDS.HORIZONTAL_LINE.HR3_80MM
-      }`
+      }${COMMANDS.LINE_SPACING.LS_DEFAULT}`
     );
     await sleep(100);
 
@@ -290,7 +295,7 @@ const printCustomerReceipt = async ({
         "",
         `${createdAt.format("HH:mm")}`,
       ],
-      [(width - 1) / 2, 1, (width - 1) / 2],
+      [col1, col2, col3],
       [ColumnAlignment.LEFT, ColumnAlignment.CENTER, ColumnAlignment.RIGHT],
       ["", "", ""]
     );
@@ -298,15 +303,15 @@ const printCustomerReceipt = async ({
 
     BLEPrinter.printColumnsText(
       ["ORDER ID", "", `${order.id}`],
-      [(width - 1) / 2, 1, (width - 1) / 2],
+      [col1, col2, col3],
       [ColumnAlignment.LEFT, ColumnAlignment.CENTER, ColumnAlignment.RIGHT],
       ["", "", ""]
     );
     await sleep(100);
 
     BLEPrinter.printColumnsText(
-      ["Processed By", "", `${order.processedBy.name.slice(0, 17)}`],
-      [(width - 1) / 2, 1, (width - 1) / 2],
+      ["Processed By", "", `${order.processedBy.name.slice(0, col3 - 1)}`],
+      [col1, col2, col3],
       [ColumnAlignment.LEFT, ColumnAlignment.CENTER, ColumnAlignment.RIGHT],
       ["", "", ""]
     );
@@ -339,7 +344,7 @@ const printCustomerReceipt = async ({
           "",
           `${currencyFormat.format(itemTotal).replace(/[^\d.]/g, "")}`,
         ],
-        [(width - 1) / 2, 1, (width - 1) / 2],
+        [col1, col2, col3],
         [ColumnAlignment.LEFT, ColumnAlignment.CENTER, ColumnAlignment.RIGHT],
         ["", "", ""]
       );
@@ -352,7 +357,7 @@ const printCustomerReceipt = async ({
             "",
             `-${currencyFormat.format(itemDiscount).replace(/[^\d.]/g, "")}`,
           ],
-          [(width - 1) / 2, 1, (width - 1) / 2],
+          [col1, col2, col3],
           [ColumnAlignment.LEFT, ColumnAlignment.CENTER, ColumnAlignment.RIGHT],
           ["", "", ""]
         );
@@ -373,7 +378,7 @@ const printCustomerReceipt = async ({
         "",
         `${currencyFormat.format(subtotal).replace(/\u00A0/g, "")}`,
       ],
-      [(width - 1) / 2, 1, (width - 1) / 2],
+      [col1, col2, col3],
       [ColumnAlignment.LEFT, ColumnAlignment.CENTER, ColumnAlignment.RIGHT],
       ["", "", ""]
     );
@@ -385,7 +390,7 @@ const printCustomerReceipt = async ({
         "",
         `-${currencyFormat.format(totalDiscount).replace(/\u00A0/g, "")}`,
       ],
-      [(width - 1) / 2, 1, (width - 1) / 2],
+      [col1, col2, col3],
       [ColumnAlignment.LEFT, ColumnAlignment.CENTER, ColumnAlignment.RIGHT],
       ["", "", ""]
     );
@@ -393,7 +398,7 @@ const printCustomerReceipt = async ({
 
     BLEPrinter.printColumnsText(
       [`Tax`, "", ``],
-      [(width - 1) / 2, 1, (width - 1) / 2],
+      [col1, col2, col3],
       [ColumnAlignment.LEFT, ColumnAlignment.CENTER, ColumnAlignment.RIGHT],
       ["", "", ""]
     );
@@ -414,7 +419,7 @@ const printCustomerReceipt = async ({
           .format(Number(order.totalAmount))
           .replace(/\u00A0/g, "")}`,
       ],
-      [(width - 1) / 2, 1, (width - 1) / 2],
+      [col1, col2, col3],
       [ColumnAlignment.LEFT, ColumnAlignment.CENTER, ColumnAlignment.RIGHT],
       [`${COMMANDS.TEXT_FORMAT.TXT_BOLD_ON}`, "", ""]
     );
@@ -435,7 +440,7 @@ const printCustomerReceipt = async ({
           .format(Number(order.cashAmount))
           .replace(/\u00A0/g, "")}`,
       ],
-      [(width - 1) / 2, 1, (width - 1) / 2],
+      [col1, col2, col3],
       [ColumnAlignment.LEFT, ColumnAlignment.CENTER, ColumnAlignment.RIGHT],
       ["", "", ""]
     );
@@ -449,7 +454,7 @@ const printCustomerReceipt = async ({
           .format(Number(order.cashAmount) - Number(order.totalAmount))
           .replace(/\u00A0/g, "")}`,
       ],
-      [(width - 1) / 2, 1, (width - 1) / 2],
+      [col1, col2, col3],
       [ColumnAlignment.LEFT, ColumnAlignment.CENTER, ColumnAlignment.RIGHT],
       ["", "", ""]
     );
@@ -467,7 +472,7 @@ const printCustomerReceipt = async ({
         COMMANDS.TEXT_FORMAT.TXT_ALIGN_CT
       }Thank you for your purchase!\n\n\n\n${
         COMMANDS.TEXT_FORMAT.TXT_ALIGN_CT
-      }Printed on: ${createdAt.format("DD MMM YYYY - hh:mm")}`,
+      }Printed on: ${dayjs().format("DD MMM YYYY - HH:mm")}`,
       {
         beep: false,
       }
