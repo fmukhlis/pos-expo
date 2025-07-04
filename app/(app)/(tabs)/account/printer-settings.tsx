@@ -25,6 +25,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { PrimaryButtonSM } from "@/components/PrimaryButton";
 import { useAppDispatch, useAppSelector } from "@/components/reduxHooks";
 import {
+  setPaperWidth,
   selectNetPrinter,
   setAutoPrintReceipt,
   setBase64ReceiptLogo,
@@ -41,6 +42,7 @@ const PrinterSettings = () => {
   const isAutoPrintReceipt = useAppSelector(
     ({ store }) => store.isAutoPrintReceipt
   );
+  const paperWidth = useAppSelector(({ store }) => store.paperWidth);
   const base64ReceiptLogo = useAppSelector(
     ({ store }) => store.base64ReceiptLogo
   );
@@ -120,7 +122,7 @@ const PrinterSettings = () => {
               })
             );
             await SecureStore.setItemAsync(
-              "selectedNetPrinterHOST",
+              "selectedNetPrinterHost",
               netPrinter.host
             );
             await SecureStore.setItemAsync(
@@ -173,6 +175,7 @@ const PrinterSettings = () => {
 
   React.useEffect(() => {
     const init = async () => {
+      // Init BLE
       const bluetoothScanPermission = await PermissionsAndroid.check(
         PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN
       );
@@ -201,28 +204,6 @@ const PrinterSettings = () => {
                     value: inner_mac_address,
                   }))
                 );
-                if (selectedBluetoothPrinter?.inner_mac_address) {
-                  setIsBLEConnecting(true);
-                  BLEPrinter.connectPrinter(
-                    selectedBluetoothPrinter.inner_mac_address
-                  )
-                    .then(
-                      () => {},
-                      (err) => {
-                        setBLEError(
-                          `Error when trying to connect to the printer\n(${err})`
-                        );
-                      }
-                    )
-                    .catch((err) => {
-                      setBLEError(
-                        `Error when trying to connect to the printer\n(${err})`
-                      );
-                    })
-                    .finally(() => {
-                      setIsBLEConnecting(false);
-                    });
-                }
               })
               .catch((err) => {
                 setBLEError(`Error when trying to get device list\n(${err})`);
@@ -238,41 +219,15 @@ const PrinterSettings = () => {
         setBLEError(`Bluetooth or Location permission is not granted.`);
       }
 
-      if (selectedNetPrinter?.host && selectedNetPrinter?.port) {
-        setIsNETConnecting(true);
-        NetPrinter.connectPrinter(netPrinter.host, Number(netPrinter.port))
-          .then(
-            async () => {
-              dispatch(
-                selectNetPrinter({
-                  host: netPrinter.host,
-                  port: Number(netPrinter.port),
-                })
-              );
-              await SecureStore.setItemAsync(
-                "selectedNetPrinterHOST",
-                netPrinter.host
-              );
-              await SecureStore.setItemAsync(
-                "selectedNetPrinterPort",
-                netPrinter.port
-              );
-            },
-            (err) => {
-              setNetError(
-                `Error when trying to connect to the NET printer\n(${err})`
-              );
-            }
-          )
-          .catch((err) => {
-            setNetError(
-              `Error when trying to connect to the NET printer\n(${err})`
-            );
-          })
-          .finally(() => {
-            setIsNETConnecting(false);
-          });
-      }
+      // Init NET
+      setIsNETConnecting(true);
+      NetPrinter.init()
+        .catch((err) => {
+          setNetError(`Error when initializing net printer\n${err}`);
+        })
+        .finally(() => {
+          setIsNETConnecting(false);
+        });
     };
     init();
   }, []);
@@ -373,27 +328,12 @@ const PrinterSettings = () => {
             </Text>
             <Text className="text-sm mt-2 mb-2 text-orange-600/70">
               You can perform a <Text className="font-bold">Self Test</Text> on
-              the printer to check its IP address. This feature has not been
-              tested yet, so make sure the printer is{" "}
+              the printer to check its IP address. Print via network has not
+              been tested yet, so make sure the printer is{" "}
               <Text className="font-bold">idle</Text> before printing and{" "}
               <Text className="font-bold">the cable</Text> is properly connected
               to avoid any issues.
             </Text>
-            <View className="flex-row items-center">
-              <Text className="font-bold text-base text-gray-400">
-                Disable Network Printer ?
-              </Text>
-              <TouchableOpacity
-                onPress={handleDisableNetPrinter}
-                className="ml-auto border p-1.5 border-gray-300 bg-gray-100 rounded"
-              >
-                <MaterialIcons
-                  name="print-disabled"
-                  size={20}
-                  color={"#9ca3af"}
-                />
-              </TouchableOpacity>
-            </View>
             {netError ? (
               <View className="mt-2 px-4 py-2 bg-red-100 border border-red-500 rounded">
                 <Text className="text-red-500">{netError}</Text>
@@ -403,22 +343,41 @@ const PrinterSettings = () => {
                 <LoadingComponent size={"small"} />
               </View>
             ) : selectedNetPrinter ? (
-              <View className="border border-gray-300 px-3 py-1.5 rounded mt-2">
-                <View className="flex-row justify-between items-center">
-                  <Text className="font-medium text-base">Net Printer 1</Text>
-                </View>
-                <View className="flex-row justify-between mt-1">
-                  <Text className="text-gray-500 text-medium">
-                    IP: {selectedNetPrinter.host}
+              <>
+                <View className="flex-row items-center">
+                  <Text className="font-bold text-base text-gray-400">
+                    Disable Network Printer ?
                   </Text>
-                  <Text className="text-gray-500 text-medium">
-                    PORT: {selectedNetPrinter.port}
-                  </Text>
+                  <TouchableOpacity
+                    disabled={!selectedNetPrinter}
+                    onPress={handleDisableNetPrinter}
+                    className="ml-auto border p-1.5 border-gray-300 bg-gray-100 rounded"
+                  >
+                    <MaterialIcons
+                      name="print-disabled"
+                      size={20}
+                      color={"#9ca3af"}
+                    />
+                  </TouchableOpacity>
                 </View>
-              </View>
+                <View className="border border-gray-300 px-3 py-1.5 rounded mt-2">
+                  <View className="flex-row justify-between items-center">
+                    <Text className="font-medium text-base">Net Printer 1</Text>
+                  </View>
+                  <View className="flex-row justify-between mt-1">
+                    <Text className="text-gray-500 text-medium">
+                      IP: {selectedNetPrinter.host}
+                    </Text>
+                    <Text className="text-gray-500 text-medium">
+                      PORT: {selectedNetPrinter.port}
+                    </Text>
+                  </View>
+                </View>
+              </>
             ) : (
               <>
                 <PrimaryInput
+                  keyboardType="numeric"
                   value={netPrinter.host}
                   onChangeText={(host) => {
                     setNetPrinter((prev) => ({ ...prev, host }));
@@ -463,6 +422,33 @@ const PrinterSettings = () => {
                   "isAutoPrintReceipt",
                   `${value}`
                 );
+              }}
+            />
+          </View>
+
+          <View className="mx-5 mb-5">
+            <Text className="mb-3 text-base font-medium">
+              Select paper width
+            </Text>
+            <CustomRadioGroup
+              options={[
+                { label: "58mm", value: "58mm" },
+                { label: "80mm", value: "80mm" },
+              ]}
+              renderItem={(label, isSelected) => (
+                <>
+                  <View className="border rounded-full border-gray-300 w-[25] h-[25]">
+                    {isSelected && (
+                      <View className="rounded-full bg-blue-500 w-[18] h-[18] m-auto border border-blue-400" />
+                    )}
+                  </View>
+                  <Text className="ml-2 text-base">{label}</Text>
+                </>
+              )}
+              value={paperWidth}
+              onValueChange={async ({ value }) => {
+                dispatch(setPaperWidth(value));
+                await SecureStore.setItemAsync("paperWidth", value);
               }}
             />
           </View>
