@@ -32,6 +32,9 @@ const ReceiptModal = ({
   const selectedBluetoothPrinter = useAppSelector(
     ({ store }) => store.selectedBluetoothPrinter
   );
+  const selectedNetPrinter = useAppSelector(
+    ({ store }) => store.selectedNetPrinter
+  );
 
   const dispatch = useAppDispatch();
 
@@ -41,7 +44,10 @@ const ReceiptModal = ({
     ? Number(detailedOrder.cashAmount) - Number(detailedOrder.totalAmount)
     : 0;
 
-  const [isPrinting, setIsPrinting] = React.useState(false);
+  const [isPrinting, setIsPrinting] = React.useState({
+    BLE: false,
+    NET: false,
+  });
 
   const newSale = (e: GestureResponderEvent) => {
     if (onRequestClose) {
@@ -51,18 +57,40 @@ const ReceiptModal = ({
   };
 
   const handlePrint = () => {
-    if (selectedBluetoothPrinter) {
+    if (selectedBluetoothPrinter || selectedNetPrinter) {
       if (getStoreResult.data && detailedOrder) {
-        setIsPrinting(true);
-        printCustomerReceipt({
-          store: getStoreResult.data,
-          order: detailedOrder,
-          printer: selectedBluetoothPrinter,
-          base64Logo: base64ReceiptLogo,
-          paperWidth,
-        }).then(() => {
-          setIsPrinting(false);
-        });
+        setIsPrinting({ BLE: true, NET: true });
+        if (selectedBluetoothPrinter) {
+          printCustomerReceipt({
+            store: getStoreResult.data,
+            order: detailedOrder,
+            printer: selectedBluetoothPrinter,
+            base64Logo: base64ReceiptLogo,
+            paperWidth,
+          }).then(() => {
+            if (selectedNetPrinter) {
+              setIsPrinting((prev) => ({ ...prev, BLE: false }));
+            } else {
+              setIsPrinting({ BLE: false, NET: false });
+            }
+          });
+        }
+
+        if (selectedNetPrinter) {
+          printCustomerReceipt({
+            store: getStoreResult.data,
+            order: detailedOrder,
+            printer: selectedNetPrinter,
+            base64Logo: base64ReceiptLogo,
+            paperWidth,
+          }).then(() => {
+            if (selectedBluetoothPrinter) {
+              setIsPrinting((prev) => ({ ...prev, NET: false }));
+            } else {
+              setIsPrinting({ NET: false, BLE: false });
+            }
+          });
+        }
       }
     } else {
       Alert.alert(
@@ -78,7 +106,12 @@ const ReceiptModal = ({
   }, []);
 
   React.useEffect(() => {
-    if (!isPrinting && visible && detailedOrder?.id && isAutoPrint) {
+    if (
+      !(isPrinting.BLE || isPrinting.NET) &&
+      visible &&
+      detailedOrder?.id &&
+      isAutoPrint
+    ) {
       handlePrint();
     }
   }, [visible]);
@@ -121,7 +154,7 @@ const ReceiptModal = ({
           How would you like your receipt?
         </Text>
         <PrimaryButtonLG
-          isProcessing={isPrinting}
+          isProcessing={isPrinting.BLE || isPrinting.NET}
           className="w-[250] py-2 mb-3"
           onPress={handlePrint}
         >
