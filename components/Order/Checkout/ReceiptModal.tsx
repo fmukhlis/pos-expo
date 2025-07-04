@@ -59,8 +59,8 @@ const ReceiptModal = ({
   const handlePrint = () => {
     if (selectedBluetoothPrinter || selectedNetPrinter) {
       if (getStoreResult.data && detailedOrder) {
-        setIsPrinting({ BLE: true, NET: true });
         if (selectedBluetoothPrinter) {
+          setIsPrinting((prev) => ({ ...prev, BLE: true }));
           printCustomerReceipt({
             store: getStoreResult.data,
             order: detailedOrder,
@@ -68,15 +68,12 @@ const ReceiptModal = ({
             base64Logo: base64ReceiptLogo,
             paperWidth,
           }).then(() => {
-            if (selectedNetPrinter) {
-              setIsPrinting((prev) => ({ ...prev, BLE: false }));
-            } else {
-              setIsPrinting({ BLE: false, NET: false });
-            }
+            setIsPrinting((prev) => ({ ...prev, BLE: false }));
           });
         }
 
         if (selectedNetPrinter) {
+          setIsPrinting((prev) => ({ ...prev, NET: true }));
           printCustomerReceipt({
             store: getStoreResult.data,
             order: detailedOrder,
@@ -84,11 +81,7 @@ const ReceiptModal = ({
             base64Logo: base64ReceiptLogo,
             paperWidth,
           }).then(() => {
-            if (selectedBluetoothPrinter) {
-              setIsPrinting((prev) => ({ ...prev, NET: false }));
-            } else {
-              setIsPrinting({ NET: false, BLE: false });
-            }
+            setIsPrinting((prev) => ({ ...prev, NET: false }));
           });
         }
       }

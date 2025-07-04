@@ -59,8 +59,8 @@ const OrderDetail = () => {
 
     if (selectedBluetoothPrinter || selectedNetPrinter) {
       if (store && order) {
-        setIsPrinting({ BLE: true, NET: true });
         if (selectedBluetoothPrinter) {
+          setIsPrinting((prev) => ({ ...prev, BLE: true }));
           printCustomerReceipt({
             store,
             order,
@@ -68,14 +68,11 @@ const OrderDetail = () => {
             base64Logo: base64ReceiptLogo,
             paperWidth,
           }).then(() => {
-            if (selectedNetPrinter) {
-              setIsPrinting((prev) => ({ ...prev, BLE: false }));
-            } else {
-              setIsPrinting({ NET: false, BLE: false });
-            }
+            setIsPrinting((prev) => ({ ...prev, BLE: false }));
           });
         }
         if (selectedNetPrinter) {
+          setIsPrinting((prev) => ({ ...prev, NET: true }));
           printCustomerReceipt({
             store,
             order,
@@ -83,11 +80,7 @@ const OrderDetail = () => {
             base64Logo: base64ReceiptLogo,
             paperWidth,
           }).then(() => {
-            if (selectedBluetoothPrinter) {
-              setIsPrinting((prev) => ({ ...prev, NET: false }));
-            } else {
-              setIsPrinting({ BLE: false, NET: false });
-            }
+            setIsPrinting((prev) => ({ ...prev, NET: false }));
           });
         }
       }
