@@ -62,9 +62,7 @@ const printCustomerReceipt = async ({
     NetPrinter.printText(
       `<C>${COMMANDS.TEXT_FORMAT.TXT_BOLD_ON}${store.name}${
         COMMANDS.TEXT_FORMAT.TXT_BOLD_OFF
-      }</C>${COMMANDS.LINE_SPACING.LS_SET}\x30\n<C>${store.address}</C>${
-        COMMANDS.LINE_SPACING.LS_SET
-      }\x30\n<C>${store.phone}</C>${COMMANDS.LINE_SPACING.LS_SET}\x35\n${
+      }</C>\n<C>${store.address}</C>\n<C>${store.phone}</C>\n\n${
         paperWidth === "58mm"
           ? "--------------------------------"
           : COMMANDS.HORIZONTAL_LINE.HR3_80MM
@@ -275,13 +273,10 @@ const printCustomerReceipt = async ({
       });
       await sleep(100);
     }
-
-    BLEPrinter.printText(
+    NetPrinter.printText(
       `<C>${COMMANDS.TEXT_FORMAT.TXT_BOLD_ON}${store.name}${
         COMMANDS.TEXT_FORMAT.TXT_BOLD_OFF
-      }</C>${COMMANDS.LINE_SPACING.LS_SET}\x30\n<C>${store.address}</C>${
-        COMMANDS.LINE_SPACING.LS_SET
-      }\x30\n<C>${store.phone}</C>${COMMANDS.LINE_SPACING.LS_SET}\x35\n${
+      }</C>\n<C>${store.address}</C>\n<C>${store.phone}</C>\n\n${
         paperWidth === "58mm"
           ? "--------------------------------"
           : COMMANDS.HORIZONTAL_LINE.HR3_80MM
