@@ -4,6 +4,7 @@ import {
   OrderPayload,
   DetailedOrder,
   IssueRefundPayload,
+  SalesSummary,
 } from "@/types/order";
 
 export const orderAPI = apiSlice.injectEndpoints({
@@ -70,6 +71,16 @@ export const orderAPI = apiSlice.injectEndpoints({
         return [];
       },
     }),
+    getSalesSummary: build.query<SalesSummary, GetSalesSummaryArg>({
+      query: ({ storeId, from, to }) => ({
+        url: `/stores/${storeId}/sales-summary?from=${from}&to=${to}`,
+        method: "GET",
+      }),
+      transformResponse: (data: { data: SalesSummary }) => data.data,
+      providesTags: (result, error, { storeId }) => [
+        { type: "Order", id: `SalesSummary/${storeId}` },
+      ],
+    }),
   }),
 });
 
@@ -77,6 +88,7 @@ export const {
   useLazyGetOrderQuery,
   useStoreOrderMutation,
   useRefundItemsMutation,
+  useLazyGetSalesSummaryQuery,
   useGetTransactionHistoryInfiniteQuery,
 } = orderAPI;
 
@@ -105,4 +117,10 @@ interface TransactionHistory
     Order["orderedProducts"][number],
     "id" | "name" | "quantity"
   >[];
+}
+
+interface GetSalesSummaryArg {
+  storeId: number;
+  from: string;
+  to: string;
 }

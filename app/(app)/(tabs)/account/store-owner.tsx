@@ -211,9 +211,10 @@ export default function HomeScreen() {
         </View>
         <View className="border-t border-gray-300">
           <TouchableHighlight
-            disabled
-            className={`p-3 opacity-40`}
-            onPress={() => {}}
+            className={`p-3 ${!storeId ? "opacity-40" : ""}`}
+            onPress={() => {
+              router.navigate("/account/reports");
+            }}
             underlayColor={"#e5e7eb"}
           >
             <View className="flex-row space-x-2 items-center">

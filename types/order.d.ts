@@ -61,3 +61,12 @@ export interface IssueRefundPayload {
   authorizationCode: string;
   orderProductVariantIds: string[];
 }
+
+export interface SalesSummary {
+  from: string;
+  to: string;
+  totalTransactions: string;
+  totalRevenue: string;
+  averageOrderValue: string;
+  byPaymentMethods: Record<string, string>[];
+}

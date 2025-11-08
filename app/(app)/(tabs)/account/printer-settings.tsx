@@ -65,6 +65,8 @@ const PrinterSettings = () => {
   const [bleError, setBLEError] = React.useState("");
   const [netError, setNetError] = React.useState("");
 
+  const [apiBaseUrl, setApiBaseUrl] = React.useState("");
+
   const handleBluetoothPrinterChange = async ({
     label,
     value,
@@ -451,6 +453,29 @@ const PrinterSettings = () => {
                 await SecureStore.setItemAsync("paperWidth", value);
               }}
             />
+          </View>
+
+          <View className="mx-5 mb-5">
+            <Text className="mb-3 text-base font-medium">Set API Base URL</Text>
+            <View className="flex-row">
+              <PrimaryInput
+                containerClassName="flex-1 mr-3"
+                className="text-sm h-[40]"
+                placeholder="https://..."
+                numberOfLines={1}
+                value={apiBaseUrl}
+                onChangeText={setApiBaseUrl}
+              />
+              <PrimaryButtonSM
+                className="h-[40]"
+                onPress={async () => {
+                  await SecureStore.setItemAsync("apiEndpoint", apiBaseUrl);
+                  setApiBaseUrl("");
+                }}
+              >
+                Set
+              </PrimaryButtonSM>
+            </View>
           </View>
 
           {/* <View className="px-5 mt-3 border-b pb-4 border-gray-300">
