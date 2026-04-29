@@ -66,7 +66,7 @@ const printCustomerReceipt = async ({
         paperWidth === "58mm"
           ? "--------------------------------"
           : COMMANDS.HORIZONTAL_LINE.HR3_80MM
-      }${COMMANDS.LINE_SPACING.LS_DEFAULT}`
+      }${COMMANDS.LINE_SPACING.LS_DEFAULT}`,
     );
     await sleep(100);
 
@@ -78,7 +78,7 @@ const printCustomerReceipt = async ({
       ],
       [col1, col2, col3],
       [ColumnAlignment.LEFT, ColumnAlignment.CENTER, ColumnAlignment.RIGHT],
-      ["", "", ""]
+      ["", "", ""],
     );
     await sleep(100);
 
@@ -86,7 +86,7 @@ const printCustomerReceipt = async ({
       ["ORDER ID", "", `${order.id}`],
       [col1, col2, col3],
       [ColumnAlignment.LEFT, ColumnAlignment.CENTER, ColumnAlignment.RIGHT],
-      ["", "", ""]
+      ["", "", ""],
     );
     await sleep(100);
 
@@ -94,14 +94,14 @@ const printCustomerReceipt = async ({
       ["Processed By", "", `${order.processedBy.name.slice(0, col3 - 1)}`],
       [col1, col2, col3],
       [ColumnAlignment.LEFT, ColumnAlignment.CENTER, ColumnAlignment.RIGHT],
-      ["", "", ""]
+      ["", "", ""],
     );
     await sleep(100);
 
     NetPrinter.printText(
       paperWidth === "58mm"
         ? "--------------------------------"
-        : COMMANDS.HORIZONTAL_LINE.HR3_80MM
+        : COMMANDS.HORIZONTAL_LINE.HR3_80MM,
     );
     await sleep(100);
 
@@ -113,7 +113,7 @@ const printCustomerReceipt = async ({
       totalDiscount += itemDiscount;
 
       NetPrinter.printText(
-        `${COMMANDS.TEXT_FORMAT.TXT_BOLD_ON}${item.name.slice(0, width)}`
+        `${COMMANDS.TEXT_FORMAT.TXT_BOLD_ON}${item.name.slice(0, width)}`,
       );
       await sleep(100);
 
@@ -127,7 +127,7 @@ const printCustomerReceipt = async ({
         ],
         [col1, col2, col3],
         [ColumnAlignment.LEFT, ColumnAlignment.CENTER, ColumnAlignment.RIGHT],
-        ["", "", ""]
+        ["", "", ""],
       );
       await sleep(100);
 
@@ -140,7 +140,7 @@ const printCustomerReceipt = async ({
           ],
           [col1, col2, col3],
           [ColumnAlignment.LEFT, ColumnAlignment.CENTER, ColumnAlignment.RIGHT],
-          ["", "", ""]
+          ["", "", ""],
         );
         await sleep(100);
       }
@@ -149,7 +149,7 @@ const printCustomerReceipt = async ({
     NetPrinter.printText(
       paperWidth === "58mm"
         ? "--------------------------------"
-        : COMMANDS.HORIZONTAL_LINE.HR3_80MM
+        : COMMANDS.HORIZONTAL_LINE.HR3_80MM,
     );
     await sleep(100);
 
@@ -161,7 +161,7 @@ const printCustomerReceipt = async ({
       ],
       [col1, col2, col3],
       [ColumnAlignment.LEFT, ColumnAlignment.CENTER, ColumnAlignment.RIGHT],
-      ["", "", ""]
+      ["", "", ""],
     );
     await sleep(100);
 
@@ -173,7 +173,7 @@ const printCustomerReceipt = async ({
       ],
       [col1, col2, col3],
       [ColumnAlignment.LEFT, ColumnAlignment.CENTER, ColumnAlignment.RIGHT],
-      ["", "", ""]
+      ["", "", ""],
     );
     await sleep(100);
 
@@ -181,14 +181,14 @@ const printCustomerReceipt = async ({
       [`Tax`, "", ``],
       [col1, col2, col3],
       [ColumnAlignment.LEFT, ColumnAlignment.CENTER, ColumnAlignment.RIGHT],
-      ["", "", ""]
+      ["", "", ""],
     );
     await sleep(100);
 
     NetPrinter.printText(
       paperWidth === "58mm"
         ? "--------------------------------"
-        : COMMANDS.HORIZONTAL_LINE.HR3_80MM
+        : COMMANDS.HORIZONTAL_LINE.HR3_80MM,
     );
     await sleep(100);
 
@@ -202,14 +202,14 @@ const printCustomerReceipt = async ({
       ],
       [col1, col2, col3],
       [ColumnAlignment.LEFT, ColumnAlignment.CENTER, ColumnAlignment.RIGHT],
-      [`${COMMANDS.TEXT_FORMAT.TXT_BOLD_ON}`, "", ""]
+      [`${COMMANDS.TEXT_FORMAT.TXT_BOLD_ON}`, "", ""],
     );
     await sleep(100);
 
     NetPrinter.printText(
       paperWidth === "58mm"
         ? "--------------------------------"
-        : COMMANDS.HORIZONTAL_LINE.HR3_80MM
+        : COMMANDS.HORIZONTAL_LINE.HR3_80MM,
     );
     await sleep(100);
 
@@ -223,7 +223,7 @@ const printCustomerReceipt = async ({
       ],
       [col1, col2, col3],
       [ColumnAlignment.LEFT, ColumnAlignment.CENTER, ColumnAlignment.RIGHT],
-      ["", "", ""]
+      ["", "", ""],
     );
     await sleep(100);
 
@@ -237,14 +237,14 @@ const printCustomerReceipt = async ({
       ],
       [col1, col2, col3],
       [ColumnAlignment.LEFT, ColumnAlignment.CENTER, ColumnAlignment.RIGHT],
-      ["", "", ""]
+      ["", "", ""],
     );
     await sleep(100);
 
     NetPrinter.printText(
       paperWidth === "58mm"
         ? "--------------------------------"
-        : COMMANDS.HORIZONTAL_LINE.HR3_80MM
+        : COMMANDS.HORIZONTAL_LINE.HR3_80MM,
     );
     await sleep(100);
 
@@ -256,7 +256,7 @@ const printCustomerReceipt = async ({
       }Printed on: ${dayjs().format("DD MMM YYYY - HH:mm")}`,
       {
         beep: false,
-      }
+      },
     );
     await sleep(100);
   } else {
@@ -273,14 +273,14 @@ const printCustomerReceipt = async ({
       });
       await sleep(100);
     }
-    NetPrinter.printText(
+    BLEPrinter.printText(
       `<C>${COMMANDS.TEXT_FORMAT.TXT_BOLD_ON}${store.name}${
         COMMANDS.TEXT_FORMAT.TXT_BOLD_OFF
       }</C>\n<C>${store.address}</C>\n<C>${store.phone}</C>\n\n${
         paperWidth === "58mm"
           ? "--------------------------------"
           : COMMANDS.HORIZONTAL_LINE.HR3_80MM
-      }${COMMANDS.LINE_SPACING.LS_DEFAULT}`
+      }${COMMANDS.LINE_SPACING.LS_DEFAULT}`,
     );
     await sleep(100);
 
@@ -292,7 +292,7 @@ const printCustomerReceipt = async ({
       ],
       [col1, col2, col3],
       [ColumnAlignment.LEFT, ColumnAlignment.CENTER, ColumnAlignment.RIGHT],
-      ["", "", ""]
+      ["", "", ""],
     );
     await sleep(100);
 
@@ -300,7 +300,7 @@ const printCustomerReceipt = async ({
       ["ORDER ID", "", `${order.id}`],
       [col1, col2, col3],
       [ColumnAlignment.LEFT, ColumnAlignment.CENTER, ColumnAlignment.RIGHT],
-      ["", "", ""]
+      ["", "", ""],
     );
     await sleep(100);
 
@@ -308,14 +308,14 @@ const printCustomerReceipt = async ({
       ["Processed By", "", `${order.processedBy.name.slice(0, col3 - 1)}`],
       [col1, col2, col3],
       [ColumnAlignment.LEFT, ColumnAlignment.CENTER, ColumnAlignment.RIGHT],
-      ["", "", ""]
+      ["", "", ""],
     );
     await sleep(100);
 
     BLEPrinter.printText(
       paperWidth === "58mm"
         ? "--------------------------------"
-        : COMMANDS.HORIZONTAL_LINE.HR3_80MM
+        : COMMANDS.HORIZONTAL_LINE.HR3_80MM,
     );
     await sleep(100);
 
@@ -327,7 +327,7 @@ const printCustomerReceipt = async ({
       totalDiscount += itemDiscount;
 
       BLEPrinter.printText(
-        `${COMMANDS.TEXT_FORMAT.TXT_BOLD_ON}${item.name.slice(0, width)}`
+        `${COMMANDS.TEXT_FORMAT.TXT_BOLD_ON}${item.name.slice(0, width)}`,
       );
       await sleep(100);
 
@@ -341,7 +341,7 @@ const printCustomerReceipt = async ({
         ],
         [col1, col2, col3],
         [ColumnAlignment.LEFT, ColumnAlignment.CENTER, ColumnAlignment.RIGHT],
-        ["", "", ""]
+        ["", "", ""],
       );
       await sleep(100);
 
@@ -354,7 +354,7 @@ const printCustomerReceipt = async ({
           ],
           [col1, col2, col3],
           [ColumnAlignment.LEFT, ColumnAlignment.CENTER, ColumnAlignment.RIGHT],
-          ["", "", ""]
+          ["", "", ""],
         );
         await sleep(100);
       }
@@ -363,7 +363,7 @@ const printCustomerReceipt = async ({
     BLEPrinter.printText(
       paperWidth === "58mm"
         ? "--------------------------------"
-        : COMMANDS.HORIZONTAL_LINE.HR3_80MM
+        : COMMANDS.HORIZONTAL_LINE.HR3_80MM,
     );
     await sleep(100);
 
@@ -375,7 +375,7 @@ const printCustomerReceipt = async ({
       ],
       [col1, col2, col3],
       [ColumnAlignment.LEFT, ColumnAlignment.CENTER, ColumnAlignment.RIGHT],
-      ["", "", ""]
+      ["", "", ""],
     );
     await sleep(100);
 
@@ -387,7 +387,7 @@ const printCustomerReceipt = async ({
       ],
       [col1, col2, col3],
       [ColumnAlignment.LEFT, ColumnAlignment.CENTER, ColumnAlignment.RIGHT],
-      ["", "", ""]
+      ["", "", ""],
     );
     await sleep(100);
 
@@ -395,14 +395,14 @@ const printCustomerReceipt = async ({
       [`Tax`, "", ``],
       [col1, col2, col3],
       [ColumnAlignment.LEFT, ColumnAlignment.CENTER, ColumnAlignment.RIGHT],
-      ["", "", ""]
+      ["", "", ""],
     );
     await sleep(100);
 
     BLEPrinter.printText(
       paperWidth === "58mm"
         ? "--------------------------------"
-        : COMMANDS.HORIZONTAL_LINE.HR3_80MM
+        : COMMANDS.HORIZONTAL_LINE.HR3_80MM,
     );
     await sleep(100);
 
@@ -416,14 +416,14 @@ const printCustomerReceipt = async ({
       ],
       [col1, col2, col3],
       [ColumnAlignment.LEFT, ColumnAlignment.CENTER, ColumnAlignment.RIGHT],
-      [`${COMMANDS.TEXT_FORMAT.TXT_BOLD_ON}`, "", ""]
+      [`${COMMANDS.TEXT_FORMAT.TXT_BOLD_ON}`, "", ""],
     );
     await sleep(100);
 
     BLEPrinter.printText(
       paperWidth === "58mm"
         ? "--------------------------------"
-        : COMMANDS.HORIZONTAL_LINE.HR3_80MM
+        : COMMANDS.HORIZONTAL_LINE.HR3_80MM,
     );
     await sleep(100);
 
@@ -437,7 +437,7 @@ const printCustomerReceipt = async ({
       ],
       [col1, col2, col3],
       [ColumnAlignment.LEFT, ColumnAlignment.CENTER, ColumnAlignment.RIGHT],
-      ["", "", ""]
+      ["", "", ""],
     );
     await sleep(100);
 
@@ -451,14 +451,14 @@ const printCustomerReceipt = async ({
       ],
       [col1, col2, col3],
       [ColumnAlignment.LEFT, ColumnAlignment.CENTER, ColumnAlignment.RIGHT],
-      ["", "", ""]
+      ["", "", ""],
     );
     await sleep(100);
 
     BLEPrinter.printText(
       paperWidth === "58mm"
         ? "--------------------------------"
-        : COMMANDS.HORIZONTAL_LINE.HR3_80MM
+        : COMMANDS.HORIZONTAL_LINE.HR3_80MM,
     );
     await sleep(100);
 
@@ -470,7 +470,7 @@ const printCustomerReceipt = async ({
       }Printed on: ${dayjs().format("DD MMM YYYY - HH:mm")}`,
       {
         beep: false,
-      }
+      },
     );
     await sleep(100);
   }
