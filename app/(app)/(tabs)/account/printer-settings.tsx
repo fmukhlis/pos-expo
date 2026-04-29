@@ -31,20 +31,21 @@ import {
   setBase64ReceiptLogo,
   selectBluetoothPrinter,
 } from "@/components/Store/storeSlice";
+import { ReceiptLogoPicker } from "@/components/ReceiptLogoPicker";
 
 const PrinterSettings = () => {
   const selectedBluetoothPrinter = useAppSelector(
-    ({ store }) => store.selectedBluetoothPrinter
+    ({ store }) => store.selectedBluetoothPrinter,
   );
   const selectedNetPrinter = useAppSelector(
-    ({ store }) => store.selectedNetPrinter
+    ({ store }) => store.selectedNetPrinter,
   );
   const isAutoPrintReceipt = useAppSelector(
-    ({ store }) => store.isAutoPrintReceipt
+    ({ store }) => store.isAutoPrintReceipt,
   );
   const paperWidth = useAppSelector(({ store }) => store.paperWidth);
   const base64ReceiptLogo = useAppSelector(
-    ({ store }) => store.base64ReceiptLogo
+    ({ store }) => store.base64ReceiptLogo,
   );
 
   const dispatch = useAppDispatch();
@@ -83,26 +84,26 @@ const PrinterSettings = () => {
               selectBluetoothPrinter({
                 device_name: label,
                 inner_mac_address: value,
-              })
+              }),
             );
             await SecureStore.setItemAsync(
               "selectedBluetoothPrinterName",
-              label
+              label,
             );
             await SecureStore.setItemAsync(
               "selectedBluetoothPrinterInnerMacAddress",
-              value
+              value,
             );
           },
           (err) => {
             setBLEError(
-              `Error when trying to connect to the BLE printer\n(${err})`
+              `Error when trying to connect to the BLE printer\n(${err})`,
             );
-          }
+          },
         )
         .catch((err) => {
           setBLEError(
-            `Error when trying to connect to the BLE printer\n(${err})`
+            `Error when trying to connect to the BLE printer\n(${err})`,
           );
         })
         .finally(() => {
@@ -121,26 +122,26 @@ const PrinterSettings = () => {
               selectNetPrinter({
                 host: netPrinter.host,
                 port: Number(netPrinter.port),
-              })
+              }),
             );
             await SecureStore.setItemAsync(
               "selectedNetPrinterHost",
-              netPrinter.host
+              netPrinter.host,
             );
             await SecureStore.setItemAsync(
               "selectedNetPrinterPort",
-              netPrinter.port
+              netPrinter.port,
             );
           },
           (err) => {
             setNetError(
-              `Error when trying to connect to the NET printer\n(${err})`
+              `Error when trying to connect to the NET printer\n(${err})`,
             );
-          }
+          },
         )
         .catch((err) => {
           setNetError(
-            `Error when trying to connect to the NET printer\n(${err})`
+            `Error when trying to connect to the NET printer\n(${err})`,
           );
         })
         .finally(() => {
@@ -155,7 +156,7 @@ const PrinterSettings = () => {
         dispatch(selectBluetoothPrinter(null));
         await SecureStore.deleteItemAsync("selectedBluetoothPrinterName");
         await SecureStore.deleteItemAsync(
-          "selectedBluetoothPrinterInnerMacAddress"
+          "selectedBluetoothPrinterInnerMacAddress",
         );
       })
       .catch((err) => {
@@ -179,13 +180,13 @@ const PrinterSettings = () => {
     const init = async () => {
       // Init BLE
       const bluetoothScanPermission = await PermissionsAndroid.check(
-        PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN
+        PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
       );
       const bluetoothConnectPermission = await PermissionsAndroid.check(
-        PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT
+        PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
       );
       const accessFineLocationPermission = await PermissionsAndroid.check(
-        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
+        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
       );
 
       if (
@@ -204,7 +205,7 @@ const PrinterSettings = () => {
                   deviceList.map(({ device_name, inner_mac_address }) => ({
                     label: device_name,
                     value: inner_mac_address,
-                  }))
+                  })),
                 );
               })
               .catch((err) => {
@@ -422,7 +423,7 @@ const PrinterSettings = () => {
                 dispatch(setAutoPrintReceipt(value));
                 await SecureStore.setItemAsync(
                   "isAutoPrintReceipt",
-                  `${value}`
+                  `${value}`,
                 );
               }}
             />
@@ -477,6 +478,8 @@ const PrinterSettings = () => {
               </PrimaryButtonSM>
             </View>
           </View>
+
+          <ReceiptLogoPicker />
 
           {/* <View className="px-5 mt-3 border-b pb-4 border-gray-300">
           <Text className="font-medium text-base">Receipt Logo</Text>
