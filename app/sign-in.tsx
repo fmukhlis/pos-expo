@@ -86,6 +86,12 @@ const SignIn = () => {
             Sign Up
           </Link>
         </View>
+        <Link
+          href="/api-settings"
+          className="mt-4 text-sm text-light-secondaryText dark:text-dark-secondaryText"
+        >
+          API Settings
+        </Link>
       </View>
       {signInLoading && <TransparentScreen />}
     </SafeAreaView>
