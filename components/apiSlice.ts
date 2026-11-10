@@ -12,7 +12,7 @@ const rawBaseQuery = fetchBaseQuery({
 });
 
 const dynamicBaseQuery = async (args: any, api: any, extraOptions: any) => {
-  const dynamicUrl = await SecureStore.getItemAsync("apiBaseUrl");
+  const dynamicUrl = await SecureStore.getItemAsync("apiEndpoint");
 
   if (dynamicUrl) {
     if (typeof args === "string") {

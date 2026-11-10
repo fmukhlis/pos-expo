@@ -10,7 +10,7 @@ export const useCustomFetch = () => {
 
   const request = async (relativeURL: string, init: RequestInit = {}) => {
     const dynamicUrl =
-      (await SecureStore.getItemAsync("apiBaseUrl")) ?? baseURL;
+      (await SecureStore.getItemAsync("apiEndpoint")) ?? baseURL;
     const { method = "GET", headers, ...rest } = init;
     const mergedUrl = dynamicUrl + relativeURL;
     const mergedHeaders = {
